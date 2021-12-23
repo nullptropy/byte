@@ -73,4 +73,35 @@ impl CPU {
             cycle: 0,
         }
     }
+
+    pub fn reset(&mut self) {
+        self.reg = Registers::new();
+        self.reg.pc = self.bus.read_u16(0xfffc);
+    }
+
+    fn get_operand_address(&self, mode: AddressingMode) -> u16 {
+        match mode {
+            AddressingMode::Immediate => self.reg.pc,
+            AddressingMode::Absolute  => self.bus.read_u16(self.reg.pc),
+            AddressingMode::ZeroPage  => self.bus.read(self.reg.pc) as u16,
+
+            _ => 0,
+        }
+    }
+
+    fn update_flags(&mut self, value: u8) {
+        match value {
+            0 => self.reg.p.insert(Flags::ZERO),
+            _ => self.reg.p.remove(Flags::ZERO)
+        }
+
+        self.update_negative_flag(value);
+    }
+
+    fn update_negative_flag(&mut self, value: u8) {
+        match value & 0b10000000 {
+            0 => self.reg.p.remove(Flags::NEGATIVE),
+            _ => self.reg.p.insert(Flags::NEGATIVE),
+        }
+    }
 }
