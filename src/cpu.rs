@@ -79,6 +79,31 @@ impl CPU {
         self.reg.pc = self.bus.read_u16(0xfffc);
     }
 
+    pub fn run(&mut self) {
+        self.reset();
+
+        loop {
+            let code = self.bus.read(self.reg.pc);
+            let opcode = OPCODE_MAP.get(&code)
+                .expect("unrecognized opcode");
+
+            self.reg.pc += 1;
+            let pc_state = self.reg.pc;
+
+            match code {
+                0x00 => break,
+
+                _ => ()
+            }
+
+            if pc_state == self.reg.pc {
+                self.reg.pc += (opcode.size - 1) as u16;
+            }
+
+            println!("[{:x?}][{:?}]", self.reg, opcode);
+        }
+    }
+
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
         match mode {
             AddressingMode::Immediate => self.reg.pc,
