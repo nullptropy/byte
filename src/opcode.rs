@@ -64,3 +64,9 @@ impl Opcode {
         }
     }
 }
+
+lazy_static! {
+    pub static ref OPCODE_MAP: HashMap<u8, Opcode> = HashMap::from([
+        (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, TickModifier::None)),
+    ]);
+}
