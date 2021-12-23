@@ -68,5 +68,20 @@ impl Opcode {
 lazy_static! {
     pub static ref OPCODE_MAP: HashMap<u8, Opcode> = HashMap::from([
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, TickModifier::None)),
+        (0xe8, Opcode::new(0xe8, 1, 2, "INX", AddressingMode::Implied, TickModifier::None)),
+
+        (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, TickModifier::None)),
+        (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, TickModifier::None)),
+        (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, TickModifier::None)),
+        (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, TickModifier::None)),
+
+        (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, TickModifier::None)),
+        (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage,  TickModifier::None)),
+        (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, TickModifier::None)),
+        (0xad, Opcode::new(0xad, 3, 4, "LDA", AddressingMode::Absolute,  TickModifier::None)),
+        (0xbd, Opcode::new(0xbd, 3, 4, "LDA", AddressingMode::AbsoluteX, TickModifier::PageCrossed)),
+        (0xb9, Opcode::new(0xb9, 3, 4, "LDA", AddressingMode::AbsoluteY, TickModifier::PageCrossed)),
+        (0xa1, Opcode::new(0xa1, 2, 6, "LDA", AddressingMode::IndirectX, TickModifier::None)),
+        (0xb1, Opcode::new(0xb1, 2, 5, "LDA", AddressingMode::IndirectY, TickModifier::PageCrossed)),
     ]);
 }
