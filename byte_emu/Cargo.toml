@@ -1,0 +1,32 @@
+[package]
+name = "byte_emu"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.81"
+
+[dependencies]
+byte_asm = { path = "../byte_asm" }
+byte_core = { path = "../byte_core" }
+byte_common = { path = "../byte_common" }
+vfs = { git = "https://github.com/heaptr/rust-vfs.git", features = ["serde"] }
+
+rfd = "0.11.1"
+egui = "0.30.0"
+eframe = { version = "0.30.0", default-features = false, features = [
+    "default_fonts", # embed the default egui fonts
+    "glow",          # use the glow rendering backend. alternative: "wgpu"
+    "persistence",   # enable restoring app state when restarting the app
+    "wayland",       # To support Linux (and CI)
+] }
+log = "0.4"
+
+serde = { version = "1", features = ["derive"] }
+bitflags = "1.3.2"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+env_logger = "0.11"
+pollster = "0.3.0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3.70"

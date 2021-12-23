@@ -1,0 +1,9 @@
+[package]
+name = "byte_asm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+byte_common = { path = "../byte_common" }
+thiserror = "1.0.40"
+strum = { version = "0.25", features = ["derive"] }

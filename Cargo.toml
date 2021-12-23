@@ -1,0 +1,14 @@
+[workspace]
+members = [
+  "byte_asm",
+  "byte_common",
+  "byte_core",
+  "byte_emu",
+]
+resolver = "2"
+
+[profile.release]
+opt-level = 2
+
+[profile.dev.package."*"]
+opt-level = 2

@@ -1,0 +1,1210 @@
+[
+  {
+    "code": 105,
+    "mode": "Immediate",
+    "name": "ADC",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 101,
+    "mode": "ZeroPage",
+    "name": "ADC",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 117,
+    "mode": "ZeroPageX",
+    "name": "ADC",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 109,
+    "mode": "Absolute",
+    "name": "ADC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 125,
+    "mode": "AbsoluteX",
+    "name": "ADC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 121,
+    "mode": "AbsoluteY",
+    "name": "ADC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 97,
+    "mode": "IndirectX",
+    "name": "ADC",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 113,
+    "mode": "IndirectY",
+    "name": "ADC",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 41,
+    "mode": "Immediate",
+    "name": "AND",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 37,
+    "mode": "ZeroPage",
+    "name": "AND",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 53,
+    "mode": "ZeroPageX",
+    "name": "AND",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 45,
+    "mode": "Absolute",
+    "name": "AND",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 61,
+    "mode": "AbsoluteX",
+    "name": "AND",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 57,
+    "mode": "AbsoluteY",
+    "name": "AND",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 33,
+    "mode": "IndirectX",
+    "name": "AND",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 49,
+    "mode": "IndirectY",
+    "name": "AND",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 10,
+    "mode": "Accumulator",
+    "name": "ASL",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 6,
+    "mode": "ZeroPage",
+    "name": "ASL",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 22,
+    "mode": "ZeroPageX",
+    "name": "ASL",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 14,
+    "mode": "Absolute",
+    "name": "ASL",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 30,
+    "mode": "AbsoluteX",
+    "name": "ASL",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 144,
+    "mode": "Relative",
+    "name": "BCC",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 176,
+    "mode": "Relative",
+    "name": "BCS",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 240,
+    "mode": "Relative",
+    "name": "BEQ",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 36,
+    "mode": "ZeroPage",
+    "name": "BIT",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 44,
+    "mode": "Absolute",
+    "name": "BIT",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 48,
+    "mode": "Relative",
+    "name": "BMI",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 208,
+    "mode": "Relative",
+    "name": "BNE",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 16,
+    "mode": "Relative",
+    "name": "BPL",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 0,
+    "mode": "Implied",
+    "name": "BRK",
+    "size": 1,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 80,
+    "mode": "Relative",
+    "name": "BVC",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 112,
+    "mode": "Relative",
+    "name": "BVS",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": "Branch"
+  },
+  {
+    "code": 24,
+    "mode": "Implied",
+    "name": "CLC",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 216,
+    "mode": "Implied",
+    "name": "CLD",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 88,
+    "mode": "Implied",
+    "name": "CLI",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 184,
+    "mode": "Implied",
+    "name": "CLV",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 201,
+    "mode": "Immediate",
+    "name": "CMP",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 197,
+    "mode": "ZeroPage",
+    "name": "CMP",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 213,
+    "mode": "ZeroPageX",
+    "name": "CMP",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 205,
+    "mode": "Absolute",
+    "name": "CMP",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 221,
+    "mode": "AbsoluteX",
+    "name": "CMP",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 217,
+    "mode": "AbsoluteY",
+    "name": "CMP",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 193,
+    "mode": "IndirectX",
+    "name": "CMP",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 209,
+    "mode": "IndirectY",
+    "name": "CMP",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 224,
+    "mode": "Immediate",
+    "name": "CPX",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 228,
+    "mode": "ZeroPage",
+    "name": "CPX",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 236,
+    "mode": "Absolute",
+    "name": "CPX",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 192,
+    "mode": "Immediate",
+    "name": "CPY",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 196,
+    "mode": "ZeroPage",
+    "name": "CPY",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 204,
+    "mode": "Absolute",
+    "name": "CPY",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 198,
+    "mode": "ZeroPage",
+    "name": "DEC",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 214,
+    "mode": "ZeroPageX",
+    "name": "DEC",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 206,
+    "mode": "Absolute",
+    "name": "DEC",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 222,
+    "mode": "AbsoluteX",
+    "name": "DEC",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 202,
+    "mode": "Implied",
+    "name": "DEX",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 136,
+    "mode": "Implied",
+    "name": "DEY",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 73,
+    "mode": "Immediate",
+    "name": "EOR",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 69,
+    "mode": "ZeroPage",
+    "name": "EOR",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 85,
+    "mode": "ZeroPageX",
+    "name": "EOR",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 77,
+    "mode": "Absolute",
+    "name": "EOR",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 93,
+    "mode": "AbsoluteX",
+    "name": "EOR",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 89,
+    "mode": "AbsoluteY",
+    "name": "EOR",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 65,
+    "mode": "IndirectX",
+    "name": "EOR",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 81,
+    "mode": "IndirectY",
+    "name": "EOR",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 230,
+    "mode": "ZeroPage",
+    "name": "INC",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 246,
+    "mode": "ZeroPageX",
+    "name": "INC",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 238,
+    "mode": "Absolute",
+    "name": "INC",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 254,
+    "mode": "AbsoluteX",
+    "name": "INC",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 232,
+    "mode": "Implied",
+    "name": "INX",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 200,
+    "mode": "Implied",
+    "name": "INY",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 76,
+    "mode": "Absolute",
+    "name": "JMP",
+    "size": 3,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 108,
+    "mode": "Indirect",
+    "name": "JMP",
+    "size": 3,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 32,
+    "mode": "Absolute",
+    "name": "JSR",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 169,
+    "mode": "Immediate",
+    "name": "LDA",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 165,
+    "mode": "ZeroPage",
+    "name": "LDA",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 181,
+    "mode": "ZeroPageX",
+    "name": "LDA",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 173,
+    "mode": "Absolute",
+    "name": "LDA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 189,
+    "mode": "AbsoluteX",
+    "name": "LDA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 185,
+    "mode": "AbsoluteY",
+    "name": "LDA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 161,
+    "mode": "IndirectX",
+    "name": "LDA",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 177,
+    "mode": "IndirectY",
+    "name": "LDA",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 162,
+    "mode": "Immediate",
+    "name": "LDX",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 166,
+    "mode": "ZeroPage",
+    "name": "LDX",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 182,
+    "mode": "ZeroPageY",
+    "name": "LDX",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 174,
+    "mode": "Absolute",
+    "name": "LDX",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 190,
+    "mode": "AbsoluteY",
+    "name": "LDX",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 160,
+    "mode": "Immediate",
+    "name": "LDY",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 164,
+    "mode": "ZeroPage",
+    "name": "LDY",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 180,
+    "mode": "ZeroPageX",
+    "name": "LDY",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 172,
+    "mode": "Absolute",
+    "name": "LDY",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 188,
+    "mode": "AbsoluteX",
+    "name": "LDY",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 74,
+    "mode": "Accumulator",
+    "name": "LSR",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 70,
+    "mode": "ZeroPage",
+    "name": "LSR",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 86,
+    "mode": "ZeroPageX",
+    "name": "LSR",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 78,
+    "mode": "Absolute",
+    "name": "LSR",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 94,
+    "mode": "AbsoluteX",
+    "name": "LSR",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 234,
+    "mode": "Implied",
+    "name": "NOP",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 9,
+    "mode": "Immediate",
+    "name": "ORA",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 5,
+    "mode": "ZeroPage",
+    "name": "ORA",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 21,
+    "mode": "ZeroPageX",
+    "name": "ORA",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 13,
+    "mode": "Absolute",
+    "name": "ORA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 29,
+    "mode": "AbsoluteX",
+    "name": "ORA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 25,
+    "mode": "AbsoluteY",
+    "name": "ORA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 1,
+    "mode": "IndirectX",
+    "name": "ORA",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 17,
+    "mode": "IndirectY",
+    "name": "ORA",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 72,
+    "mode": "Implied",
+    "name": "PHA",
+    "size": 1,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 8,
+    "mode": "Implied",
+    "name": "PHP",
+    "size": 1,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 104,
+    "mode": "Implied",
+    "name": "PLA",
+    "size": 1,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 40,
+    "mode": "Implied",
+    "name": "PLP",
+    "size": 1,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 42,
+    "mode": "Accumulator",
+    "name": "ROL",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 38,
+    "mode": "ZeroPage",
+    "name": "ROL",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 54,
+    "mode": "ZeroPageX",
+    "name": "ROL",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 46,
+    "mode": "Absolute",
+    "name": "ROL",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 62,
+    "mode": "AbsoluteX",
+    "name": "ROL",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 106,
+    "mode": "Accumulator",
+    "name": "ROR",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 102,
+    "mode": "ZeroPage",
+    "name": "ROR",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 118,
+    "mode": "ZeroPageX",
+    "name": "ROR",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 110,
+    "mode": "Absolute",
+    "name": "ROR",
+    "size": 3,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 126,
+    "mode": "AbsoluteX",
+    "name": "ROR",
+    "size": 3,
+    "tick": 7,
+    "tick_modifier": null
+  },
+  {
+    "code": 64,
+    "mode": "Implied",
+    "name": "RTI",
+    "size": 1,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 96,
+    "mode": "Implied",
+    "name": "RTS",
+    "size": 1,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 233,
+    "mode": "Immediate",
+    "name": "SBC",
+    "size": 2,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 229,
+    "mode": "ZeroPage",
+    "name": "SBC",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 245,
+    "mode": "ZeroPageX",
+    "name": "SBC",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 237,
+    "mode": "Absolute",
+    "name": "SBC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 253,
+    "mode": "AbsoluteX",
+    "name": "SBC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 249,
+    "mode": "AbsoluteY",
+    "name": "SBC",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 225,
+    "mode": "IndirectX",
+    "name": "SBC",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 241,
+    "mode": "IndirectY",
+    "name": "SBC",
+    "size": 2,
+    "tick": 5,
+    "tick_modifier": "PageCrossed"
+  },
+  {
+    "code": 56,
+    "mode": "Implied",
+    "name": "SEC",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 248,
+    "mode": "Implied",
+    "name": "SED",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 120,
+    "mode": "Implied",
+    "name": "SEI",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 133,
+    "mode": "ZeroPage",
+    "name": "STA",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 149,
+    "mode": "ZeroPageX",
+    "name": "STA",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 141,
+    "mode": "Absolute",
+    "name": "STA",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 157,
+    "mode": "AbsoluteX",
+    "name": "STA",
+    "size": 3,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 153,
+    "mode": "AbsoluteY",
+    "name": "STA",
+    "size": 3,
+    "tick": 5,
+    "tick_modifier": null
+  },
+  {
+    "code": 129,
+    "mode": "IndirectX",
+    "name": "STA",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 145,
+    "mode": "IndirectY",
+    "name": "STA",
+    "size": 2,
+    "tick": 6,
+    "tick_modifier": null
+  },
+  {
+    "code": 134,
+    "mode": "ZeroPage",
+    "name": "STX",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 150,
+    "mode": "ZeroPageY",
+    "name": "STX",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 142,
+    "mode": "Absolute",
+    "name": "STX",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 132,
+    "mode": "ZeroPage",
+    "name": "STY",
+    "size": 2,
+    "tick": 3,
+    "tick_modifier": null
+  },
+  {
+    "code": 148,
+    "mode": "ZeroPageX",
+    "name": "STY",
+    "size": 2,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 140,
+    "mode": "Absolute",
+    "name": "STY",
+    "size": 3,
+    "tick": 4,
+    "tick_modifier": null
+  },
+  {
+    "code": 170,
+    "mode": "Implied",
+    "name": "TAX",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 168,
+    "mode": "Implied",
+    "name": "TAY",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 186,
+    "mode": "Implied",
+    "name": "TSX",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 138,
+    "mode": "Implied",
+    "name": "TXA",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 154,
+    "mode": "Implied",
+    "name": "TXS",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  },
+  {
+    "code": 152,
+    "mode": "Implied",
+    "name": "TYA",
+    "size": 1,
+    "tick": 2,
+    "tick_modifier": null
+  }
+]
