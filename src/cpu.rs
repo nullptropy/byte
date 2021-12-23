@@ -91,6 +91,8 @@ impl CPU {
             let pc_state = self.reg.pc;
 
             match code {
+                0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
+
                 0xaa => self.tax(&opcode),
                 0xe8 => self.inx(&opcode),
                 0x00 => break,
@@ -114,6 +116,11 @@ impl CPU {
     fn inx(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
         self.update_flags(self.reg.x);
+    }
+
+    fn lda(&mut self, opcode: &Opcode) {
+        self.reg.a = self.bus.read(self.get_operand_address(opcode.mode));
+        self.update_flags(self.reg.a);
     }
 
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
