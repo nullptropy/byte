@@ -40,7 +40,7 @@ fn main() {
 
     // load some arbitrary program into ram starting from 0x8000
     [
-        0xa9, 0xff,        // LDA #$c0
+        0xa9, 0xff,        // LDA #$ff
         0xaa,              // TAX
         0xe8,              // INX
         0xad, 0x00, 0x10,  // LDA $1000
