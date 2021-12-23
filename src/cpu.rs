@@ -91,6 +91,8 @@ impl CPU {
             let pc_state = self.reg.pc;
 
             match code {
+                0xaa => self.tax(&opcode),
+                0xe8 => self.inx(&opcode),
                 0x00 => break,
 
                 _ => ()
@@ -102,6 +104,16 @@ impl CPU {
 
             println!("[{:x?}][{:?}]", self.reg, opcode);
         }
+    }
+
+    fn tax(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.a;
+        self.update_flags(self.reg.x);
+    }
+
+    fn inx(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.x.wrapping_add(1);
+        self.update_flags(self.reg.x);
     }
 
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
