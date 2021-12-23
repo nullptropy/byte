@@ -1,4 +1,8 @@
+use core::fmt;
 use bitflags::bitflags;
+
+use crate::bus::Bus;
+use crate::opcode::*;
 
 bitflags! {
 /// 6502 status flags
@@ -22,5 +26,51 @@ bitflags! {
         const INTERRUPT    = 0b00000100;
         const ZERO         = 0b00000010;
         const CARRY        = 0b00000001;
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Registers {
+    sp: u16,
+    pc: u16,
+
+    x: u8, y: u8,
+    a: u8, p: Flags,
+}
+
+#[allow(non_snake_case)]
+pub struct CPU {
+    pub reg: Registers,
+    pub bus: Bus,
+    pub cycle: u32
+}
+
+impl Registers {
+    fn new() -> Self {
+        Self {
+            sp: 0, pc: 0,
+
+            x: 0, y: 0,
+            a: 0, p: Flags::default()
+        }
+    }
+}
+
+impl fmt::Debug for Registers {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f, "{:04x}:{:04x}:{:08b}:{:02x}:{:02x}:{:02x}",
+            self.pc, self.sp, self.p, self.a, self.x, self.y
+        )
+    }
+}
+
+impl CPU {
+    pub fn new() -> Self {
+        CPU {
+            reg: Registers::new(),
+            bus: Bus::new(),
+            cycle: 0,
+        }
     }
 }
