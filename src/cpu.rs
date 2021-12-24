@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, panic};
 use bitflags::bitflags;
 
 use crate::bus::Bus;
@@ -126,10 +126,22 @@ impl CPU {
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
         match mode {
             AddressingMode::Immediate => self.reg.pc,
-            AddressingMode::Absolute  => self.bus.read_u16(self.reg.pc),
-            AddressingMode::ZeroPage  => self.bus.read(self.reg.pc) as u16,
 
-            _ => 0,
+            AddressingMode::ZeroPage  => self.bus.read(self.reg.pc) as u16,
+            AddressingMode::ZeroPageX => self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16,
+            AddressingMode::ZeroPageY => self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16,
+
+            AddressingMode::Absolute  => self.bus.read_u16(self.reg.pc),
+            AddressingMode::AbsoluteX => self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16),
+            AddressingMode::AbsoluteY => self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16),
+
+            AddressingMode::Indirect  => self.bus.read_u16(self.bus.read_u16(self.reg.pc)),
+            AddressingMode::IndirectX => self.bus.read_u16(
+                self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
+            AddressingMode::IndirectY => self.bus.read_u16(
+                self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16),
+
+            _ => panic!("shouldn't be called with {:?}", mode),
         }
     }
 
