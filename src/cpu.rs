@@ -95,6 +95,7 @@ impl CPU {
 
                 0xaa => self.tax(&opcode),
                 0xe8 => self.inx(&opcode),
+                0xca => self.dex(&opcode),
                 0x00 => break,
 
                 _ => ()
@@ -115,6 +116,11 @@ impl CPU {
 
     fn inx(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
+        self.update_flags(self.reg.x);
+    }
+
+    fn dex(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.x.wrapping_sub(1);
         self.update_flags(self.reg.x);
     }
 
