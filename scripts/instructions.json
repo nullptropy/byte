@@ -1,0 +1,1059 @@
+[
+    {
+        "code": "69",
+        "mode": "Immediate",
+        "name": "ADC",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "65",
+        "mode": "ZeroPage",
+        "name": "ADC",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "75",
+        "mode": "ZeroPageX",
+        "name": "ADC",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "6d",
+        "mode": "Absolute",
+        "name": "ADC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "7d",
+        "mode": "AbsoluteX",
+        "name": "ADC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "79",
+        "mode": "AbsoluteY",
+        "name": "ADC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "61",
+        "mode": "IndirectX",
+        "name": "ADC",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "71",
+        "mode": "IndirectY",
+        "name": "ADC",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "29",
+        "mode": "Immediate",
+        "name": "AND",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "25",
+        "mode": "ZeroPage",
+        "name": "AND",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "35",
+        "mode": "ZeroPageX",
+        "name": "AND",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "2d",
+        "mode": "Absolute",
+        "name": "AND",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "3d",
+        "mode": "AbsoluteX",
+        "name": "AND",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "39",
+        "mode": "AbsoluteY",
+        "name": "AND",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "21",
+        "mode": "IndirectX",
+        "name": "AND",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "31",
+        "mode": "IndirectY",
+        "name": "AND",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "0a",
+        "mode": "Accumulator",
+        "name": "ASL",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "06",
+        "mode": "ZeroPage",
+        "name": "ASL",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "16",
+        "mode": "ZeroPageX",
+        "name": "ASL",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "0e",
+        "mode": "Absolute",
+        "name": "ASL",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "1e",
+        "mode": "AbsoluteX",
+        "name": "ASL",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "90",
+        "mode": "Relative",
+        "name": "BCC",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "b0",
+        "mode": "Relative",
+        "name": "BCS",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "f0",
+        "mode": "Relative",
+        "name": "BEQ",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "24",
+        "mode": "ZeroPage",
+        "name": "BIT",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "2c",
+        "mode": "Absolute",
+        "name": "BIT",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "30",
+        "mode": "Relative",
+        "name": "BMI",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "d0",
+        "mode": "Relative",
+        "name": "BNE",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "10",
+        "mode": "Relative",
+        "name": "BPL",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "00",
+        "mode": "Implied",
+        "name": "BRK",
+        "size": "1",
+        "tick": "7"
+    },
+    {
+        "code": "50",
+        "mode": "Relative",
+        "name": "BVC",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "70",
+        "mode": "Relative",
+        "name": "BVS",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "18",
+        "mode": "Implied",
+        "name": "CLC",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "d8",
+        "mode": "Implied",
+        "name": "CLD",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "58",
+        "mode": "Implied",
+        "name": "CLI",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "b8",
+        "mode": "Implied",
+        "name": "CLV",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "c9",
+        "mode": "Immediate",
+        "name": "CMP",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "c5",
+        "mode": "ZeroPage",
+        "name": "CMP",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "d5",
+        "mode": "ZeroPageX",
+        "name": "CMP",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "cd",
+        "mode": "Absolute",
+        "name": "CMP",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "dd",
+        "mode": "AbsoluteX",
+        "name": "CMP",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "d9",
+        "mode": "AbsoluteY",
+        "name": "CMP",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "c1",
+        "mode": "IndirectX",
+        "name": "CMP",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "d1",
+        "mode": "IndirectY",
+        "name": "CMP",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "e0",
+        "mode": "Immediate",
+        "name": "CPX",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "e4",
+        "mode": "ZeroPage",
+        "name": "CPX",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "ec",
+        "mode": "Absolute",
+        "name": "CPX",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "c0",
+        "mode": "Immediate",
+        "name": "CPY",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "c4",
+        "mode": "ZeroPage",
+        "name": "CPY",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "cc",
+        "mode": "Absolute",
+        "name": "CPY",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "c6",
+        "mode": "ZeroPage",
+        "name": "DEC",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "d6",
+        "mode": "ZeroPageX",
+        "name": "DEC",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "ce",
+        "mode": "Absolute",
+        "name": "DEC",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "de",
+        "mode": "AbsoluteX",
+        "name": "DEC",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "ca",
+        "mode": "Implied",
+        "name": "DEX",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "88",
+        "mode": "Implied",
+        "name": "DEY",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "49",
+        "mode": "Immediate",
+        "name": "EOR",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "45",
+        "mode": "ZeroPage",
+        "name": "EOR",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "55",
+        "mode": "ZeroPageX",
+        "name": "EOR",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "4d",
+        "mode": "Absolute",
+        "name": "EOR",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "5d",
+        "mode": "AbsoluteX",
+        "name": "EOR",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "59",
+        "mode": "AbsoluteY",
+        "name": "EOR",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "41",
+        "mode": "IndirectX",
+        "name": "EOR",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "51",
+        "mode": "IndirectY",
+        "name": "EOR",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "e6",
+        "mode": "ZeroPage",
+        "name": "INC",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "f6",
+        "mode": "ZeroPageX",
+        "name": "INC",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "ee",
+        "mode": "Absolute",
+        "name": "INC",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "fe",
+        "mode": "AbsoluteX",
+        "name": "INC",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "e8",
+        "mode": "Implied",
+        "name": "INX",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "c8",
+        "mode": "Implied",
+        "name": "INY",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "4c",
+        "mode": "Absolute",
+        "name": "JMP",
+        "size": "3",
+        "tick": "3"
+    },
+    {
+        "code": "6c",
+        "mode": "Indirect",
+        "name": "JMP",
+        "size": "3",
+        "tick": "5"
+    },
+    {
+        "code": "20",
+        "mode": "Absolute",
+        "name": "JSR",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "a9",
+        "mode": "Immediate",
+        "name": "LDA",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "a5",
+        "mode": "ZeroPage",
+        "name": "LDA",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "b5",
+        "mode": "ZeroPageX",
+        "name": "LDA",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "ad",
+        "mode": "Absolute",
+        "name": "LDA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "bd",
+        "mode": "AbsoluteX",
+        "name": "LDA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "b9",
+        "mode": "AbsoluteY",
+        "name": "LDA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "a1",
+        "mode": "IndirectX",
+        "name": "LDA",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "b1",
+        "mode": "IndirectY",
+        "name": "LDA",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "a2",
+        "mode": "Immediate",
+        "name": "LDX",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "a6",
+        "mode": "ZeroPage",
+        "name": "LDX",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "b6",
+        "mode": "ZeroPageY",
+        "name": "LDX",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "ae",
+        "mode": "Absolute",
+        "name": "LDX",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "be",
+        "mode": "AbsoluteY",
+        "name": "LDX",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "a0",
+        "mode": "Immediate",
+        "name": "LDY",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "a4",
+        "mode": "ZeroPage",
+        "name": "LDY",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "b4",
+        "mode": "ZeroPageX",
+        "name": "LDY",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "ac",
+        "mode": "Absolute",
+        "name": "LDY",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "bc",
+        "mode": "AbsoluteX",
+        "name": "LDY",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "4a",
+        "mode": "Accumulator",
+        "name": "LSR",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "46",
+        "mode": "ZeroPage",
+        "name": "LSR",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "56",
+        "mode": "ZeroPageX",
+        "name": "LSR",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "4e",
+        "mode": "Absolute",
+        "name": "LSR",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "5e",
+        "mode": "AbsoluteX",
+        "name": "LSR",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "ea",
+        "mode": "Implied",
+        "name": "NOP",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "09",
+        "mode": "Immediate",
+        "name": "ORA",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "05",
+        "mode": "ZeroPage",
+        "name": "ORA",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "15",
+        "mode": "ZeroPageX",
+        "name": "ORA",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "0d",
+        "mode": "Absolute",
+        "name": "ORA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "1d",
+        "mode": "AbsoluteX",
+        "name": "ORA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "19",
+        "mode": "AbsoluteY",
+        "name": "ORA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "01",
+        "mode": "IndirectX",
+        "name": "ORA",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "11",
+        "mode": "IndirectY",
+        "name": "ORA",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "48",
+        "mode": "Implied",
+        "name": "PHA",
+        "size": "1",
+        "tick": "3"
+    },
+    {
+        "code": "08",
+        "mode": "Implied",
+        "name": "PHP",
+        "size": "1",
+        "tick": "3"
+    },
+    {
+        "code": "68",
+        "mode": "Implied",
+        "name": "PLA",
+        "size": "1",
+        "tick": "4"
+    },
+    {
+        "code": "28",
+        "mode": "Implied",
+        "name": "PLP",
+        "size": "1",
+        "tick": "4"
+    },
+    {
+        "code": "2a",
+        "mode": "Accumulator",
+        "name": "ROL",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "26",
+        "mode": "ZeroPage",
+        "name": "ROL",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "36",
+        "mode": "ZeroPageX",
+        "name": "ROL",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "2e",
+        "mode": "Absolute",
+        "name": "ROL",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "3e",
+        "mode": "AbsoluteX",
+        "name": "ROL",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "6a",
+        "mode": "Accumulator",
+        "name": "ROR",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "66",
+        "mode": "ZeroPage",
+        "name": "ROR",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "76",
+        "mode": "ZeroPageX",
+        "name": "ROR",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "6e",
+        "mode": "Absolute",
+        "name": "ROR",
+        "size": "3",
+        "tick": "6"
+    },
+    {
+        "code": "7e",
+        "mode": "AbsoluteX",
+        "name": "ROR",
+        "size": "3",
+        "tick": "7"
+    },
+    {
+        "code": "40",
+        "mode": "Implied",
+        "name": "RTI",
+        "size": "1",
+        "tick": "6"
+    },
+    {
+        "code": "60",
+        "mode": "Implied",
+        "name": "RTS",
+        "size": "1",
+        "tick": "6"
+    },
+    {
+        "code": "e9",
+        "mode": "Immediate",
+        "name": "SBC",
+        "size": "2",
+        "tick": "2"
+    },
+    {
+        "code": "e5",
+        "mode": "ZeroPage",
+        "name": "SBC",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "f5",
+        "mode": "ZeroPageX",
+        "name": "SBC",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "ed",
+        "mode": "Absolute",
+        "name": "SBC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "fd",
+        "mode": "AbsoluteX",
+        "name": "SBC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "f9",
+        "mode": "AbsoluteY",
+        "name": "SBC",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "e1",
+        "mode": "IndirectX",
+        "name": "SBC",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "f1",
+        "mode": "IndirectY",
+        "name": "SBC",
+        "size": "2",
+        "tick": "5"
+    },
+    {
+        "code": "38",
+        "mode": "Implied",
+        "name": "SEC",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "f8",
+        "mode": "Implied",
+        "name": "SED",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "78",
+        "mode": "Implied",
+        "name": "SEI",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "85",
+        "mode": "ZeroPage",
+        "name": "STA",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "95",
+        "mode": "ZeroPageX",
+        "name": "STA",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "8d",
+        "mode": "Absolute",
+        "name": "STA",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "9d",
+        "mode": "AbsoluteX",
+        "name": "STA",
+        "size": "3",
+        "tick": "5"
+    },
+    {
+        "code": "99",
+        "mode": "AbsoluteY",
+        "name": "STA",
+        "size": "3",
+        "tick": "5"
+    },
+    {
+        "code": "81",
+        "mode": "IndirectX",
+        "name": "STA",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "91",
+        "mode": "IndirectY",
+        "name": "STA",
+        "size": "2",
+        "tick": "6"
+    },
+    {
+        "code": "86",
+        "mode": "ZeroPage",
+        "name": "STX",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "96",
+        "mode": "ZeroPageY",
+        "name": "STX",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "8e",
+        "mode": "Absolute",
+        "name": "STX",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "84",
+        "mode": "ZeroPage",
+        "name": "STY",
+        "size": "2",
+        "tick": "3"
+    },
+    {
+        "code": "94",
+        "mode": "ZeroPageX",
+        "name": "STY",
+        "size": "2",
+        "tick": "4"
+    },
+    {
+        "code": "8c",
+        "mode": "Absolute",
+        "name": "STY",
+        "size": "3",
+        "tick": "4"
+    },
+    {
+        "code": "aa",
+        "mode": "Implied",
+        "name": "TAX",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "a8",
+        "mode": "Implied",
+        "name": "TAY",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "ba",
+        "mode": "Implied",
+        "name": "TSX",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "8a",
+        "mode": "Implied",
+        "name": "TXA",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "9a",
+        "mode": "Implied",
+        "name": "TXS",
+        "size": "1",
+        "tick": "2"
+    },
+    {
+        "code": "98",
+        "mode": "Implied",
+        "name": "TYA",
+        "size": "1",
+        "tick": "2"
+    }
+]
