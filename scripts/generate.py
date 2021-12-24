@@ -9,9 +9,8 @@ TEST_FILE_HEADER = 'use mos6502::*;\n\n'
 TEST_FUNC_TEMPLATE = '''\
 #[test]
 fn opcode_0x{code}_{mode}_{name}() {{
-    let mut cpu::CPU::new();
-    cpu.bus.attach(0x0000, 0x01ff, RAM::new(0x0200)).unwrap();
-    cpu.bus.attach(0x0200, 0xffff, RAM::new(0xfe00)).unwrap();
+    let mut cpu = cpu::CPU::new();
+    cpu.bus.attach(0x0000, 0xffff, bus::MockRAM::new(0x10000)).unwrap();
 
     assert_eq!(2 + 2, 5);
 }}\n'''
