@@ -31,11 +31,11 @@ bitflags! {
 
 #[derive(Clone, Copy)]
 pub struct Registers {
-    sp: u16,
-    pc: u16,
+    pub sp: u16,
+    pub pc: u16,
 
-    x: u8, y: u8,
-    a: u8, p: Flags,
+    pub x: u8, pub y: u8,
+    pub a: u8, pub p: Flags,
 }
 
 #[allow(non_snake_case)]
