@@ -5,8 +5,6 @@ import os
 import sys
 import json
 
-GET_PATH = lambda *p: os.path.join(os.path.dirname(sys.argv[0]), '..', *p)
-
 TEST_FILE_HEADER = 'mod common;\n\n'
 TEST_FUNC_TEMPLATE = '''\
 #[test]
@@ -17,6 +15,8 @@ fn opcode_0x{code}_{mode}_{name}() {{
 
 OPCODE_TEMPLATE = '(0x{code}, Opcode::new(0x{code}, {size}, {tick}, "{name}", AddressingMode::{mode}, None)),'
 _MATCH_TEMPLATE = '{codes} => self.{name}(&opcode.mode)'
+
+GET_PATH = lambda *p: os.path.join(os.path.dirname(sys.argv[0]), '..', *p)
 
 
 def generate_test_file(instructions):
@@ -39,7 +39,7 @@ def generate_code_file(instructions):
 def main(argc, argv):
     match argc:
         case 3:
-            instructions, opcode = sys.argv[1:]
+            instructions, opcode = argv[1:]
         case 2:
             instructions, opcode = GET_PATH('scripts', 'instructions.json'), argv[1]
         case _:
