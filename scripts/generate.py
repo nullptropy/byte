@@ -5,13 +5,13 @@ import os
 import sys
 import json
 
-TEST_FILE_HEADER = 'use mos6502::*;\n\n'
+GET_PATH = lambda *p: os.path.join(os.path.dirname(sys.argv[0]), '..', *p)
+
+TEST_FILE_HEADER = 'mod common;\n\n'
 TEST_FUNC_TEMPLATE = '''\
 #[test]
 fn opcode_0x{code}_{mode}_{name}() {{
-    let mut cpu = cpu::CPU::new();
-    cpu.bus.attach(0x0000, 0xffff, bus::MockRAM::new(0x10000)).unwrap();
-
+    let mut _cpu = common::init_cpu();
     assert_eq!(2 + 2, 5);
 }}\n'''
 
@@ -26,7 +26,9 @@ def generate_test_file(instructions):
             lambda ins: TEST_FUNC_TEMPLATE.format(
                 code=ins['code'],
                 mode=ins['mode'].lower(),
-                name=ins['name'].lower()), instructions)))
+                name=ins['name'].lower()), instructions)).rstrip(),
+        file=open(GET_PATH('tests', f'test_opcode_{instructions[0]["name"].lower()}.rs'), 'w'),
+        end='')
 
 
 def generate_code_file(instructions):
@@ -39,7 +41,7 @@ def main(argc, argv):
         case 3:
             instructions, opcode = sys.argv[1:]
         case 2:
-            instructions, opcode = os.path.join(os.path.dirname(argv[0]), 'instructions.json'), argv[1]
+            instructions, opcode = GET_PATH('scripts', 'instructions.json'), argv[1]
         case _:
             return print(f'{argv[0]} [instructions.json] OPCODE') or 1
 

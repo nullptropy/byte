@@ -1,14 +1,6 @@
 use std::ops::Range;
 use std::ops::ControlFlow;
 
-pub struct Bus {
-    peripherals: Vec<(Range<usize>, Box<dyn Peripheral>)>,
-}
-
-pub struct MockRAM {
-    data: Vec<u8>
-}
-
 pub trait Peripheral {
     fn read(&self, _addr: u16) -> u8 {
         todo!()
@@ -19,20 +11,8 @@ pub trait Peripheral {
     }
 }
 
-impl MockRAM {
-    pub fn new(size: usize) -> Self {
-        Self { data: vec![0; size] }
-    }
-}
-
-impl Peripheral for MockRAM {
-    fn read(&self, addr: u16) -> u8 {
-        self.data[addr as usize]
-    }
-
-    fn write(&mut self, addr: u16, byte: u8) {
-        self.data[addr as usize] = byte;
-    }
+pub struct Bus {
+    peripherals: Vec<(Range<usize>, Box<dyn Peripheral>)>,
 }
 
 impl Bus {
