@@ -1,4 +1,4 @@
-use core::{fmt, panic};
+use core::fmt;
 use bitflags::bitflags;
 
 use crate::bus::Bus;
@@ -79,8 +79,22 @@ impl CPU {
         self.reg.pc = self.bus.read_u16(0xfffc);
     }
 
+    pub fn load(&mut self, program: &[u8], addr: u16) {
+        self.bus.write_u16(0xfffc, addr);
+
+        program
+            .iter()
+            .enumerate()
+            .for_each(|(i, b)| self.bus.write(addr + i as u16, *b));
+    }
+
+    pub fn load_and_run(&mut self, program: &[u8], addr: u16) {
+        self.load(program, addr);
+        self.run();
+    }
+
     pub fn run(&mut self) {
-        self.reset();
+        self.reg.pc = self.bus.read_u16(0xfffc);
 
         loop {
             let code = self.bus.read(self.reg.pc);
