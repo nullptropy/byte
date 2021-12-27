@@ -112,6 +112,7 @@ impl CPU {
                 0xaa => self.tax(&opcode),
                 0x8a => self.txa(&opcode),
                 0xa8 => self.tay(&opcode),
+                0x98 => self.tya(&opcode),
 
                 0x00 => break,
 
