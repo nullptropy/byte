@@ -75,6 +75,15 @@ lazy_static! {
         (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
         (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
 
+        (0x29, Opcode::new(0x29, 2, 2, "AND", AddressingMode::Immediate, None)),
+        (0x25, Opcode::new(0x25, 2, 3, "AND", AddressingMode::ZeroPage, None)),
+        (0x35, Opcode::new(0x35, 2, 4, "AND", AddressingMode::ZeroPageX, None)),
+        (0x2d, Opcode::new(0x2d, 3, 4, "AND", AddressingMode::Absolute, None)),
+        (0x3d, Opcode::new(0x3d, 3, 4, "AND", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0x39, Opcode::new(0x39, 3, 4, "AND", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0x21, Opcode::new(0x21, 2, 6, "AND", AddressingMode::IndirectX, None)),
+        (0x31, Opcode::new(0x31, 2, 5, "AND", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage,  None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),

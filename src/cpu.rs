@@ -105,14 +105,12 @@ impl CPU {
             let pc_state = self.reg.pc;
 
             match code {
+                0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode),
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
 
-                0xe8 => self.inx(&opcode),
-                0xca => self.dex(&opcode),
-                0xaa => self.tax(&opcode),
-                0x8a => self.txa(&opcode),
-                0xa8 => self.tay(&opcode),
-                0x98 => self.tya(&opcode),
+                0xe8 => self.inx(&opcode), 0xca => self.dex(&opcode),
+                0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
+                0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
 
                 0x00 => break,
 
@@ -127,6 +125,16 @@ impl CPU {
         }
     }
 
+    fn and(&mut self, opcode: &Opcode) {
+        self.reg.a &= self.bus.read(self.get_operand_address(opcode.mode));
+        self.update_flags(self.reg.a);
+    }
+
+    fn lda(&mut self, opcode: &Opcode) {
+        self.reg.a = self.bus.read(self.get_operand_address(opcode.mode));
+        self.update_flags(self.reg.a);
+    }
+
     fn inx(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
         self.update_flags(self.reg.x);
@@ -135,11 +143,6 @@ impl CPU {
     fn dex(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_sub(1);
         self.update_flags(self.reg.x);
-    }
-
-    fn lda(&mut self, opcode: &Opcode) {
-        self.reg.a = self.bus.read(self.get_operand_address(opcode.mode));
-        self.update_flags(self.reg.a);
     }
 
     fn tax(&mut self, opcode: &Opcode) {
