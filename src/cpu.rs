@@ -107,10 +107,12 @@ impl CPU {
             match code {
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
 
-                0xaa => self.tax(&opcode),
                 0xe8 => self.inx(&opcode),
                 0xca => self.dex(&opcode),
+                0xaa => self.tax(&opcode),
                 0x8a => self.txa(&opcode),
+                0xa8 => self.tay(&opcode),
+
                 0x00 => break,
 
                 _ => ()
@@ -122,11 +124,6 @@ impl CPU {
 
             println!("[{:x?}][{:?}]", self.reg, opcode);
         }
-    }
-
-    fn tax(&mut self, opcode: &Opcode) {
-        self.reg.x = self.reg.a;
-        self.update_flags(self.reg.x);
     }
 
     fn inx(&mut self, opcode: &Opcode) {
@@ -144,9 +141,19 @@ impl CPU {
         self.update_flags(self.reg.a);
     }
 
+    fn tax(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.a;
+        self.update_flags(self.reg.x);
+    }
+
     fn txa(&mut self, opcode: &Opcode) {
         self.reg.a = self.reg.x;
         self.update_flags(self.reg.a);
+    }
+
+    fn tay(&mut self, opcode: &Opcode) {
+        self.reg.y = self.reg.a;
+        self.update_flags(self.reg.y);
     }
 
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
