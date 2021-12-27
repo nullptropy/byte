@@ -156,6 +156,11 @@ impl CPU {
         self.update_flags(self.reg.y);
     }
 
+    fn tya(&mut self, opcode: &Opcode) {
+        self.reg.a = self.reg.y;
+        self.update_flags(self.reg.a);
+    }
+
     fn get_operand_address(&self, mode: AddressingMode) -> u16 {
         match mode {
             AddressingMode::Immediate => self.reg.pc,
