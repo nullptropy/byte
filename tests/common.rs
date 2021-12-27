@@ -1,4 +1,4 @@
-use mos6502::*;
+pub use mos6502::*;
 
 pub struct MockRAM {
     pub data: Vec<u8>
