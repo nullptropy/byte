@@ -11,4 +11,5 @@ fn opcode_0xa8_implied_tay() {
     ], 0x8000);
 
     assert_eq!(cpu.reg.y, 5);
+    assert_eq!(cpu.reg.p.bits(), 0x00);
 }

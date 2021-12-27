@@ -14,4 +14,5 @@ fn opcode_0xe8_implied_inx() {
     ], 0x8000);
 
     assert_eq!(cpu.reg.x, 0x5);
+    assert_eq!(cpu.reg.p.bits(), 0x00);
 }

@@ -11,4 +11,5 @@ fn opcode_0x8a_implied_txa() {
     ], 0x8000);
 
     assert_eq!(cpu.reg.a, 0x5);
+    assert_eq!(cpu.reg.p.bits(), 0x00);
 }
