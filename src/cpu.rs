@@ -110,6 +110,7 @@ impl CPU {
                 0xaa => self.tax(&opcode),
                 0xe8 => self.inx(&opcode),
                 0xca => self.dex(&opcode),
+                0x8a => self.txa(&opcode),
                 0x00 => break,
 
                 _ => ()
@@ -140,6 +141,11 @@ impl CPU {
 
     fn lda(&mut self, opcode: &Opcode) {
         self.reg.a = self.bus.read(self.get_operand_address(opcode.mode));
+        self.update_flags(self.reg.a);
+    }
+
+    fn txa(&mut self, opcode: &Opcode) {
+        self.reg.a = self.reg.x;
         self.update_flags(self.reg.a);
     }
 
