@@ -66,7 +66,7 @@ impl Bus {
         let lo = lo as usize;
         let hi = hi as usize;
 
-        for (range, peripheral) in self.peripherals.iter() {
+        self.peripherals.iter().try_for_each(|(range, _)| {
             if lo < range.end && hi > range.start {
                 return Err(format!(
                     "overlapping ranges: [{:x}:{:x}] and [{:x}:{:x}]",
@@ -74,7 +74,9 @@ impl Bus {
                     range.start, range.end - 1
                 ));
             }
-        }
+
+            Ok(())
+        })?;
 
         Ok({ self.peripherals.push((lo..hi + 1, Box::new(peripheral))); })
     }
