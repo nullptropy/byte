@@ -38,7 +38,6 @@ pub struct Registers {
     pub a: u8, pub p: Flags,
 }
 
-#[allow(non_snake_case)]
 pub struct CPU {
     pub reg: Registers,
     pub bus: Bus,
