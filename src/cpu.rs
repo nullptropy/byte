@@ -1,4 +1,5 @@
 use core::fmt;
+use std::ops::Shl;
 use bitflags::bitflags;
 
 use crate::bus::Bus;
@@ -106,6 +107,7 @@ impl CPU {
             match code {
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode),
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
+                0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(&opcode),
 
                 0xe8 => self.inx(&opcode), 0xca => self.dex(&opcode),
                 0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
@@ -124,10 +126,80 @@ impl CPU {
         }
     }
 
+    pub fn set_carry_flag(&mut self, value: bool) {
+        println!("{:?}", value);
+        if value {
+            self.reg.p.insert(Flags::CARRY);
+        } else {
+            self.reg.p.remove(Flags::CARRY);
+        }
+    }
+
+    fn update_flags(&mut self, value: u8) {
+        match value {
+            0 => self.reg.p.insert(Flags::ZERO),
+            _ => self.reg.p.remove(Flags::ZERO)
+        }
+
+        self.update_negative_flag(value);
+    }
+
+    fn update_negative_flag(&mut self, value: u8) {
+        match value & 0b10000000 {
+            0 => self.reg.p.remove(Flags::NEGATIVE),
+            _ => self.reg.p.insert(Flags::NEGATIVE),
+        }
+    }
+
+    fn get_operand_address(&self, mode: AddressingMode) -> Operand {
+        match mode {
+            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+            AddressingMode::Accumulator => Operand::Accumulator,
+
+            AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
+            AddressingMode::ZeroPageX => Operand::Address(
+                self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
+            AddressingMode::ZeroPageY => Operand::Address(
+                self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
+
+            AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
+            AddressingMode::AbsoluteX => Operand::Address(
+                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16)),
+            AddressingMode::AbsoluteY => Operand::Address(
+                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16)),
+
+            AddressingMode::Indirect  => Operand::Address(
+                self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
+            AddressingMode::IndirectX => Operand::Address(
+                self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
+            AddressingMode::IndirectY => Operand::Address(
+                self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16)),
+
+            _ => Operand::None,
+        }
+    }
+
     fn and(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand_address(opcode.mode) {
             self.reg.a &= self.bus.read(addr);
             self.update_flags(self.reg.a);
+        }
+    }
+
+    fn asl(&mut self, opcode: &Opcode) {
+        match self.get_operand_address(opcode.mode) {
+            Operand::Accumulator => {
+                self.set_carry_flag(self.reg.a >> 7 != 0);
+                self.reg.a = self.reg.a.wrapping_shl(1);
+                self.update_flags(self.reg.a);
+            },
+            Operand::Address(addr) => {
+                self.set_carry_flag(self.bus.read(addr) >> 7 != 0);
+                self.bus.write(addr, self.bus.read(addr).wrapping_shl(1));
+                self.update_flags(self.bus.read(addr));
+            }
+
+            _ => {}
         }
     }
 
@@ -166,49 +238,5 @@ impl CPU {
     fn tya(&mut self, opcode: &Opcode) {
         self.reg.a = self.reg.y;
         self.update_flags(self.reg.a);
-    }
-
-    fn get_operand_address(&self, mode: AddressingMode) -> Operand {
-        match mode {
-            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
-            AddressingMode::Accumulator => Operand::Accumulator,
-
-            AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
-            AddressingMode::ZeroPageX => Operand::Address(
-                self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
-            AddressingMode::ZeroPageY => Operand::Address(
-                self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
-
-            AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
-            AddressingMode::AbsoluteX => Operand::Address(
-                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16)),
-            AddressingMode::AbsoluteY => Operand::Address(
-                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16)),
-
-            AddressingMode::Indirect  => Operand::Address(
-                self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
-            AddressingMode::IndirectX => Operand::Address(
-                self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
-            AddressingMode::IndirectY => Operand::Address(
-                self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16)),
-
-            _ => Operand::None,
-        }
-    }
-
-    fn update_flags(&mut self, value: u8) {
-        match value {
-            0 => self.reg.p.insert(Flags::ZERO),
-            _ => self.reg.p.remove(Flags::ZERO)
-        }
-
-        self.update_negative_flag(value);
-    }
-
-    fn update_negative_flag(&mut self, value: u8) {
-        match value & 0b10000000 {
-            0 => self.reg.p.remove(Flags::NEGATIVE),
-            _ => self.reg.p.insert(Flags::NEGATIVE),
-        }
     }
 }

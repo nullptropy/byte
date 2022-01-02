@@ -90,6 +90,12 @@ lazy_static! {
         (0x21, Opcode::new(0x21, 2, 6, "AND", AddressingMode::IndirectX, None)),
         (0x31, Opcode::new(0x31, 2, 5, "AND", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
 
+        (0x0a, Opcode::new(0x0a, 1, 2, "ASL", AddressingMode::Accumulator, None)),
+        (0x06, Opcode::new(0x06, 2, 5, "ASL", AddressingMode::ZeroPage, None)),
+        (0x16, Opcode::new(0x16, 2, 6, "ASL", AddressingMode::ZeroPageX, None)),
+        (0x0e, Opcode::new(0x0e, 3, 6, "ASL", AddressingMode::Absolute, None)),
+        (0x1e, Opcode::new(0x1e, 3, 7, "ASL", AddressingMode::AbsoluteX, None)),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage,  None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),
