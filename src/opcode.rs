@@ -28,6 +28,12 @@ pub struct Opcode {
     pub tick_modifier: Option<TickModifier>,
 }
 
+pub enum Operand {
+    None,
+    Accumulator,
+    Address(u16),
+}
+
 impl TickModifier {
     fn get_cycles(&self) -> i32 {
         match self {

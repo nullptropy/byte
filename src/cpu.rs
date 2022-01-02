@@ -125,13 +125,17 @@ impl CPU {
     }
 
     fn and(&mut self, opcode: &Opcode) {
-        self.reg.a &= self.bus.read(self.get_operand_address(opcode.mode));
-        self.update_flags(self.reg.a);
+        if let Operand::Address(addr) = self.get_operand_address(opcode.mode) {
+            self.reg.a &= self.bus.read(addr);
+            self.update_flags(self.reg.a);
+        }
     }
 
     fn lda(&mut self, opcode: &Opcode) {
-        self.reg.a = self.bus.read(self.get_operand_address(opcode.mode));
-        self.update_flags(self.reg.a);
+        if let Operand::Address(addr) = self.get_operand_address(opcode.mode) {
+            self.reg.a = self.bus.read(addr);
+            self.update_flags(self.reg.a);
+        }
     }
 
     fn inx(&mut self, opcode: &Opcode) {
@@ -164,25 +168,31 @@ impl CPU {
         self.update_flags(self.reg.a);
     }
 
-    fn get_operand_address(&self, mode: AddressingMode) -> u16 {
+    fn get_operand_address(&self, mode: AddressingMode) -> Operand {
         match mode {
-            AddressingMode::Immediate => self.reg.pc,
+            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+            AddressingMode::Accumulator => Operand::Accumulator,
 
-            AddressingMode::ZeroPage  => self.bus.read(self.reg.pc) as u16,
-            AddressingMode::ZeroPageX => self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16,
-            AddressingMode::ZeroPageY => self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16,
-
-            AddressingMode::Absolute  => self.bus.read_u16(self.reg.pc),
-            AddressingMode::AbsoluteX => self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16),
-            AddressingMode::AbsoluteY => self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16),
-
-            AddressingMode::Indirect  => self.bus.read_u16(self.bus.read_u16(self.reg.pc)),
-            AddressingMode::IndirectX => self.bus.read_u16(
+            AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
+            AddressingMode::ZeroPageX => Operand::Address(
                 self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
-            AddressingMode::IndirectY => self.bus.read_u16(
-                self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16),
+            AddressingMode::ZeroPageY => Operand::Address(
+                self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
 
-            _ => panic!("shouldn't be called with {:?}", mode),
+            AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
+            AddressingMode::AbsoluteX => Operand::Address(
+                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16)),
+            AddressingMode::AbsoluteY => Operand::Address(
+                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16)),
+
+            AddressingMode::Indirect  => Operand::Address(
+                self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
+            AddressingMode::IndirectX => Operand::Address(
+                self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
+            AddressingMode::IndirectY => Operand::Address(
+                self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16)),
+
+            _ => Operand::None,
         }
     }
 
