@@ -121,8 +121,9 @@ impl CPU {
             if pc_state == self.reg.pc {
                 self.reg.pc += (opcode.size - 1) as u16;
             }
+            self.cycle += opcode.tick as u32;
 
-            println!("[{:x?}][{:?}]", self.reg, opcode);
+            println!("[{:x?}:{:08}][{:?}]", self.reg, self.cycle, opcode);
         }
     }
 
@@ -151,43 +152,72 @@ impl CPU {
         }
     }
 
-    fn get_operand_address(&self, mode: AddressingMode) -> Operand {
-        match mode {
-            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+    fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
+        match (lo.overflowing_add(byte).1, modifier) {
+            (true, TickModifier::PageCrossed) => self.cycle += 1,
+            _ => ()
+        }
+
+        Operand::Address(((hi as u16) << 8 | lo as u16).wrapping_add(byte as u16))
+    }
+
+    fn get_operand(&mut self, opcode: &Opcode) -> Operand {
+        match opcode.mode {
             AddressingMode::Accumulator => Operand::Accumulator,
+            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
 
             AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
-            AddressingMode::ZeroPageX => Operand::Address(
-                self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
-            AddressingMode::ZeroPageY => Operand::Address(
-                self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
+            AddressingMode::ZeroPageX => Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
+            AddressingMode::ZeroPageY => Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
 
             AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
-            AddressingMode::AbsoluteX => Operand::Address(
-                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16)),
-            AddressingMode::AbsoluteY => Operand::Address(
-                self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16)),
+            AddressingMode::AbsoluteX => {
+                if let Some(modifier) = opcode.tick_modifier {
+                    let lo = self.bus.read(self.reg.pc);
+                    let hi = self.bus.read(self.reg.pc + 1);
 
-            AddressingMode::Indirect  => Operand::Address(
-                self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
-            AddressingMode::IndirectX => Operand::Address(
-                self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
-            AddressingMode::IndirectY => Operand::Address(
-                self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16)),
+                    return self.on_tick_modifier(lo, hi, self.reg.x, modifier);
+                }
+
+                Operand::Address(self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16))
+            },
+            AddressingMode::AbsoluteY => {
+                 if let Some(modifier) = opcode.tick_modifier {
+                    let lo = self.bus.read(self.reg.pc);
+                    let hi = self.bus.read(self.reg.pc + 1);
+
+                    return self.on_tick_modifier(lo, hi, self.reg.y, modifier);
+                }
+
+                Operand::Address(self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16))
+           },
+
+            AddressingMode::Indirect  => Operand::Address(self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
+            AddressingMode::IndirectX => Operand::Address(self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
+            AddressingMode::IndirectY => {
+                if let Some(modifier) = opcode.tick_modifier {
+                    let lo = self.bus.read(self.bus.read(self.reg.pc) as u16);
+                    let hi = self.bus.read(self.bus.read(self.reg.pc) as u16 + 1);
+
+                    return self.on_tick_modifier(lo, hi, self.reg.y, modifier);
+                }
+
+                Operand::Address(self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16))
+            },
 
             _ => Operand::None,
         }
     }
 
     fn and(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand_address(opcode.mode) {
+        if let Operand::Address(addr) = self.get_operand(&opcode) {
             self.reg.a &= self.bus.read(addr);
             self.update_flags(self.reg.a);
         }
     }
 
     fn asl(&mut self, opcode: &Opcode) {
-        match self.get_operand_address(opcode.mode) {
+        match self.get_operand(&opcode) {
             Operand::Accumulator => {
                 self.set_carry_flag(self.reg.a >> 7 != 0);
                 self.reg.a = self.reg.a.wrapping_shl(1);
@@ -204,7 +234,7 @@ impl CPU {
     }
 
     fn lda(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand_address(opcode.mode) {
+        if let Operand::Address(addr) = self.get_operand(&opcode) {
             self.reg.a = self.bus.read(addr);
             self.update_flags(self.reg.a);
         }
