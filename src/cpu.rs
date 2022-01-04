@@ -90,41 +90,48 @@ impl CPU {
 
     pub fn load_and_run(&mut self, program: &[u8], addr: u16) {
         self.load(program, addr);
+        self.reg.pc = self.bus.read_u16(0xfffc);
         self.run();
     }
 
     pub fn run(&mut self) {
-        self.reg.pc = self.bus.read_u16(0xfffc);
-
         loop {
-            let code = self.bus.read(self.reg.pc);
-            let opcode = OPCODE_MAP.get(&code)
-                .expect("unrecognized opcode");
-
-            self.reg.pc += 1;
-            let pc_state = self.reg.pc;
-
-            match code {
-                0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode),
-                0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
-                0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(&opcode),
-
-                0xe8 => self.inx(&opcode), 0xca => self.dex(&opcode),
-                0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
-                0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
-
-                0x00 => { self.brk(&opcode); break; },
-
-                _ => ()
+            if self.reg.p.contains(Flags::BREAK) {
+                break;
             }
 
-            if pc_state == self.reg.pc {
-                self.reg.pc += (opcode.size - 1) as u16;
-            }
-            self.cycle += opcode.tick as u32;
-
-            println!("[{:x?}:{:08}][{:?}]", self.reg, self.cycle, opcode);
+            self.step();
         }
+    }
+
+    pub fn step(&mut self) {
+        let code = self.bus.read(self.reg.pc);
+        let opcode = OPCODE_MAP.get(&code)
+            .expect("unrecognized opcode");
+
+        self.reg.pc += 1;
+        let pc_state = self.reg.pc;
+
+        match code {
+            0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode),
+            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
+            0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(&opcode),
+
+            0xe8 => self.inx(&opcode), 0xca => self.dex(&opcode),
+            0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
+            0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
+
+            0x00 => self.brk(&opcode),
+
+            _ => ()
+        }
+
+        if pc_state == self.reg.pc {
+            self.reg.pc += (opcode.size - 1) as u16;
+        }
+        self.cycle += opcode.tick as u32;
+
+        println!("[{:x?}:{:08}][{:?}]", self.reg, self.cycle, opcode);
     }
 
     fn stack_push(&mut self, byte: u8) {
@@ -132,7 +139,7 @@ impl CPU {
         self.reg.sp -= 1;
     }
 
-    fn set_carry_flag(&mut self, value: bool) {
+    pub fn set_carry_flag(&mut self, value: bool) {
         if value {
             self.reg.p.insert(Flags::CARRY);
         } else {
@@ -159,6 +166,7 @@ impl CPU {
     fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
         match (lo.overflowing_add(byte).1, modifier) {
             (true, TickModifier::PageCrossed) => self.cycle += 1,
+
             _ => ()
         }
 
