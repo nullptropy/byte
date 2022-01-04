@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub use mos6502::*;
 
 pub struct MockRAM {
