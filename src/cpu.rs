@@ -106,27 +106,27 @@ impl CPU {
     pub fn step(&mut self) {
         let code = self.bus.read(self.reg.pc);
         let opcode = OPCODE_MAP.get(&code)
-            .expect(&format!("panic: unrecognized opcode {:x}", code));
+            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", code));
 
         self.reg.pc += 1;
         let pc_state = self.reg.pc;
 
         match code {
-            0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode),
-            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode),
-            0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(&opcode),
+            0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
+            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
+            0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
 
-            0xe8 => self.inx(&opcode), 0xca => self.dex(&opcode),
-            0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
-            0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
+            0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
+            0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
+            0xa8 => self.tay(opcode), 0x98 => self.tya(opcode),
 
-            0x90 => self.bcc(&opcode), 0xb0 => self.bcs(&opcode),
-            0xf0 => self.beq(&opcode), 0xd0 => self.bne(&opcode),
-            0x30 => self.bmi(&opcode), 0x10 => self.bpl(&opcode),
-            0x50 => self.bvc(&opcode), 0x70 => self.bvs(&opcode),
+            0x90 => self.bcc(opcode), 0xb0 => self.bcs(opcode),
+            0xf0 => self.beq(opcode), 0xd0 => self.bne(opcode),
+            0x30 => self.bmi(opcode), 0x10 => self.bpl(opcode),
+            0x50 => self.bvc(opcode), 0x70 => self.bvs(opcode),
 
-            0xea => self.nop(&opcode),
-            0x00 => self.brk(&opcode),
+            0xea => self.nop(opcode),
+            0x00 => self.brk(opcode),
 
             _ => ()
         }
@@ -244,14 +244,14 @@ impl CPU {
     fn nop(&self, opcode: &Opcode) {}
 
     fn and(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(&opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a &= self.bus.read(addr);
             self.update_flags(self.reg.a);
         }
     }
 
     fn asl(&mut self, opcode: &Opcode) {
-        match self.get_operand(&opcode) {
+        match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.set_carry_flag(self.reg.a >> 7 != 0);
                 self.reg.a = self.reg.a.wrapping_shl(1);
@@ -329,7 +329,7 @@ impl CPU {
     }
 
     fn lda(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(&opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a = self.bus.read(addr);
             self.update_flags(self.reg.a);
         }
