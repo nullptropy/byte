@@ -86,6 +86,8 @@ lazy_static! {
         (0x0e, Opcode::new(0x0e, 3, 6, "ASL", AddressingMode::Absolute, None)),
         (0x1e, Opcode::new(0x1e, 3, 7, "ASL", AddressingMode::AbsoluteX, None)),
 
+        (0x90, Opcode::new(0x90, 2, 2, "BCC", AddressingMode::Relative, Some(TickModifier::Branch))),
+
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
 
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
@@ -96,5 +98,7 @@ lazy_static! {
         (0xb9, Opcode::new(0xb9, 3, 4, "LDA", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
         (0xa1, Opcode::new(0xa1, 2, 6, "LDA", AddressingMode::IndirectX, None)),
         (0xb1, Opcode::new(0xb1, 2, 5, "LDA", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
+        (0xea, Opcode::new(0xea, 1, 2, "NOP", AddressingMode::Implied, None)),
     ]);
 }

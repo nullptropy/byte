@@ -107,7 +107,7 @@ impl CPU {
     pub fn step(&mut self) {
         let code = self.bus.read(self.reg.pc);
         let opcode = OPCODE_MAP.get(&code)
-            .expect("unrecognized opcode");
+            .expect(&format!("panic: unrecognized opcode {:x}", code));
 
         self.reg.pc += 1;
         let pc_state = self.reg.pc;
@@ -121,6 +121,8 @@ impl CPU {
             0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
             0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
 
+            0xea => self.nop(&opcode),
+            0x90 => self.bcc(&opcode),
             0x00 => self.brk(&opcode),
 
             _ => ()
@@ -173,10 +175,24 @@ impl CPU {
         Operand::Address(((hi as u16) << 8 | lo as u16).wrapping_add(byte as u16))
     }
 
+    fn branch(&mut self, opcode: &Opcode) {
+        self.cycle += 1;
+
+        if let (Some(modifier), Operand::Address(addr)) = (opcode.tick_modifier, self.get_operand(opcode)) {
+            self.on_tick_modifier(
+                (self.reg.pc & 0xff) as u8,
+                (self.reg.pc >> 0x8) as u8, self.bus.read(addr), modifier);
+
+            self.reg.pc = self.reg.pc.wrapping_add(
+                i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
+        }
+    }
+
     fn get_operand(&mut self, opcode: &Opcode) -> Operand {
         match opcode.mode {
             AddressingMode::Accumulator => Operand::Accumulator,
             AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+            AddressingMode::Relative    => Operand::Address(self.reg.pc),
 
             AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
             AddressingMode::ZeroPageX => Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
@@ -221,6 +237,8 @@ impl CPU {
         }
     }
 
+    fn nop(&self, opcode: &Opcode) {}
+
     fn and(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(&opcode) {
             self.reg.a &= self.bus.read(addr);
@@ -242,6 +260,12 @@ impl CPU {
             }
 
             _ => {}
+        }
+    }
+
+    fn bcc(&mut self, opcode: &Opcode) {
+        if !self.reg.p.contains(Flags::CARRY) {
+            self.branch(opcode);
         }
     }
 
