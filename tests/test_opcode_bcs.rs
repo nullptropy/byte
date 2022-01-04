@@ -5,7 +5,7 @@ fn opcode_0xb0_relative_bcs() {
     let mut cpu = common::init_cpu();
 
     cpu.load(&[
-        0xb0, 0xfb,  // BCC rel(-5)
+        0xb0, 0xfb,  // BCS rel(-5)
         0x00         // BRK
     ], 0x8000);
 
