@@ -13,9 +13,8 @@ fn opcode_0x{code}_{mode}_{name}() {{
     assert_eq!(2 + 2, 5);
 }}\n'''
 
-OPCODE_TEMPLATE = '(0x{code}, Opcode::new(0x{code}, {size}, {tick}, "{name}", \
-    AddressingMode::{mode}, TickModifier::None)),'.replace('    ', '')
-_MATCH_TEMPLATE = '{codes} => self.{name}(&opcode.mode)'
+OPCODE_TEMPLATE = '(0x{code}, Opcode::new(0x{code}, {size}, {tick}, "{name}", AddressingMode::{mode}, None)),'
+_MATCH_TEMPLATE = '{codes} => self.{name}(&opcode)'
 
 GET_PATH = lambda *p: os.path.join(os.path.dirname(sys.argv[0]), '..', *p)
 
