@@ -2,7 +2,7 @@ use core::fmt;
 use bitflags::bitflags;
 
 use crate::bus::Bus;
-use crate::opcode::*;
+use crate::opcode::{self, *};
 
 bitflags! {
 /// 6502 status flags
@@ -123,6 +123,7 @@ impl CPU {
             0x90 => self.bcc(&opcode), 0xb0 => self.bcs(&opcode),
             0xf0 => self.beq(&opcode), 0xd0 => self.bne(&opcode),
             0x30 => self.bmi(&opcode), 0x10 => self.bpl(&opcode),
+            0x50 => self.bvc(&opcode), 0x70 => self.bvs(&opcode),
 
             0xea => self.nop(&opcode),
             0x00 => self.brk(&opcode),
@@ -266,6 +267,8 @@ impl CPU {
         }
     }
 
+    // TODO: refactor branch functions, too repetative
+
     fn bcc(&mut self, opcode: &Opcode) {
         if !self.reg.p.contains(Flags::CARRY) {
             self.branch(opcode);
@@ -298,6 +301,18 @@ impl CPU {
 
     fn bpl(&mut self, opcode: &Opcode) {
         if !self.reg.p.contains(Flags::NEGATIVE) {
+            self.branch(opcode);
+        }
+    }
+
+    fn bvc(&mut self, opcode: &Opcode) {
+        if !self.reg.p.contains(Flags::OVERFLOW) {
+            self.branch(opcode);
+        }
+    }
+
+    fn bvs(&mut self, opcode: &Opcode) {
+        if self.reg.p.contains(Flags::OVERFLOW) {
             self.branch(opcode);
         }
     }
