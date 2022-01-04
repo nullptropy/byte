@@ -168,6 +168,7 @@ impl CPU {
     fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
         match (lo.overflowing_add(byte).1, modifier) {
             (true, TickModifier::PageCrossed) => self.cycle += 1,
+            (true, TickModifier::Branch)      => self.cycle += 1,
 
             _ => ()
         }
