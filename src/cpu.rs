@@ -120,9 +120,9 @@ impl CPU {
             0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
             0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
 
-            0x90 => self.bcc(&opcode),
-            0xb0 => self.bcs(&opcode),
-            0xf0 => self.beq(&opcode),
+            0x90 => self.bcc(&opcode), 0xb0 => self.bcs(&opcode),
+            0xf0 => self.beq(&opcode), 0xd0 => self.bne(&opcode),
+            0x30 => self.bmi(&opcode), 0x10 => self.bpl(&opcode),
 
             0xea => self.nop(&opcode),
             0x00 => self.brk(&opcode),
@@ -280,6 +280,24 @@ impl CPU {
 
     fn beq(&mut self, opcode: &Opcode) {
         if self.reg.p.contains(Flags::ZERO) {
+            self.branch(opcode);
+        }
+    }
+
+    fn bne(&mut self, opcode: &Opcode) {
+        if !self.reg.p.contains(Flags::ZERO) {
+            self.branch(opcode);
+        }
+    }
+
+    fn bmi(&mut self, opcode: &Opcode) {
+        if self.reg.p.contains(Flags::NEGATIVE) {
+            self.branch(opcode);
+        }
+    }
+
+    fn bpl(&mut self, opcode: &Opcode) {
+        if !self.reg.p.contains(Flags::NEGATIVE) {
             self.branch(opcode);
         }
     }

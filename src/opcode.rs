@@ -89,6 +89,9 @@ lazy_static! {
         (0x90, Opcode::new(0x90, 2, 2, "BCC", AddressingMode::Relative, Some(TickModifier::Branch))),
         (0xb0, Opcode::new(0xb0, 2, 2, "BCS", AddressingMode::Relative, Some(TickModifier::Branch))),
         (0xf0, Opcode::new(0xf0, 2, 2, "BEQ", AddressingMode::Relative, Some(TickModifier::Branch))),
+        (0x30, Opcode::new(0x30, 2, 2, "BMI", AddressingMode::Relative, Some(TickModifier::Branch))),
+        (0xd0, Opcode::new(0xd0, 2, 2, "BNE", AddressingMode::Relative, Some(TickModifier::Branch))),
+        (0x10, Opcode::new(0x10, 2, 2, "BPL", AddressingMode::Relative, Some(TickModifier::Branch))),
 
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
 
