@@ -32,8 +32,8 @@ bitflags! {
 
 #[derive(Clone, Copy)]
 pub struct Registers {
-    pub sp: u16,
     pub pc: u16,
+    pub sp: u16,
 
     pub x: u8, pub y: u8,
     pub a: u8, pub p: Flags,
@@ -48,7 +48,7 @@ pub struct CPU {
 impl Registers {
     fn new() -> Self {
         Self {
-            sp: 0, pc: 0,
+            pc: 0, sp: 0x01ff,
 
             x: 0, y: 0,
             a: 0, p: Flags::default()
@@ -113,7 +113,7 @@ impl CPU {
                 0xaa => self.tax(&opcode), 0x8a => self.txa(&opcode),
                 0xa8 => self.tay(&opcode), 0x98 => self.tya(&opcode),
 
-                0x00 => break,
+                0x00 => { self.brk(&opcode); break; },
 
                 _ => ()
             }
@@ -127,8 +127,12 @@ impl CPU {
         }
     }
 
-    pub fn set_carry_flag(&mut self, value: bool) {
-        println!("{:?}", value);
+    fn stack_push(&mut self, byte: u8) {
+        self.bus.write(self.reg.sp, byte);
+        self.reg.sp -= 1;
+    }
+
+    fn set_carry_flag(&mut self, value: bool) {
         if value {
             self.reg.p.insert(Flags::CARRY);
         } else {
@@ -231,6 +235,17 @@ impl CPU {
 
             _ => {}
         }
+    }
+
+    fn brk(&mut self, opcode: &Opcode) {
+        self.reg.p.insert(Flags::BREAK);
+
+        self.stack_push(((self.reg.pc + 2) >> 0x8) as u8);
+        self.stack_push(((self.reg.pc + 2) & 0xff) as u8);
+
+        self.stack_push(self.reg.p.bits());
+
+        self.reg.pc = self.bus.read_u16(0xfffe);
     }
 
     fn lda(&mut self, opcode: &Opcode) {
