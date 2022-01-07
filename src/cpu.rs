@@ -145,7 +145,7 @@ impl CPU {
 
     fn stack_push(&mut self, byte: u8) {
         self.bus.write(self.reg.sp, byte);
-        self.reg.sp -= 1;
+        self.reg.sp = self.reg.sp.wrapping_sub(1);
     }
 
     pub fn set_carry_flag(&mut self, value: bool) {
