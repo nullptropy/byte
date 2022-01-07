@@ -120,10 +120,14 @@ impl CPU {
             0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
             0xa8 => self.tay(opcode), 0x98 => self.tya(opcode),
 
-            0x90 => self.bcc(opcode), 0xb0 => self.bcs(opcode),
-            0xf0 => self.beq(opcode), 0xd0 => self.bne(opcode),
-            0x30 => self.bmi(opcode), 0x10 => self.bpl(opcode),
-            0x50 => self.bvc(opcode), 0x70 => self.bvs(opcode),
+            0x90 => self.branch(opcode, !self.reg.p.contains(Flags::CARRY)),
+            0xb0 => self.branch(opcode,  self.reg.p.contains(Flags::CARRY)),
+            0xf0 => self.branch(opcode,  self.reg.p.contains(Flags::ZERO)),
+            0xd0 => self.branch(opcode, !self.reg.p.contains(Flags::ZERO)),
+            0x10 => self.branch(opcode, !self.reg.p.contains(Flags::NEGATIVE)),
+            0x30 => self.branch(opcode,  self.reg.p.contains(Flags::NEGATIVE)),
+            0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
+            0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
             0xea => self.nop(opcode),
             0x00 => self.brk(opcode),
@@ -179,16 +183,22 @@ impl CPU {
         Operand::Address(((hi as u16) << 8 | lo as u16).wrapping_add(byte as u16))
     }
 
-    fn branch(&mut self, opcode: &Opcode) {
+    fn branch(&mut self, opcode: &Opcode, condition: bool) {
+        if !condition {
+            return;
+        }
+
         self.cycle += 1;
 
-        if let (Some(modifier), Operand::Address(addr)) = (opcode.tick_modifier, self.get_operand(opcode)) {
-            self.on_tick_modifier(
-                (self.reg.pc & 0xff) as u8,
-                (self.reg.pc >> 0x8) as u8, self.bus.read(addr), modifier);
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let page = self.reg.pc >> 8;
 
             self.reg.pc = self.reg.pc.wrapping_add(
                 i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
+
+            if page != self.reg.pc >> 8 {
+                self.cycle += 1;
+            }
         }
     }
 
@@ -264,56 +274,6 @@ impl CPU {
             }
 
             _ => {}
-        }
-    }
-
-    // TODO: refactor branch functions, too repetative
-
-    fn bcc(&mut self, opcode: &Opcode) {
-        if !self.reg.p.contains(Flags::CARRY) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bcs(&mut self, opcode: &Opcode) {
-        if self.reg.p.contains(Flags::CARRY) {
-            self.branch(opcode);
-        }
-    }
-
-    fn beq(&mut self, opcode: &Opcode) {
-        if self.reg.p.contains(Flags::ZERO) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bne(&mut self, opcode: &Opcode) {
-        if !self.reg.p.contains(Flags::ZERO) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bmi(&mut self, opcode: &Opcode) {
-        if self.reg.p.contains(Flags::NEGATIVE) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bpl(&mut self, opcode: &Opcode) {
-        if !self.reg.p.contains(Flags::NEGATIVE) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bvc(&mut self, opcode: &Opcode) {
-        if !self.reg.p.contains(Flags::OVERFLOW) {
-            self.branch(opcode);
-        }
-    }
-
-    fn bvs(&mut self, opcode: &Opcode) {
-        if self.reg.p.contains(Flags::OVERFLOW) {
-            self.branch(opcode);
         }
     }
 
