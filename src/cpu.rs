@@ -20,7 +20,7 @@ bitflags! {
     pub struct Flags: u8 {
         const NEGATIVE     = 0b10000000;
         const OVERFLOW     = 0b01000000;
-        const UNUSUED      = 0b00100000;
+        const UNUSED       = 0b00100000;
         const BREAK        = 0b00010000;
         const DECIMAL      = 0b00001000;
         const INTERRUPT    = 0b00000100;
