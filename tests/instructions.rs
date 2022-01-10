@@ -75,17 +75,17 @@ fn opcode_0x90_relative_bcc_1() {
     let cpu = execute_nsteps(
         |_| {}, &[0x90, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
 fn opcode_0x90_relative_bcc_2() {
-    // BCC rel(-5)
+    // BCC rel(5)
     // BRK
     let cpu = execute_nsteps(
         |_| {}, &[0x90, 0x05, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x8006); // 0x8000 + 1 + 5
+    assert_eq!(cpu.reg.pc, 0x8007); // 0x8000 + 5
 }
 
 #[test]
@@ -95,7 +95,7 @@ fn opcode_0xb0_relative_bcs() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.p.insert(Flags::CARRY), &[0xb0, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn opcode_0xf0_relative_beq() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.p.insert(Flags::ZERO), &[0xf0, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -115,7 +115,7 @@ fn opcode_0x30_relative_bmi() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.p.insert(Flags::NEGATIVE), &[0x30, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -125,7 +125,7 @@ fn opcode_0xd0_relative_bne() {
     let cpu = execute_nsteps(
         |_| {}, &[0xd0, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -135,7 +135,7 @@ fn opcode_0x10_relative_bpl() {
     let cpu = execute_nsteps(
         |_| {}, &[0x10, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn opcode_0x50_relative_bvc() {
     let cpu = execute_nsteps(
         |_| {}, &[0x50, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]
@@ -161,7 +161,7 @@ fn opcode_0x70_relative_bvs() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.p.insert(Flags::OVERFLOW), &[0x70, 0xfb, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.pc, 0x7ffc); // 0x8000 + 1 - 5
+    assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
 }
 
 #[test]

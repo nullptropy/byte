@@ -187,8 +187,9 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let page = self.reg.pc >> 8;
 
-            self.reg.pc = self.reg.pc.wrapping_add(
-                i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
+            self.reg.pc = self.reg.pc
+                .wrapping_add(1)
+                .wrapping_add(i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
 
             if page != self.reg.pc >> 8 {
                 self.cycle += 1;
