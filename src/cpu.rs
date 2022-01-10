@@ -87,13 +87,7 @@ impl CPU {
             .for_each(|(i, b)| self.bus.write(addr + i as u16, *b));
     }
 
-    pub fn load_and_run(&mut self, program: &[u8], addr: u16) {
-        self.load(program, addr);
-        self.reg.pc = self.bus.read_u16(0xfffc);
-        self.run();
-    }
-
-    pub fn run(&mut self) {
+    pub fn run_until_brk(&mut self) {
         loop {
             if self.reg.p.contains(Flags::BREAK) {
                 break;
