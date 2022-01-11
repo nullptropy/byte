@@ -28,7 +28,6 @@ pub struct Opcode {
 }
 
 pub enum Operand {
-    None,
     Accumulator,
     Address(u16),
 }

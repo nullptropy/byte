@@ -144,6 +144,11 @@ impl CPU {
         self.reg.sp = self.reg.sp.wrapping_sub(1);
     }
 
+    fn stack_push_u16(&mut self, data: u16) {
+        self.stack_push((data >> 0x8) as u8);
+        self.stack_push((data & 0xff) as u8);
+    }
+
     pub fn set_carry_flag(&mut self, value: bool) {
         if value {
             self.reg.p.insert(Flags::CARRY);
@@ -201,13 +206,17 @@ impl CPU {
 
     fn get_operand(&mut self, opcode: &Opcode) -> Operand {
         match opcode.mode {
-            AddressingMode::Accumulator => Operand::Accumulator,
-            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
             AddressingMode::Relative    => Operand::Address(self.reg.pc),
+            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+            AddressingMode::Accumulator => Operand::Accumulator,
 
             AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
-            AddressingMode::ZeroPageX => Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
-            AddressingMode::ZeroPageY => Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16),
+            AddressingMode::ZeroPageX => {
+                Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)
+            }
+            AddressingMode::ZeroPageY => {
+                Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16)
+            }
 
             AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
             AddressingMode::AbsoluteX => {
@@ -218,21 +227,34 @@ impl CPU {
                     return self.on_tick_modifier(lo, hi, self.reg.x, modifier);
                 }
 
-                Operand::Address(self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.x as u16))
-            },
+                Operand::Address(
+                    self.bus
+                        .read_u16(self.reg.pc)
+                        .wrapping_add(self.reg.x as u16),
+                )
+            }
             AddressingMode::AbsoluteY => {
-                 if let Some(modifier) = opcode.tick_modifier {
+                if let Some(modifier) = opcode.tick_modifier {
                     let lo = self.bus.read(self.reg.pc);
                     let hi = self.bus.read(self.reg.pc + 1);
 
                     return self.on_tick_modifier(lo, hi, self.reg.y, modifier);
                 }
 
-                Operand::Address(self.bus.read_u16(self.reg.pc).wrapping_add(self.reg.y as u16))
-           },
+                Operand::Address(
+                    self.bus
+                        .read_u16(self.reg.pc)
+                        .wrapping_add(self.reg.y as u16),
+                )
+            }
 
-            AddressingMode::Indirect  => Operand::Address(self.bus.read_u16(self.bus.read_u16(self.reg.pc))),
-            AddressingMode::IndirectX => Operand::Address(self.bus.read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)),
+            AddressingMode::Indirect  => {
+                Operand::Address(self.bus.read_u16(self.bus.read_u16(self.reg.pc)))
+            }
+            AddressingMode::IndirectX => Operand::Address(
+                self.bus
+                    .read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
+            ),
             AddressingMode::IndirectY => {
                 if let Some(modifier) = opcode.tick_modifier {
                     let lo = self.bus.read(self.bus.read(self.reg.pc) as u16);
@@ -241,10 +263,14 @@ impl CPU {
                     return self.on_tick_modifier(lo, hi, self.reg.y, modifier);
                 }
 
-                Operand::Address(self.bus.read_u16(self.bus.read(self.reg.pc) as u16).wrapping_add(self.reg.y as u16))
-            },
+                Operand::Address(
+                    self.bus
+                        .read_u16(self.bus.read(self.reg.pc) as u16)
+                        .wrapping_add(self.reg.y as u16),
+                )
+            }
 
-            _ => Operand::None,
+            _ => panic!("Eh"),
         }
     }
 
@@ -269,8 +295,6 @@ impl CPU {
                 self.bus.write(addr, self.bus.read(addr).wrapping_shl(1));
                 self.update_flags(self.bus.read(addr));
             }
-
-            _ => {}
         }
     }
 
