@@ -11,17 +11,6 @@ pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
 
 bitflags! {
-/// 6502 status flags
-///
-///  7 6 5 4 3 2 1 0
-///  N V _ B D I Z C
-///  | |   | | | | +--- Carry Flag
-///  | |   | | | +----- Zero Flag
-///  | |   | | +------- Interrupt Disable
-///  | |   | +--------- Decimal Mode (not used on NES)
-///  | |   +----------- Break Command
-///  | +--------------- Overflow Flag
-///  +----------------- Negative Flag
     #[derive(Default)]
     pub struct Flags: u8 {
         const NEGATIVE     = 0b10000000;
