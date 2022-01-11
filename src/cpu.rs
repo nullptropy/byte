@@ -4,6 +4,8 @@ use bitflags::bitflags;
 use crate::bus::Bus;
 use crate::opcode::{self, *};
 
+const STACK_BASE: u16 = 0x0100;
+
 bitflags! {
 /// 6502 status flags
 ///
@@ -31,8 +33,8 @@ bitflags! {
 
 #[derive(Clone, Copy)]
 pub struct Registers {
+    pub sp: u8,
     pub pc: u16,
-    pub sp: u16,
 
     pub x: u8, pub y: u8,
     pub a: u8, pub p: Flags,
@@ -47,7 +49,7 @@ pub struct CPU {
 impl Registers {
     fn new() -> Self {
         Self {
-            pc: 0, sp: 0x01ff,
+            pc: 0, sp: 0xff,
 
             x: 0, y: 0,
             a: 0, p: Flags::default()
@@ -138,7 +140,7 @@ impl CPU {
     }
 
     fn stack_push(&mut self, byte: u8) {
-        self.bus.write(self.reg.sp, byte);
+        self.bus.write(STACK_BASE.wrapping_add(self.reg.sp as u16), byte);
         self.reg.sp = self.reg.sp.wrapping_sub(1);
     }
 
