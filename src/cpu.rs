@@ -4,7 +4,11 @@ use bitflags::bitflags;
 use crate::bus::Bus;
 use crate::opcode::{self, *};
 
-const STACK_BASE: u16 = 0x0100;
+pub const STACK_BASE: u16 = 0x0100;
+
+pub const NMI_VECTOR: u16 = 0xfffa;
+pub const RST_VECTOR: u16 = 0xfffc;
+pub const IRQ_VECTOR: u16 = 0xfffe;
 
 bitflags! {
 /// 6502 status flags
