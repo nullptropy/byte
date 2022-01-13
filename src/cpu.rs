@@ -10,6 +10,7 @@ pub const NMI_VECTOR: u16 = 0xfffa;
 pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
 
+#[derive(Debug)]
 pub enum Interrupt {
     IRQ,
     NMI,
@@ -164,8 +165,9 @@ impl CPU {
             0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
-            0xea => self.nop(opcode),
+            0x40 => self.rti(opcode),
             0x00 => self.interrupt(Interrupt::BRK),
+            0xea => {},
 
             _ => ()
         }
@@ -186,6 +188,18 @@ impl CPU {
     fn stack_push_u16(&mut self, data: u16) {
         self.stack_push((data >> 0x8) as u8);
         self.stack_push((data & 0xff) as u8);
+    }
+
+    fn stack_pull(&mut self) -> u8 {
+        self.reg.sp = self.reg.sp.wrapping_add(1);
+        self.bus.read(STACK_BASE.wrapping_add(self.reg.sp as u16))
+    }
+
+    fn stack_pull_u16(&mut self) -> u16 {
+        let lo = self.stack_pull() as u16;
+        let hi = self.stack_pull() as u16;
+
+        (hi << 8) | lo
     }
 
     pub fn set_carry_flag(&mut self, value: bool) {
@@ -313,8 +327,6 @@ impl CPU {
         }
     }
 
-    fn nop(&self, opcode: &Opcode) {}
-
     fn and(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a &= self.bus.read(addr);
@@ -372,5 +384,12 @@ impl CPU {
     fn tya(&mut self, opcode: &Opcode) {
         self.reg.a = self.reg.y;
         self.update_flags(self.reg.a);
+    }
+
+    fn rti(&mut self, opcode: &Opcode) {
+        self.reg.p.bits = self.stack_pull();
+        self.reg.pc = self.stack_pull_u16();
+
+        self.reg.p.remove(Flags::BREAK);
     }
 }

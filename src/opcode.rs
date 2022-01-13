@@ -106,5 +106,6 @@ lazy_static! {
         (0xb1, Opcode::new(0xb1, 2, 5, "LDA", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
 
         (0xea, Opcode::new(0xea, 1, 2, "NOP", AddressingMode::Implied, None)),
+        (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
     ]);
 }
