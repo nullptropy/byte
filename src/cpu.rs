@@ -10,11 +10,12 @@ pub const NMI_VECTOR: u16 = 0xfffa;
 pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Interrupt {
     IRQ,
     NMI,
     BRK,
+    RST,
 }
 
 bitflags! {
@@ -111,15 +112,22 @@ impl CPU {
             Interrupt::BRK => (self.reg.pc + 1, Some(Flags::BREAK), IRQ_VECTOR),
             Interrupt::IRQ => (self.reg.pc, Some(Flags::INTERRUPT), IRQ_VECTOR),
             Interrupt::NMI => (self.reg.pc, None, NMI_VECTOR),
+            Interrupt::RST => (0, None, RST_VECTOR),
         };
 
-        self.stack_push_u16(pc);
-        self.stack_push(self.reg.p.bits());
-        self.reg.pc = self.bus.read_u16(vector);
+        if interrupt != Interrupt::RST {
+            self.stack_push_u16(pc);
+            self.stack_push(self.reg.p.bits());
 
-        if let Some(flag) = flag {
-            self.reg.p.insert(flag);
+            if let Some(flag) = flag {
+                self.reg.p.insert(flag);
+            }
         }
+
+        self.reg.pc = self.bus.read_u16(vector);
+        self.cycle += 7;
+
+        println!("[{:x?}][{:?}]", self.reg, interrupt);
     }
 
     pub fn run_until_brk(&mut self) {
@@ -175,8 +183,9 @@ impl CPU {
         if pc_state == self.reg.pc {
             self.reg.pc += (opcode.size - 1) as u16;
         }
-        self.cycle += opcode.tick as u32;
-
+        if opcode.code != 0x00 {
+            self.cycle += opcode.tick as u32;
+        }
         println!("[{:x?}:{:08}][{:?}]", self.reg, self.cycle, opcode);
     }
 
