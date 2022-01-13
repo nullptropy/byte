@@ -10,6 +10,12 @@ pub const NMI_VECTOR: u16 = 0xfffa;
 pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
 
+pub enum Interrupt {
+    IRQ,
+    NMI,
+    BRK,
+}
+
 bitflags! {
     #[derive(Default)]
     pub struct Flags: u8 {
@@ -36,7 +42,10 @@ pub struct Registers {
 pub struct CPU {
     pub reg: Registers,
     pub bus: Bus,
-    pub cycle: u32
+    pub cycle: u32,
+
+    pub irq: bool,
+    pub nmi: bool, pub nmi_edge: bool,
 }
 
 impl Registers {
@@ -53,7 +62,7 @@ impl Registers {
 impl fmt::Debug for Registers {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
-            f, "{:04x}:{:04x}:{:08b}:{:02x}:{:02x}:{:02x}",
+            f, "{:04x}:{:02x}:{:08b}:{:02x}:{:02x}:{:02x}",
             self.pc, self.sp, self.p, self.a, self.x, self.y
         )
     }
@@ -65,6 +74,9 @@ impl CPU {
             reg: Registers::new(),
             bus: Bus::new(),
             cycle: 0,
+
+            irq: true,
+            nmi: true, nmi_edge: false,
         }
     }
 
@@ -82,6 +94,33 @@ impl CPU {
             .for_each(|(i, b)| self.bus.write(addr + i as u16, *b));
     }
 
+    pub fn set_irq(&mut self, irq: bool) {
+        self.irq = irq;
+    }
+
+    /// NMI is only executed once on a negative transition
+    /// from HIGH to LOW
+    pub fn set_nmi(&mut self, nmi: bool) {
+        self.nmi_edge = !nmi;
+        self.nmi = nmi;
+    }
+
+    pub fn interrupt(&mut self, interrupt: Interrupt) {
+        let (pc, flag, vector): (u16, Option<Flags>, u16) = match interrupt {
+            Interrupt::BRK => (self.reg.pc + 1, Some(Flags::BREAK), IRQ_VECTOR),
+            Interrupt::IRQ => (self.reg.pc, Some(Flags::INTERRUPT), IRQ_VECTOR),
+            Interrupt::NMI => (self.reg.pc, None, NMI_VECTOR),
+        };
+
+        self.stack_push_u16(pc);
+        self.stack_push(self.reg.p.bits());
+        self.reg.pc = self.bus.read_u16(vector);
+
+        if let Some(flag) = flag {
+            self.reg.p.insert(flag);
+        }
+    }
+
     pub fn run_until_brk(&mut self) {
         loop {
             if self.reg.p.contains(Flags::BREAK) {
@@ -93,6 +132,13 @@ impl CPU {
     }
 
     pub fn step(&mut self) {
+        if !self.irq && !self.reg.p.contains(Flags::INTERRUPT) {
+            return self.interrupt(Interrupt::IRQ);
+        } else if self.nmi_edge {
+            self.nmi_edge = false;
+            return self.interrupt(Interrupt::NMI);
+        }
+
         let code = self.bus.read(self.reg.pc);
         let opcode = OPCODE_MAP.get(&code)
             .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", code));
@@ -119,7 +165,7 @@ impl CPU {
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
             0xea => self.nop(opcode),
-            0x00 => self.brk(opcode),
+            0x00 => self.interrupt(Interrupt::BRK),
 
             _ => ()
         }
@@ -289,17 +335,6 @@ impl CPU {
                 self.update_flags(self.bus.read(addr));
             }
         }
-    }
-
-    fn brk(&mut self, opcode: &Opcode) {
-        self.reg.p.insert(Flags::BREAK);
-
-        self.stack_push(((self.reg.pc + 2) >> 0x8) as u8);
-        self.stack_push(((self.reg.pc + 2) & 0xff) as u8);
-
-        self.stack_push(self.reg.p.bits());
-
-        self.reg.pc = self.bus.read_u16(0xfffe);
     }
 
     fn lda(&mut self, opcode: &Opcode) {
