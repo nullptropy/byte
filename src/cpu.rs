@@ -1,8 +1,9 @@
 use core::fmt;
 use bitflags::bitflags;
+use std::ops::ControlFlow;
 
 use crate::bus::Bus;
-use crate::opcode::{self, *};
+use crate::opcode::*;
 
 pub const STACK_BASE: u16 = 0x0100;
 
@@ -88,12 +89,20 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: &[u8], addr: u16) {
-        self.bus.write_u16(0xfffc, addr);
-
         program
             .iter()
             .enumerate()
             .for_each(|(i, b)| self.bus.write(addr + i as u16, *b));
+    }
+
+    pub fn run_with_callback(&mut self, callback: fn(&mut CPU) -> ControlFlow<()>) {
+        loop {
+            if callback(self).is_break() {
+                break;
+            }
+
+            self.step();
+        }
     }
 
     pub fn set_irq(&mut self, irq: bool) {
@@ -126,18 +135,6 @@ impl CPU {
 
         self.reg.pc = self.bus.read_u16(vector);
         self.cycle += 7;
-
-        println!("[{:x?}][{:?}]", self.reg, interrupt);
-    }
-
-    pub fn run_until_brk(&mut self) {
-        loop {
-            if self.reg.p.contains(Flags::BREAK) {
-                break;
-            }
-
-            self.step();
-        }
     }
 
     pub fn step(&mut self) {
@@ -186,7 +183,6 @@ impl CPU {
         if opcode.code != 0x00 {
             self.cycle += opcode.tick as u32;
         }
-        println!("[{:x?}:{:08}][{:?}]", self.reg, self.cycle, opcode);
     }
 
     fn stack_push(&mut self, byte: u8) {
