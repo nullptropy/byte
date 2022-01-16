@@ -149,7 +149,7 @@ impl CPU {
         let opcode = OPCODE_MAP.get(&code)
             .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", code));
 
-        self.reg.pc += 1;
+        self.reg.pc  = self.reg.pc.wrapping_add(1);
         let pc_state = self.reg.pc;
 
         match code {
@@ -170,7 +170,9 @@ impl CPU {
             0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
+            0x20 => self.jsr(opcode),
             0x40 => self.rti(opcode),
+            0x60 => self.rts(opcode),
             0x00 => self.interrupt(Interrupt::BRK),
             0xea => {},
 
@@ -391,10 +393,21 @@ impl CPU {
         self.update_flags(self.reg.a);
     }
 
+    fn jsr(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.stack_push_u16(self.reg.pc.wrapping_add(2));
+            self.reg.pc = self.bus.read_u16(addr);
+        }
+    }
+
     fn rti(&mut self, opcode: &Opcode) {
         self.reg.p.bits = self.stack_pull();
         self.reg.pc = self.stack_pull_u16();
 
         self.reg.p.remove(Flags::BREAK);
+    }
+
+    fn rts(&mut self, opcode: &Opcode) {
+        self.reg.pc = self.stack_pull_u16();
     }
 }
