@@ -51,7 +51,7 @@ fn main() {
         0x00,              // BRK
         0xea,              // NOP
         0xea,              // NOP
-        0xa9, 0xff,        // LDA #$0xff : $8004
+        0xa9, 0xff,        // LDA #$0xff : $8006
         0x60               // RTS
     ], 0x8000);
 
