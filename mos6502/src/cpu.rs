@@ -187,22 +187,22 @@ impl CPU {
         }
     }
 
-    fn stack_push(&mut self, byte: u8) {
+    pub fn stack_push(&mut self, byte: u8) {
         self.bus.write(STACK_BASE.wrapping_add(self.reg.sp as u16), byte);
         self.reg.sp = self.reg.sp.wrapping_sub(1);
     }
 
-    fn stack_push_u16(&mut self, data: u16) {
+    pub fn stack_push_u16(&mut self, data: u16) {
         self.stack_push((data >> 0x8) as u8);
         self.stack_push((data & 0xff) as u8);
     }
 
-    fn stack_pull(&mut self) -> u8 {
+    pub fn stack_pull(&mut self) -> u8 {
         self.reg.sp = self.reg.sp.wrapping_add(1);
         self.bus.read(STACK_BASE.wrapping_add(self.reg.sp as u16))
     }
 
-    fn stack_pull_u16(&mut self) -> u16 {
+    pub fn stack_pull_u16(&mut self) -> u16 {
         let lo = self.stack_pull() as u16;
         let hi = self.stack_pull() as u16;
 
