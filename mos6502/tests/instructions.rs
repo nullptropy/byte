@@ -305,6 +305,44 @@ fn opcode_0xb1_indirecty_lda() {
 fn opcode_0xea_implied_nop() {}
 
 #[test]
+fn opcode_0x40_implied_rti() {
+    // BRK      ; 0xfffe: 0x8003
+    // NOP
+    // NOP
+    // LDA #$ff ; 0x8003
+    // RTI
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write_u16(0xfffe, 0x8003),
+        &[0x00, 0xea, 0xea, 0xa9, 0xff, 0x40], 0x8000, 3);
+
+    assert_eq!(cpu.reg.pc, 0x8002);
+}
+
+#[test]
+fn opcode_0x60_implied_rts() {
+    //      [ 0x80 ]: ff \
+    //      [ 0x01 ]: fe  => stack state
+    //      [ 0x00 ]: fd /
+    //
+    // RTS
+    // NOP
+    let cpu = execute_nsteps(
+        |cpu| cpu.stack_push_u16(0x8001), &[0x60, 0xea], 0x8000, 2);
+    assert_eq!(cpu.reg.pc, 0x8002);
+}
+
+#[test]
+fn opcode_0x20_absolute_jsr() {
+    // JSR $0001 ; 0x0001: 0x8003
+    // NOP       ; 0x8003
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write_u16(0x0001, 0x8003), &[0x20, 0x01, 0x00, 0xea], 0x8000, 1);
+
+    assert_eq!(cpu.reg.sp, 0x00fd);
+    assert_eq!(cpu.reg.pc, 0x8003);
+}
+
+#[test]
 fn opcode_0xaa_implied_tax() {
     // TAX
     // BRK
