@@ -1,6 +1,6 @@
 use core::fmt;
 use bitflags::bitflags;
-use std::ops::ControlFlow;
+use std::ops::{ControlFlow, Shl};
 
 use crate::bus::Bus;
 use crate::opcode::*;
@@ -210,28 +210,13 @@ impl CPU {
         (hi << 8) | lo
     }
 
-    pub fn set_carry_flag(&mut self, value: bool) {
-        if value {
-            self.reg.p.insert(Flags::CARRY);
-        } else {
-            self.reg.p.remove(Flags::CARRY);
-        }
+    pub fn set_flag(&mut self, flag: Flags, value: bool) {
+        self.reg.p.set(flag, value);
     }
 
-    fn update_flags(&mut self, value: u8) {
-        match value {
-            0 => self.reg.p.insert(Flags::ZERO),
-            _ => self.reg.p.remove(Flags::ZERO)
-        }
-
-        self.update_negative_flag(value);
-    }
-
-    fn update_negative_flag(&mut self, value: u8) {
-        match value & 0b10000000 {
-            0 => self.reg.p.remove(Flags::NEGATIVE),
-            _ => self.reg.p.insert(Flags::NEGATIVE),
-        }
+    fn update_nz_flags(&mut self, value: u8) {
+        self.set_flag(Flags::ZERO, value == 0);
+        self.set_flag(Flags::NEGATIVE, (value as i8) < 0);
     }
 
     fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
@@ -338,21 +323,24 @@ impl CPU {
     fn and(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a &= self.bus.read(addr);
-            self.update_flags(self.reg.a);
+            self.update_nz_flags(self.reg.a);
         }
     }
 
     fn asl(&mut self, opcode: &Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
-                self.set_carry_flag(self.reg.a >> 7 != 0);
+                self.set_flag(Flags::CARRY, self.reg.a >> 7 == 1);
                 self.reg.a = self.reg.a.wrapping_shl(1);
-                self.update_flags(self.reg.a);
+                self.update_nz_flags(self.reg.a);
             },
             Operand::Address(addr) => {
-                self.set_carry_flag(self.bus.read(addr) >> 7 != 0);
-                self.bus.write(addr, self.bus.read(addr).wrapping_shl(1));
-                self.update_flags(self.bus.read(addr));
+                let mut data = self.bus.read(addr);
+                self.set_flag(Flags::CARRY, data >> 7 == 1);
+
+                data = data.wrapping_shl(1);
+                self.bus.write(addr, data);
+                self.update_nz_flags(data);
             }
         }
     }
@@ -361,7 +349,7 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let value = self.reg.a & self.bus.read(addr);
 
-            self.update_flags(value);
+            self.update_nz_flags(value);
             self.reg.p.set(Flags::NEGATIVE, value & 0x80 > 0);
             self.reg.p.set(Flags::OVERFLOW, value & 0x40 > 0);
         }
@@ -370,38 +358,38 @@ impl CPU {
     fn lda(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a = self.bus.read(addr);
-            self.update_flags(self.reg.a);
+            self.update_nz_flags(self.reg.a);
         }
     }
 
     fn inx(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
-        self.update_flags(self.reg.x);
+        self.update_nz_flags(self.reg.x);
     }
 
     fn dex(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_sub(1);
-        self.update_flags(self.reg.x);
+        self.update_nz_flags(self.reg.x);
     }
 
     fn tax(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.a;
-        self.update_flags(self.reg.x);
+        self.update_nz_flags(self.reg.x);
     }
 
     fn txa(&mut self, opcode: &Opcode) {
         self.reg.a = self.reg.x;
-        self.update_flags(self.reg.a);
+        self.update_nz_flags(self.reg.a);
     }
 
     fn tay(&mut self, opcode: &Opcode) {
         self.reg.y = self.reg.a;
-        self.update_flags(self.reg.y);
+        self.update_nz_flags(self.reg.y);
     }
 
     fn tya(&mut self, opcode: &Opcode) {
         self.reg.a = self.reg.y;
-        self.update_flags(self.reg.a);
+        self.update_nz_flags(self.reg.a);
     }
 
     fn jsr(&mut self, opcode: &Opcode) {
