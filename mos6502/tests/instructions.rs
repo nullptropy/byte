@@ -69,6 +69,22 @@ fn opcode_0x0e_absolute_asl() {}
 fn opcode_0x1e_absolutex_asl() {}
 
 #[test]
+fn opcode_0x24_zeropage_bit() {
+    let cpu = execute_nsteps(|cpu| {
+        cpu.reg.a = 0b1100_0000;
+        cpu.bus.write(0x00aa, 0b1111_1111);
+    },
+    &[0x24, 0xaa], 0x8000, 1);
+
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
+    assert!(cpu.reg.p.contains(Flags::OVERFLOW));
+    assert!(cpu.reg.p.contains(Flags::ZERO) == false);
+}
+
+#[test]
+fn opcode_0x2c_absolute_bit() {}
+
+#[test]
 fn opcode_0x90_relative_bcc_1() {
     // BCC rel(-5)
     // BRK

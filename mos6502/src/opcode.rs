@@ -94,6 +94,9 @@ lazy_static! {
         (0x50, Opcode::new(0x50, 2, 2, "BVC", AddressingMode::Relative, Some(TickModifier::Branch))),
         (0x70, Opcode::new(0x70, 2, 2, "BVS", AddressingMode::Relative, Some(TickModifier::Branch))),
 
+        (0x24, Opcode::new(0x24, 2, 3, "BIT", AddressingMode::ZeroPage, None)),
+        (0x2c, Opcode::new(0x2c, 3, 4, "BIT", AddressingMode::Absolute, None)),
+
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
 
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),

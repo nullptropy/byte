@@ -156,6 +156,7 @@ impl CPU {
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
+            0x24 | 0x2c                                           => self.bit(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
             0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
@@ -353,6 +354,16 @@ impl CPU {
                 self.bus.write(addr, self.bus.read(addr).wrapping_shl(1));
                 self.update_flags(self.bus.read(addr));
             }
+        }
+    }
+
+    fn bit(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let value = self.reg.a & self.bus.read(addr);
+
+            self.update_flags(value);
+            self.reg.p.set(Flags::NEGATIVE, value & 0x80 > 0);
+            self.reg.p.set(Flags::OVERFLOW, value & 0x40 > 0);
         }
     }
 
