@@ -171,6 +171,11 @@ impl CPU {
             0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
+            0x18 => self.set_flag(Flags::CARRY, false),
+            0xd8 => self.set_flag(Flags::DECIMAL, false),
+            0x58 => self.set_flag(Flags::INTERRUPT, false),
+            0xb8 => self.set_flag(Flags::OVERFLOW, false),
+
             0x20 => self.jsr(opcode),
             0x40 => self.rti(opcode),
             0x60 => self.rts(opcode),

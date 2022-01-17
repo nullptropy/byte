@@ -99,6 +99,11 @@ lazy_static! {
 
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
 
+        (0x18, Opcode::new(0x18, 1, 2, "CLC", AddressingMode::Implied, None)),
+        (0xd8, Opcode::new(0xd8, 1, 2, "CLD", AddressingMode::Implied, None)),
+        (0x58, Opcode::new(0x58, 1, 2, "CLI", AddressingMode::Implied, None)),
+        (0xb8, Opcode::new(0xb8, 1, 2, "CLV", AddressingMode::Implied, None)),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage, None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),

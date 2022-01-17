@@ -181,6 +181,46 @@ fn opcode_0x70_relative_bvs() {
 }
 
 #[test]
+fn opcode_0x18_implied_clc() {
+    // CLC
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.set_flag(Flags::CARRY, true), &[0x18, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.p.contains(Flags::CARRY), false);
+}
+
+#[test]
+fn opcode_0xd8_implied_cld() {
+    // CLD
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.set_flag(Flags::DECIMAL, true), &[0xd8, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.p.contains(Flags::DECIMAL), false);
+}
+
+#[test]
+fn opcode_0x58_implied_cli() {
+    // CLI
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.set_flag(Flags::INTERRUPT, true), &[0x58, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.p.contains(Flags::INTERRUPT), false);
+}
+
+#[test]
+fn opcode_0xb8_implied_clv() {
+    // CLV
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.set_flag(Flags::OVERFLOW, false), &[0xb8], 0x8000, 1);
+
+    assert_eq!(cpu.reg.p.contains(Flags::OVERFLOW), false);
+}
+
+#[test]
 fn opcode_0xca_implied_dex() {
     // DEX
     // DEX
