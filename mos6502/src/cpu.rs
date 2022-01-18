@@ -1,6 +1,8 @@
-use core::fmt;
 use bitflags::bitflags;
-use std::ops::{ControlFlow, Shl};
+
+use core::fmt;
+use std::cmp::Ordering;
+use std::ops::ControlFlow;
 
 use crate::bus::Bus;
 use crate::opcode::*;
@@ -154,9 +156,12 @@ impl CPU {
 
         match code {
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
-            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
             0x24 | 0x2c                                           => self.bit(opcode),
+            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.cmp(opcode, self.reg.a),
+            0xe0 | 0xe4 | 0xec                                    => self.cmp(opcode, self.reg.x),
+            0xc0 | 0xc4 | 0xcc                                    => self.cmp(opcode, self.reg.y),
+            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
             0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
@@ -233,26 +238,6 @@ impl CPU {
         }
 
         Operand::Address(((hi as u16) << 8 | lo as u16).wrapping_add(byte as u16))
-    }
-
-    fn branch(&mut self, opcode: &Opcode, condition: bool) {
-        if !condition {
-            return;
-        }
-
-        self.cycle += 1;
-
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            let page = self.reg.pc >> 8;
-
-            self.reg.pc = self.reg.pc
-                .wrapping_add(1)
-                .wrapping_add(i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
-
-            if page != self.reg.pc >> 8 {
-                self.cycle += 1;
-            }
-        }
     }
 
     fn get_operand(&mut self, opcode: &Opcode) -> Operand {
@@ -350,6 +335,27 @@ impl CPU {
         }
     }
 
+    fn branch(&mut self, opcode: &Opcode, condition: bool) {
+        if !condition {
+            return;
+        }
+
+        self.cycle += 1;
+
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let page = self.reg.pc >> 8;
+
+            self.reg.pc = self.reg.pc
+                .wrapping_add(1)
+                .wrapping_add(i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
+
+            if page != self.reg.pc >> 8 {
+                self.cycle += 1;
+            }
+        }
+    }
+
+
     fn bit(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let value = self.reg.a & self.bus.read(addr);
@@ -357,6 +363,16 @@ impl CPU {
             self.update_nz_flags(value);
             self.reg.p.set(Flags::NEGATIVE, value & 0x80 > 0);
             self.reg.p.set(Flags::OVERFLOW, value & 0x40 > 0);
+        }
+    }
+
+    fn cmp(&mut self, opcode: &Opcode, reg: u8) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let operand = self.bus.read(addr);
+            eprintln!("{:x},{:x}, {}", reg, operand, (reg.wrapping_sub(operand)) as i8);
+
+            self.set_flag(Flags::CARRY, reg <= operand);
+            self.update_nz_flags(reg.wrapping_sub(operand));
         }
     }
 

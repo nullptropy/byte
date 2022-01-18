@@ -104,6 +104,23 @@ lazy_static! {
         (0x58, Opcode::new(0x58, 1, 2, "CLI", AddressingMode::Implied, None)),
         (0xb8, Opcode::new(0xb8, 1, 2, "CLV", AddressingMode::Implied, None)),
 
+        (0xc9, Opcode::new(0xc9, 2, 2, "CMP", AddressingMode::Immediate, None)),
+        (0xc5, Opcode::new(0xc5, 2, 3, "CMP", AddressingMode::ZeroPage, None)),
+        (0xd5, Opcode::new(0xd5, 2, 4, "CMP", AddressingMode::ZeroPageX, None)),
+        (0xcd, Opcode::new(0xcd, 3, 4, "CMP", AddressingMode::Absolute, None)),
+        (0xdd, Opcode::new(0xdd, 3, 4, "CMP", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0xd9, Opcode::new(0xd9, 3, 4, "CMP", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0xc1, Opcode::new(0xc1, 2, 6, "CMP", AddressingMode::IndirectX, None)),
+        (0xd1, Opcode::new(0xd1, 2, 5, "CMP", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
+        (0xe0, Opcode::new(0xe0, 2, 2, "CPX", AddressingMode::Immediate, None)),
+        (0xe4, Opcode::new(0xe4, 2, 3, "CPX", AddressingMode::ZeroPage, None)),
+        (0xec, Opcode::new(0xec, 3, 4, "CPX", AddressingMode::Absolute, None)),
+
+        (0xc0, Opcode::new(0xc0, 2, 2, "CPY", AddressingMode::Immediate, None)),
+        (0xc4, Opcode::new(0xc4, 2, 3, "CPY", AddressingMode::ZeroPage, None)),
+        (0xcc, Opcode::new(0xcc, 3, 4, "CPY", AddressingMode::Absolute, None)),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage, None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),

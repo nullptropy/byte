@@ -221,6 +221,63 @@ fn opcode_0xb8_implied_clv() {
 }
 
 #[test]
+fn opcode_0xc9_immediate_cmp() {
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.a = 0xaa, &[0xc9, 0xaa], 0x8000, 1);
+
+    assert!(cpu.reg.p.contains(Flags::CARRY));
+    assert!(cpu.reg.p.contains(Flags::ZERO));
+}
+
+#[test]
+fn opcode_0xc5_zeropage_cmp() {
+    let cpu = execute_nsteps(
+        |cpu| {
+            cpu.reg.a = 0xca;
+            cpu.bus.write(0x4a, 0x4a);
+        },
+        &[0xc5, 0x4a, 0x00], 0x8000, 1);
+
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE))
+}
+
+#[test]
+fn opcode_0xd5_zeropagex_cmp() {}
+
+#[test]
+fn opcode_0xcd_absolute_cmp() {}
+
+#[test]
+fn opcode_0xdd_absolutex_cmp() {}
+
+#[test]
+fn opcode_0xd9_absolutey_cmp() {}
+
+#[test]
+fn opcode_0xc1_indirectx_cmp() {}
+
+#[test]
+fn opcode_0xd1_indirecty_cmp() {}
+
+#[test]
+fn opcode_0xe0_immediate_cpx() {}
+
+#[test]
+fn opcode_0xe4_zeropage_cpx() {}
+
+#[test]
+fn opcode_0xec_absolute_cpx() {}
+
+#[test]
+fn opcode_0xc0_immediate_cpy() {}
+
+#[test]
+fn opcode_0xc4_zeropage_cpy() {}
+
+#[test]
+fn opcode_0xcc_absolute_cpy() {}
+
+#[test]
 fn opcode_0xca_implied_dex() {
     // DEX
     // DEX
