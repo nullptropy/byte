@@ -62,13 +62,6 @@ impl Opcode {
 lazy_static! {
     pub static ref OPCODE_MAP: HashMap<u8, Opcode> = HashMap::from([
         (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
-        (0xe8, Opcode::new(0xe8, 1, 2, "INX", AddressingMode::Implied, None)),
-        (0xca, Opcode::new(0xca, 1, 2, "DEX", AddressingMode::Implied, None)),
-
-        (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
-        (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
-        (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
-        (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
 
         (0x29, Opcode::new(0x29, 2, 2, "AND", AddressingMode::Immediate, None)),
         (0x25, Opcode::new(0x25, 2, 3, "AND", AddressingMode::ZeroPage, None)),
@@ -121,6 +114,22 @@ lazy_static! {
         (0xc4, Opcode::new(0xc4, 2, 3, "CPY", AddressingMode::ZeroPage, None)),
         (0xcc, Opcode::new(0xcc, 3, 4, "CPY", AddressingMode::Absolute, None)),
 
+        (0xc6, Opcode::new(0xc6, 2, 5, "DEC", AddressingMode::ZeroPage, None)),
+        (0xd6, Opcode::new(0xd6, 2, 6, "DEC", AddressingMode::ZeroPageX, None)),
+        (0xce, Opcode::new(0xce, 3, 6, "DEC", AddressingMode::Absolute, None)),
+        (0xde, Opcode::new(0xde, 3, 7, "DEC", AddressingMode::AbsoluteX, None)),
+
+        (0xca, Opcode::new(0xca, 1, 2, "DEX", AddressingMode::Implied, None)),
+        (0x88, Opcode::new(0x88, 1, 2, "DEY", AddressingMode::Implied, None)),
+
+        (0xe6, Opcode::new(0xe6, 2, 5, "INC", AddressingMode::ZeroPage, None)),
+        (0xf6, Opcode::new(0xf6, 2, 6, "INC", AddressingMode::ZeroPageX, None)),
+        (0xee, Opcode::new(0xee, 3, 6, "INC", AddressingMode::Absolute, None)),
+        (0xfe, Opcode::new(0xfe, 3, 7, "INC", AddressingMode::AbsoluteX, None)),
+
+        (0xe8, Opcode::new(0xe8, 1, 2, "INX", AddressingMode::Implied, None)),
+        (0xc8, Opcode::new(0xc8, 1, 2, "INY", AddressingMode::Implied, None)),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage, None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),
@@ -129,6 +138,11 @@ lazy_static! {
         (0xb9, Opcode::new(0xb9, 3, 4, "LDA", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
         (0xa1, Opcode::new(0xa1, 2, 6, "LDA", AddressingMode::IndirectX, None)),
         (0xb1, Opcode::new(0xb1, 2, 5, "LDA", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
+        (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
+        (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
+        (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
+        (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
 
         (0x20, Opcode::new(0x20, 3, 6, "JSR", AddressingMode::Absolute, None)),
 

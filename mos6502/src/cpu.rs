@@ -161,9 +161,12 @@ impl CPU {
             0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.cmp(opcode, self.reg.a),
             0xe0 | 0xe4 | 0xec                                    => self.cmp(opcode, self.reg.x),
             0xc0 | 0xc4 | 0xcc                                    => self.cmp(opcode, self.reg.y),
+            0xc6 | 0xd6 | 0xce | 0xde                             => self.dec(opcode),
+            0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
+            0xc8 => self.iny(opcode), 0x88 => self.dey(opcode),
             0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
             0xa8 => self.tay(opcode), 0x98 => self.tya(opcode),
 
@@ -376,10 +379,29 @@ impl CPU {
         }
     }
 
-    fn lda(&mut self, opcode: &Opcode) {
+    fn dec(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.reg.a = self.bus.read(addr);
-            self.update_nz_flags(self.reg.a);
+            let value = self.bus.read(addr).wrapping_sub(1);
+            self.bus.write(addr, value);
+            self.update_nz_flags(value);
+        }
+    }
+
+    fn dex(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.x.wrapping_sub(1);
+        self.update_nz_flags(self.reg.x);
+    }
+
+    fn dey(&mut self, opcode: &Opcode) {
+        self.reg.y = self.reg.y.wrapping_sub(1);
+        self.update_nz_flags(self.reg.y);
+    }
+
+    fn inc(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let value = self.bus.read(addr).wrapping_add(1);
+            self.bus.write(addr, value);
+            self.update_nz_flags(value);
         }
     }
 
@@ -388,9 +410,16 @@ impl CPU {
         self.update_nz_flags(self.reg.x);
     }
 
-    fn dex(&mut self, opcode: &Opcode) {
-        self.reg.x = self.reg.x.wrapping_sub(1);
-        self.update_nz_flags(self.reg.x);
+    fn iny(&mut self, opcode: &Opcode) {
+        self.reg.y = self.reg.y.wrapping_add(1);
+        self.update_nz_flags(self.reg.y);
+    }
+
+    fn lda(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.a = self.bus.read(addr);
+            self.update_nz_flags(self.reg.a);
+        }
     }
 
     fn tax(&mut self, opcode: &Opcode) {

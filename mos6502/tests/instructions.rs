@@ -278,6 +278,25 @@ fn opcode_0xc4_zeropage_cpy() {}
 fn opcode_0xcc_absolute_cpy() {}
 
 #[test]
+fn opcode_0xc6_zeropage_dec() {
+    // DEC $aa
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write(0xaa, 0xff), &[0xc6, 0xaa, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.bus.read(0x00aa), 0xfe);
+}
+
+#[test]
+fn opcode_0xd6_zeropagex_dec() {}
+
+#[test]
+fn opcode_0xce_absolute_dec() {}
+
+#[test]
+fn opcode_0xde_absolutex_dec() {}
+
+#[test]
 fn opcode_0xca_implied_dex() {
     // DEX
     // DEX
@@ -291,6 +310,35 @@ fn opcode_0xca_implied_dex() {
 }
 
 #[test]
+fn opcode_0x88_implied_dey() {
+    // DEY
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.y = 0xff, &[0x88, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.y, 0xfe);
+}
+
+#[test]
+fn opcode_0xe6_zeropage_inc() {
+    // INC $aa
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write(0xaa, 0xfe), &[0xe6, 0xaa, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.bus.read(0x00aa), 0xff);
+}
+
+#[test]
+fn opcode_0xf6_zeropagex_inc() {}
+
+#[test]
+fn opcode_0xee_absolute_inc() {}
+
+#[test]
+fn opcode_0xfe_absolutex_inc() {}
+
+#[test]
 fn opcode_0xe8_implied_inx() {
     // INX
     // INX
@@ -302,6 +350,17 @@ fn opcode_0xe8_implied_inx() {
         |_| {}, &[0xe8, 0xe8, 0xe8, 0xe8, 0xe8, 0x00], 0x8000, 5);
 
     assert_eq!(cpu.reg.x, 0x5);
+}
+
+#[test]
+fn opcode_0xc8_implied_iny() {
+    // INY
+    // INY
+    // BRK
+    let cpu = execute_nsteps(
+        |_| {}, &[0xc8, 0xc8, 0x00], 0x8000, 2);
+
+    assert_eq!(cpu.reg.y, 0x2);
 }
 
 #[test]
