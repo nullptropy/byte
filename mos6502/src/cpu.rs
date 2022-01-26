@@ -5,7 +5,7 @@ use std::cmp::Ordering;
 use std::ops::ControlFlow;
 
 use crate::bus::Bus;
-use crate::opcode::*;
+use crate::opcode::{self, *};
 
 pub const STACK_BASE: u16 = 0x0100;
 
@@ -166,6 +166,7 @@ impl CPU {
             0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldx(opcode),
             0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
+            0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
 
             0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
             0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
@@ -488,6 +489,13 @@ impl CPU {
         }
     }
 
+    fn ora(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.a |= self.bus.read(addr);
+            self.update_nz_flags(self.reg.a);
+        }
+    }
+
     fn pha(&mut self, opcode: &Opcode) {
         self.stack_push(self.reg.a);
     }
@@ -508,7 +516,7 @@ impl CPU {
         self.set_flag(Flags::UNUSED, false);
     }
 
-   fn tax(&mut self, opcode: &Opcode) {
+    fn tax(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.a;
         self.update_nz_flags(self.reg.x);
     }

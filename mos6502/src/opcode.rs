@@ -171,6 +171,15 @@ lazy_static! {
         (0x4e, Opcode::new(0x4e, 3, 6, "LSR", AddressingMode::Absolute, None)),
         (0x5e, Opcode::new(0x5e, 3, 7, "LSR", AddressingMode::AbsoluteX, None)),
 
+        (0x09, Opcode::new(0x09, 2, 2, "ORA", AddressingMode::Immediate, None)),
+        (0x05, Opcode::new(0x05, 2, 3, "ORA", AddressingMode::ZeroPage, None)),
+        (0x15, Opcode::new(0x15, 2, 4, "ORA", AddressingMode::ZeroPageX, None)),
+        (0x0d, Opcode::new(0x0d, 3, 4, "ORA", AddressingMode::Absolute, None)),
+        (0x1d, Opcode::new(0x1d, 3, 4, "ORA", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0x19, Opcode::new(0x19, 3, 4, "ORA", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0x01, Opcode::new(0x01, 2, 6, "ORA", AddressingMode::IndirectX, None)),
+        (0x11, Opcode::new(0x11, 2, 5, "ORA", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
         (0x48, Opcode::new(0x48, 1, 3, "PHA", AddressingMode::Implied, None)),
         (0x08, Opcode::new(0x08, 1, 3, "PHP", AddressingMode::Implied, None)),
         (0x68, Opcode::new(0x68, 1, 4, "PLA", AddressingMode::Implied, None)),

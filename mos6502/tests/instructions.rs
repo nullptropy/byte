@@ -603,6 +603,35 @@ fn opcode_0x4e_absolute_lsr() {}
 fn opcode_0x5e_absolutex_lsr() {}
 
 #[test]
+fn opcode_0x09_immediate_ora() {
+    let cpu = execute_nsteps(
+        |_| {}, &[0x09, 0xff], 0x8000, 1);
+
+    assert_eq!(cpu.reg.a, 0xff);
+}
+
+#[test]
+fn opcode_0x05_zeropage_ora() {}
+
+#[test]
+fn opcode_0x15_zeropagex_ora() {}
+
+#[test]
+fn opcode_0x0d_absolute_ora() {}
+
+#[test]
+fn opcode_0x1d_absolutex_ora() {}
+
+#[test]
+fn opcode_0x19_absolutey_ora() {}
+
+#[test]
+fn opcode_0x01_indirectx_ora() {}
+
+#[test]
+fn opcode_0x11_indirecty_ora() {}
+
+#[test]
 fn opcode_0xea_implied_nop() {}
 
 #[test]
