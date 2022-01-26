@@ -163,6 +163,8 @@ impl CPU {
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0x4c | 0x6c                                           => self.jmp(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
+            0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldx(opcode),
+            0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
             0xc8 => self.iny(opcode), 0x88 => self.dey(opcode),
@@ -443,6 +445,8 @@ impl CPU {
         self.reg.pc = operand;
     }
 
+    // TODO: combine load instructions into one `load` function
+
     fn lda(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a = self.bus.read(addr);
@@ -450,7 +454,21 @@ impl CPU {
         }
     }
 
-    fn tax(&mut self, opcode: &Opcode) {
+    fn ldx(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.x = self.bus.read(addr);
+            self.update_nz_flags(self.reg.x);
+        }
+    }
+
+    fn ldy(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.y = self.bus.read(addr);
+            self.update_nz_flags(self.reg.y);
+        }
+    }
+
+   fn tax(&mut self, opcode: &Opcode) {
         self.reg.x = self.reg.a;
         self.update_nz_flags(self.reg.x);
     }

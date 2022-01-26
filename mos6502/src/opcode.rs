@@ -153,6 +153,18 @@ lazy_static! {
         (0xa1, Opcode::new(0xa1, 2, 6, "LDA", AddressingMode::IndirectX, None)),
         (0xb1, Opcode::new(0xb1, 2, 5, "LDA", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
 
+        (0xa2, Opcode::new(0xa2, 2, 2, "LDX", AddressingMode::Immediate, None)),
+        (0xa6, Opcode::new(0xa6, 2, 3, "LDX", AddressingMode::ZeroPage, None)),
+        (0xb6, Opcode::new(0xb6, 2, 4, "LDX", AddressingMode::ZeroPageY, None)),
+        (0xae, Opcode::new(0xae, 3, 4, "LDX", AddressingMode::Absolute, None)),
+        (0xbe, Opcode::new(0xbe, 3, 4, "LDX", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+
+        (0xa0, Opcode::new(0xa0, 2, 2, "LDY", AddressingMode::Immediate, None)),
+        (0xa4, Opcode::new(0xa4, 2, 3, "LDY", AddressingMode::ZeroPage, None)),
+        (0xb4, Opcode::new(0xb4, 2, 4, "LDY", AddressingMode::ZeroPageX, None)),
+        (0xac, Opcode::new(0xac, 3, 4, "LDY", AddressingMode::Absolute, None)),
+        (0xbc, Opcode::new(0xbc, 3, 4, "LDY", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+
         (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
         (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),

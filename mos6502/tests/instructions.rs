@@ -543,6 +543,46 @@ fn opcode_0xb1_indirecty_lda() {
 }
 
 #[test]
+fn opcode_0xa2_immediate_ldx() {
+    let cpu = execute_nsteps(
+        |_| {}, &[0xa2, 0xff, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.x, 0xff);
+}
+
+#[test]
+fn opcode_0xa6_zeropage_ldx() {}
+
+#[test]
+fn opcode_0xb6_zeropagey_ldx() {}
+
+#[test]
+fn opcode_0xae_absolute_ldx() {}
+
+#[test]
+fn opcode_0xbe_absolutey_ldx() {}
+
+#[test]
+fn opcode_0xa0_immediate_ldy() {
+    let cpu = execute_nsteps(
+        |_| {}, &[0xa0, 0xff, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.y, 0xff);
+}
+
+#[test]
+fn opcode_0xa4_zeropage_ldy() {}
+
+#[test]
+fn opcode_0xb4_zeropagex_ldy() {}
+
+#[test]
+fn opcode_0xac_absolute_ldy() {}
+
+#[test]
+fn opcode_0xbc_absolutex_ldy() {}
+
+#[test]
 fn opcode_0xea_implied_nop() {}
 
 #[test]
