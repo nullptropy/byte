@@ -56,7 +56,7 @@ pub struct CPU {
 impl Registers {
     fn new() -> Self {
         Self {
-            pc: 0, sp: 0xff,
+            pc: 0, sp: 0,
 
             x: 0, y: 0,
             a: 0, p: Flags::default()
@@ -167,6 +167,10 @@ impl CPU {
             0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
 
+            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
+            0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
+            0xc0 | 0xc4 | 0xcc                                    => self.compare(opcode, self.reg.y),
+
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
             0xc8 => self.iny(opcode), 0x88 => self.dey(opcode),
             0xaa => self.tax(opcode), 0x8a => self.txa(opcode),
@@ -181,14 +185,15 @@ impl CPU {
             0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
 
-            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
-            0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
-            0xc0 | 0xc4 | 0xcc                                    => self.compare(opcode, self.reg.y),
-
             0x18 => self.set_flag(Flags::CARRY, false),
             0xd8 => self.set_flag(Flags::DECIMAL, false),
             0x58 => self.set_flag(Flags::INTERRUPT, false),
             0xb8 => self.set_flag(Flags::OVERFLOW, false),
+
+            0x48 => self.pha(opcode),
+            0x08 => self.php(opcode),
+            0x68 => self.pla(opcode),
+            0x28 => self.plp(opcode),
 
             0x20 => self.jsr(opcode),
             0x40 => self.rti(opcode),
@@ -462,6 +467,13 @@ impl CPU {
         }
     }
 
+    fn ldy(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.y = self.bus.read(addr);
+            self.update_nz_flags(self.reg.y);
+        }
+    }
+
     fn lsr(&mut self, opcode: &Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator   => {
@@ -476,11 +488,24 @@ impl CPU {
         }
     }
 
-    fn ldy(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.reg.y = self.bus.read(addr);
-            self.update_nz_flags(self.reg.y);
-        }
+    fn pha(&mut self, opcode: &Opcode) {
+        self.stack_push(self.reg.a);
+    }
+
+    fn php(&mut self, opcode: &Opcode) {
+        self.set_flag(Flags::BREAK, true);
+        self.set_flag(Flags::UNUSED, true);
+        self.stack_push(self.reg.p.bits());
+    }
+
+    fn pla(&mut self, opcode: &Opcode) {
+        self.reg.a = self.stack_pull();
+    }
+
+    fn plp(&mut self, opcode: &Opcode) {
+        self.reg.p.bits = self.stack_pull();
+        self.set_flag(Flags::BREAK, false);
+        self.set_flag(Flags::UNUSED, false);
     }
 
    fn tax(&mut self, opcode: &Opcode) {

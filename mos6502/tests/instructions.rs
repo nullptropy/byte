@@ -606,6 +606,43 @@ fn opcode_0x5e_absolutex_lsr() {}
 fn opcode_0xea_implied_nop() {}
 
 #[test]
+fn opcode_0x48_implied_pha() {
+    let mut cpu = execute_nsteps(
+        |cpu| cpu.reg.a = 0xff, &[0x48, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.stack_pull(), 0xff);
+}
+
+#[test]
+fn opcode_0x08_implied_php() {
+    let mut cpu = execute_nsteps(
+        |cpu| cpu.reg.p.insert(Flags::CARRY), &[0x08, 0x00], 0x8000, 1);
+
+    assert!(Flags::from_bits(cpu.stack_pull()).unwrap().contains(Flags::CARRY));
+}
+
+#[test]
+fn opcode_0x68_implied_pla() {
+    let cpu = execute_nsteps(
+        |cpu| {
+            cpu.reg.sp = 0xff;
+            cpu.stack_push(0xff);
+        }, &[0x68, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.a, 0xff);
+}
+
+#[test]
+fn opcode_0x28_implied_plp() {
+    let cpu = execute_nsteps(|cpu| {
+        cpu.reg.sp = 0xff;
+        cpu.stack_push(0b1111_1111);
+    }, &[0x28, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.p.bits(), 0b1100_1111);
+}
+
+#[test]
 fn opcode_0x40_implied_rti() {
     // BRK      ; 0xfffe: 0x8003
     // NOP
@@ -637,7 +674,10 @@ fn opcode_0x20_absolute_jsr() {
     // JSR $0001 ; 0x0001: 0x8003
     // NOP       ; 0x8003
     let cpu = execute_nsteps(
-        |cpu| cpu.bus.write_u16(0x0001, 0x8003), &[0x20, 0x01, 0x00, 0xea], 0x8000, 1);
+        |cpu| {
+            cpu.reg.sp = 0xff;  // initialize the stack pointer
+            cpu.bus.write_u16(0x0001, 0x8003);
+        }, &[0x20, 0x01, 0x00, 0xea], 0x8000, 1);
 
     assert_eq!(cpu.reg.sp, 0x00fd);
     assert_eq!(cpu.reg.pc, 0x8003);
