@@ -324,6 +324,37 @@ fn opcode_0x88_implied_dey() {
 }
 
 #[test]
+fn opcode_0x49_immediate_eor() {
+    // CMP #$ff
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.a = 0b00111100, &[0x49, 0xff, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.a, 0b11000011);
+}
+
+#[test]
+fn opcode_0x45_zeropage_eor() {}
+
+#[test]
+fn opcode_0x55_zeropagex_eor() {}
+
+#[test]
+fn opcode_0x4d_absolute_eor() {}
+
+#[test]
+fn opcode_0x5d_absolutex_eor() {}
+
+#[test]
+fn opcode_0x59_absolutey_eor() {}
+
+#[test]
+fn opcode_0x41_indirectx_eor() {}
+
+#[test]
+fn opcode_0x51_indirecty_eor() {}
+
+#[test]
 fn opcode_0xe6_zeropage_inc() {
     // INC $aa
     // BRK

@@ -159,6 +159,7 @@ impl CPU {
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
             0x24 | 0x2c                                           => self.bit(opcode),
             0xc6 | 0xd6 | 0xce | 0xde                             => self.dec(opcode),
+            0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51 => self.eor(opcode),
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
 
@@ -373,7 +374,6 @@ impl CPU {
     fn compare(&mut self, opcode: &Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
-            eprintln!("{:x},{:x}, {}", reg, operand, (reg.wrapping_sub(operand)) as i8);
 
             self.set_flag(Flags::CARRY, reg <= operand);
             self.update_nz_flags(reg.wrapping_sub(operand));
@@ -396,6 +396,13 @@ impl CPU {
     fn dey(&mut self, opcode: &Opcode) {
         self.reg.y = self.reg.y.wrapping_sub(1);
         self.update_nz_flags(self.reg.y);
+    }
+
+    fn eor(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.a ^= self.bus.read(addr);
+            self.update_nz_flags(self.reg.a);
+        }
     }
 
     fn inc(&mut self, opcode: &Opcode) {

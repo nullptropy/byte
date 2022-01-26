@@ -122,6 +122,15 @@ lazy_static! {
         (0xca, Opcode::new(0xca, 1, 2, "DEX", AddressingMode::Implied, None)),
         (0x88, Opcode::new(0x88, 1, 2, "DEY", AddressingMode::Implied, None)),
 
+        (0x49, Opcode::new(0x49, 2, 2, "EOR", AddressingMode::Immediate, None)),
+        (0x45, Opcode::new(0x45, 2, 3, "EOR", AddressingMode::ZeroPage, None)),
+        (0x55, Opcode::new(0x55, 2, 4, "EOR", AddressingMode::ZeroPageX, None)),
+        (0x4d, Opcode::new(0x4d, 3, 4, "EOR", AddressingMode::Absolute, None)),
+        (0x5d, Opcode::new(0x5d, 3, 4, "EOR", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0x59, Opcode::new(0x59, 3, 4, "EOR", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0x41, Opcode::new(0x41, 2, 6, "EOR", AddressingMode::IndirectX, None)),
+        (0x51, Opcode::new(0x51, 2, 5, "EOR", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
         (0xe6, Opcode::new(0xe6, 2, 5, "INC", AddressingMode::ZeroPage, None)),
         (0xf6, Opcode::new(0xf6, 2, 6, "INC", AddressingMode::ZeroPageX, None)),
         (0xee, Opcode::new(0xee, 3, 6, "INC", AddressingMode::Absolute, None)),
