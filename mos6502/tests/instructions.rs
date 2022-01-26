@@ -399,6 +399,40 @@ fn opcode_0xc8_implied_iny() {
 }
 
 #[test]
+fn opcode_0x4c_absolute_jmp() {
+    // JMP $dead ; absolute jump
+    // BRK
+    let cpu = execute_nsteps(
+        |_| {}, &[0x4c, 0xad, 0xde, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.pc, 0xdead);
+}
+
+#[test]
+fn opcode_0x6c_indirect_jmp() {
+    // JMP $dead ; indirect jump
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write_u16(0xdead, 0xbeef), &[0x6c, 0xad, 0xde, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.pc, 0xbeef);
+}
+
+#[test]
+fn opcode_0x6c_indirect_jmp_bug() {
+    // JMP $ccff ; indirect jump
+    // BRK
+    let cpu = execute_nsteps(
+        |cpu| {
+            cpu.bus.write(0xcc00, 0xde);
+            cpu.bus.write_u16(0xccff, 0xdead);
+        },
+        &[0x6c, 0xff, 0xcc], 0x8000, 1);
+
+    assert_eq!(cpu.reg.pc, 0xdead);
+}
+
+#[test]
 fn opcode_0xa9_immediate_lda() {
     // LDA #$ff
     // BRK

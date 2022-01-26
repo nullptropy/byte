@@ -139,6 +139,11 @@ lazy_static! {
         (0xe8, Opcode::new(0xe8, 1, 2, "INX", AddressingMode::Implied, None)),
         (0xc8, Opcode::new(0xc8, 1, 2, "INY", AddressingMode::Implied, None)),
 
+        (0x4c, Opcode::new(0x4c, 3, 3, "JMP", AddressingMode::Absolute, None)),
+        (0x6c, Opcode::new(0x6c, 3, 5, "JMP", AddressingMode::Indirect, None)),
+
+        (0x20, Opcode::new(0x20, 3, 6, "JSR", AddressingMode::Absolute, None)),
+
         (0xa9, Opcode::new(0xa9, 2, 2, "LDA", AddressingMode::Immediate, None)),
         (0xa5, Opcode::new(0xa5, 2, 3, "LDA", AddressingMode::ZeroPage, None)),
         (0xb5, Opcode::new(0xb5, 2, 4, "LDA", AddressingMode::ZeroPageX, None)),
@@ -152,8 +157,6 @@ lazy_static! {
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
         (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
         (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
-
-        (0x20, Opcode::new(0x20, 3, 6, "JSR", AddressingMode::Absolute, None)),
 
         (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
         (0x60, Opcode::new(0x60, 1, 6, "RTS", AddressingMode::Implied, None)),

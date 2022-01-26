@@ -161,6 +161,7 @@ impl CPU {
             0xc6 | 0xd6 | 0xce | 0xde                             => self.dec(opcode),
             0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51 => self.eor(opcode),
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
+            0x4c | 0x6c                                           => self.jmp(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
@@ -421,6 +422,25 @@ impl CPU {
     fn iny(&mut self, opcode: &Opcode) {
         self.reg.y = self.reg.y.wrapping_add(1);
         self.update_nz_flags(self.reg.y);
+    }
+
+    fn jmp(&mut self, opcode: &Opcode) {
+        let operand = self.bus.read_u16(self.reg.pc);
+
+        if opcode.code == 0x6c {
+            if operand & 0xff != 0xff {
+                return { self.reg.pc = self.bus.read_u16(operand); };
+            }
+
+            // 6502 indirect jump bug
+
+            let lo = self.bus.read(operand) as u16;
+            let hi = self.bus.read(operand & 0xff00) as u16;
+
+            return { self.reg.pc = (hi << 8) | lo; };
+        }
+
+        self.reg.pc = operand;
     }
 
     fn lda(&mut self, opcode: &Opcode) {
