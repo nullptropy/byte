@@ -585,13 +585,20 @@ fn opcode_0xbc_absolutex_ldy() {}
 #[test]
 fn opcode_0x4a_accumulator_lsr() {
     let cpu = execute_nsteps(
-        |cpu| cpu.reg.a = 0x80, &[0x4a, 0x00], 0x8000, 1);
+        |cpu| cpu.reg.a = 0x81, &[0x4a, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.a, 0x40);
+    assert!(cpu.reg.a == 0x40);
+    assert!(cpu.reg.p.contains(Flags::CARRY));
 }
 
 #[test]
-fn opcode_0x46_zeropage_lsr() {}
+fn opcode_0x46_zeropage_lsr() {
+    let cpu = execute_nsteps(
+        |cpu| cpu.bus.write(0xde, 0xad), &[0x46, 0xde, 0x00], 0x8000, 1);
+
+    assert!(cpu.bus.read(0xde) == 0xadu8.wrapping_shr(1));
+    assert!(cpu.reg.p.contains(Flags::CARRY));
+}
 
 #[test]
 fn opcode_0x56_zeropagex_lsr() {}

@@ -478,13 +478,16 @@ impl CPU {
     fn lsr(&mut self, opcode: &Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator   => {
+                self.set_flag(Flags::CARRY, self.reg.a & 0x1 != 0);
                 self.reg.a = self.reg.a.wrapping_shr(1);
-                self.update_nz_flags(self.reg.a);
+                self.set_flag(Flags::ZERO, self.reg.a == 0);
             },
             Operand::Address(addr) => {
-                let data = self.bus.read(addr).wrapping_shr(1);
+                let mut data = self.bus.read(addr);
+                self.set_flag(Flags::CARRY, data & 0x1 != 0);
+                data = data.wrapping_shr(1);
                 self.bus.write(addr, data);
-                self.update_nz_flags(data);
+                self.set_flag(Flags::ZERO, data == 0);
             }
         }
     }
