@@ -165,6 +165,7 @@ impl CPU {
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
             0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldx(opcode),
             0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
+            0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
 
             0xe8 => self.inx(opcode), 0xca => self.dex(opcode),
             0xc8 => self.iny(opcode), 0x88 => self.dey(opcode),
@@ -458,6 +459,20 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.x = self.bus.read(addr);
             self.update_nz_flags(self.reg.x);
+        }
+    }
+
+    fn lsr(&mut self, opcode: &Opcode) {
+        match self.get_operand(opcode) {
+            Operand::Accumulator   => {
+                self.reg.a = self.reg.a.wrapping_shr(1);
+                self.update_nz_flags(self.reg.a);
+            },
+            Operand::Address(addr) => {
+                let data = self.bus.read(addr).wrapping_shr(1);
+                self.bus.write(addr, data);
+                self.update_nz_flags(data);
+            }
         }
     }
 

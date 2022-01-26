@@ -583,6 +583,26 @@ fn opcode_0xac_absolute_ldy() {}
 fn opcode_0xbc_absolutex_ldy() {}
 
 #[test]
+fn opcode_0x4a_accumulator_lsr() {
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.a = 0x80, &[0x4a, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.a, 0x40);
+}
+
+#[test]
+fn opcode_0x46_zeropage_lsr() {}
+
+#[test]
+fn opcode_0x56_zeropagex_lsr() {}
+
+#[test]
+fn opcode_0x4e_absolute_lsr() {}
+
+#[test]
+fn opcode_0x5e_absolutex_lsr() {}
+
+#[test]
 fn opcode_0xea_implied_nop() {}
 
 #[test]
