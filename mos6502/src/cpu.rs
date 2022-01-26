@@ -158,9 +158,6 @@ impl CPU {
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
             0x24 | 0x2c                                           => self.bit(opcode),
-            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.cmp(opcode, self.reg.a),
-            0xe0 | 0xe4 | 0xec                                    => self.cmp(opcode, self.reg.x),
-            0xc0 | 0xc4 | 0xcc                                    => self.cmp(opcode, self.reg.y),
             0xc6 | 0xd6 | 0xce | 0xde                             => self.dec(opcode),
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
@@ -178,6 +175,10 @@ impl CPU {
             0x30 => self.branch(opcode,  self.reg.p.contains(Flags::NEGATIVE)),
             0x70 => self.branch(opcode,  self.reg.p.contains(Flags::OVERFLOW)),
             0x50 => self.branch(opcode, !self.reg.p.contains(Flags::OVERFLOW)),
+
+            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
+            0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
+            0xc0 | 0xc4 | 0xcc                                    => self.compare(opcode, self.reg.y),
 
             0x18 => self.set_flag(Flags::CARRY, false),
             0xd8 => self.set_flag(Flags::DECIMAL, false),
@@ -369,7 +370,7 @@ impl CPU {
         }
     }
 
-    fn cmp(&mut self, opcode: &Opcode, reg: u8) {
+    fn compare(&mut self, opcode: &Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
             eprintln!("{:x},{:x}, {}", reg, operand, (reg.wrapping_sub(operand)) as i8);

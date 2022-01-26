@@ -222,8 +222,10 @@ fn opcode_0xb8_implied_clv() {
 
 #[test]
 fn opcode_0xc9_immediate_cmp() {
+    // CMP #$aa
+    // BRK
     let cpu = execute_nsteps(
-        |cpu| cpu.reg.a = 0xaa, &[0xc9, 0xaa], 0x8000, 1);
+        |cpu| cpu.reg.a = 0xaa, &[0xc9, 0xaa, 0x00], 0x8000, 1);
 
     assert!(cpu.reg.p.contains(Flags::CARRY));
     assert!(cpu.reg.p.contains(Flags::ZERO));
@@ -231,6 +233,8 @@ fn opcode_0xc9_immediate_cmp() {
 
 #[test]
 fn opcode_0xc5_zeropage_cmp() {
+    // CMP $4a
+    // BRK
     let cpu = execute_nsteps(
         |cpu| {
             cpu.reg.a = 0xca;
