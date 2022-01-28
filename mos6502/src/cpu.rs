@@ -165,13 +165,16 @@ impl CPU {
             0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51 => self.eor(opcode),
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0x4c | 0x6c                                           => self.jmp(opcode),
-            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
-            0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldx(opcode),
-            0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
+            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.ldr(opcode),
+            0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldr(opcode),
+            0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldr(opcode),
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
             0x6a | 0x66 | 0x76 | 0x6e | 0x7e                      => self.ror(opcode),
+            0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(&opcode),
+            0x86 | 0x96 | 0x8e                                    => self.str(&opcode),
+            0x84 | 0x94 | 0x8c                                    => self.str(&opcode),
 
             0x00 => self.interrupt(Interrupt::BRK),
 
@@ -477,26 +480,19 @@ impl CPU {
         self.reg.pc = operand;
     }
 
-    // TODO: combine load instructions into one `load` function
-
-    fn lda(&mut self, opcode: &Opcode) {
+    fn ldr(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.reg.a = self.bus.read(addr);
-            self.update_nz_flags(self.reg.a);
-        }
-    }
+            let byte = self.bus.read(addr);
 
-    fn ldx(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.reg.x = self.bus.read(addr);
-            self.update_nz_flags(self.reg.x);
-        }
-    }
+            match opcode.name {
+                "LDA" => self.reg.a = byte,
+                "LDX" => self.reg.x = byte,
+                "LDY" => self.reg.y = byte,
 
-    fn ldy(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.reg.y = self.bus.read(addr);
-            self.update_nz_flags(self.reg.y);
+                _ => panic!("making the compiler happy")
+            };
+
+            self.update_nz_flags(byte);
         }
     }
 
@@ -606,6 +602,20 @@ impl CPU {
 
     fn rts(&mut self, opcode: &Opcode) {
         self.reg.pc = self.stack_pull_u16();
+    }
+
+    fn str(&mut self, opcode: &Opcode) {
+        let byte = match opcode.name {
+            "STA" => self.reg.a,
+            "STX" => self.reg.x,
+            "STY" => self.reg.y,
+
+            _ => panic!("making the compiler happy"),
+        };
+
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.bus.write(addr, byte);
+        }
     }
 
     fn tax(&mut self, opcode: &Opcode) {

@@ -169,6 +169,8 @@ lazy_static! {
         (0x4e, Opcode::new(0x4e, 3, 6, "LSR", AddressingMode::Absolute, None)),
         (0x5e, Opcode::new(0x5e, 3, 7, "LSR", AddressingMode::AbsoluteX, None)),
 
+        (0xea, Opcode::new(0xea, 1, 2, "NOP", AddressingMode::Implied, None)),
+
         (0x09, Opcode::new(0x09, 2, 2, "ORA", AddressingMode::Immediate, None)),
         (0x05, Opcode::new(0x05, 2, 3, "ORA", AddressingMode::ZeroPage, None)),
         (0x15, Opcode::new(0x15, 2, 4, "ORA", AddressingMode::ZeroPageX, None)),
@@ -195,9 +197,28 @@ lazy_static! {
         (0x6e, Opcode::new(0x6e, 3, 6, "ROR", AddressingMode::Absolute, None)),
         (0x7e, Opcode::new(0x7e, 3, 7, "ROR", AddressingMode::AbsoluteX, None)),
 
+        (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
+        (0x60, Opcode::new(0x60, 1, 6, "RTS", AddressingMode::Implied, None)),
+
         (0x38, Opcode::new(0x38, 1, 2, "SEC", AddressingMode::Implied, None)),
         (0xf8, Opcode::new(0xf8, 1, 2, "SED", AddressingMode::Implied, None)),
         (0x78, Opcode::new(0x78, 1, 2, "SEI", AddressingMode::Implied, None)),
+
+        (0x85, Opcode::new(0x85, 2, 3, "STA", AddressingMode::ZeroPage, None)),
+        (0x95, Opcode::new(0x95, 2, 4, "STA", AddressingMode::ZeroPageX, None)),
+        (0x8d, Opcode::new(0x8d, 3, 4, "STA", AddressingMode::Absolute, None)),
+        (0x9d, Opcode::new(0x9d, 3, 5, "STA", AddressingMode::AbsoluteX, None)),
+        (0x99, Opcode::new(0x99, 3, 5, "STA", AddressingMode::AbsoluteY, None)),
+        (0x81, Opcode::new(0x81, 2, 6, "STA", AddressingMode::IndirectX, None)),
+        (0x91, Opcode::new(0x91, 2, 6, "STA", AddressingMode::IndirectY, None)),
+
+        (0x86, Opcode::new(0x86, 2, 3, "STX", AddressingMode::ZeroPage, None)),
+        (0x96, Opcode::new(0x96, 2, 4, "STX", AddressingMode::ZeroPageY, None)),
+        (0x8e, Opcode::new(0x8e, 3, 4, "STX", AddressingMode::Absolute, None)),
+
+        (0x84, Opcode::new(0x84, 2, 3, "STY", AddressingMode::ZeroPage, None)),
+        (0x94, Opcode::new(0x94, 2, 4, "STY", AddressingMode::ZeroPageX, None)),
+        (0x8c, Opcode::new(0x8c, 3, 4, "STY", AddressingMode::Absolute, None)),
 
         (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
@@ -205,10 +226,5 @@ lazy_static! {
         (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
         (0x9a, Opcode::new(0x9a, 1, 2, "TXS", AddressingMode::Implied, None)),
         (0xba, Opcode::new(0xba, 1, 2, "TSX", AddressingMode::Implied, None)),
-
-        (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
-        (0x60, Opcode::new(0x60, 1, 6, "RTS", AddressingMode::Implied, None)),
-
-        (0xea, Opcode::new(0xea, 1, 2, "NOP", AddressingMode::Implied, None)),
     ]);
 }
