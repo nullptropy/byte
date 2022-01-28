@@ -61,8 +61,6 @@ impl Opcode {
 
 lazy_static! {
     pub static ref OPCODE_MAP: HashMap<u8, Opcode> = HashMap::from([
-        (0x00, Opcode::new(0x00, 1, 7, "BRK", AddressingMode::Implied, None)),
-
         (0x29, Opcode::new(0x29, 2, 2, "AND", AddressingMode::Immediate, None)),
         (0x25, Opcode::new(0x25, 2, 3, "AND", AddressingMode::ZeroPage, None)),
         (0x35, Opcode::new(0x35, 2, 4, "AND", AddressingMode::ZeroPageX, None)),
@@ -196,6 +194,10 @@ lazy_static! {
         (0x76, Opcode::new(0x76, 2, 6, "ROR", AddressingMode::ZeroPageX, None)),
         (0x6e, Opcode::new(0x6e, 3, 6, "ROR", AddressingMode::Absolute, None)),
         (0x7e, Opcode::new(0x7e, 3, 7, "ROR", AddressingMode::AbsoluteX, None)),
+
+        (0x38, Opcode::new(0x38, 1, 2, "SEC", AddressingMode::Implied, None)),
+        (0xf8, Opcode::new(0xf8, 1, 2, "SED", AddressingMode::Implied, None)),
+        (0x78, Opcode::new(0x78, 1, 2, "SEI", AddressingMode::Implied, None)),
 
         (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
