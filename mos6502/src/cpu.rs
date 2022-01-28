@@ -213,6 +213,8 @@ impl CPU {
             0x8a => self.txa(opcode),
             0xa8 => self.tay(opcode),
             0x98 => self.tya(opcode),
+            0xba => self.tsx(opcode),
+            0x9a => self.txs(opcode),
 
             0xea => {},
 
@@ -449,6 +451,13 @@ impl CPU {
         self.update_nz_flags(self.reg.y);
     }
 
+    fn jsr(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.stack_push_u16(self.reg.pc.wrapping_add(2));
+            self.reg.pc = self.bus.read_u16(addr);
+        }
+    }
+
     fn jmp(&mut self, opcode: &Opcode) {
         let operand = self.bus.read_u16(self.reg.pc);
 
@@ -518,6 +527,26 @@ impl CPU {
         }
     }
 
+    fn pha(&mut self, opcode: &Opcode) {
+        self.stack_push(self.reg.a);
+    }
+
+    fn php(&mut self, opcode: &Opcode) {
+        self.set_flag(Flags::BREAK, true);
+        self.set_flag(Flags::UNUSED, true);
+        self.stack_push(self.reg.p.bits());
+    }
+
+    fn pla(&mut self, opcode: &Opcode) {
+        self.reg.a = self.stack_pull();
+    }
+
+    fn plp(&mut self, opcode: &Opcode) {
+        self.reg.p.bits = self.stack_pull();
+        self.set_flag(Flags::BREAK, false);
+        self.set_flag(Flags::UNUSED, false);
+    }
+
     #[inline]
     fn _rol(&mut self, value: u8) -> u8 {
         let result = value
@@ -568,24 +597,15 @@ impl CPU {
         }
     }
 
-    fn pha(&mut self, opcode: &Opcode) {
-        self.stack_push(self.reg.a);
-    }
-
-    fn php(&mut self, opcode: &Opcode) {
-        self.set_flag(Flags::BREAK, true);
-        self.set_flag(Flags::UNUSED, true);
-        self.stack_push(self.reg.p.bits());
-    }
-
-    fn pla(&mut self, opcode: &Opcode) {
-        self.reg.a = self.stack_pull();
-    }
-
-    fn plp(&mut self, opcode: &Opcode) {
+    fn rti(&mut self, opcode: &Opcode) {
         self.reg.p.bits = self.stack_pull();
-        self.set_flag(Flags::BREAK, false);
-        self.set_flag(Flags::UNUSED, false);
+        self.reg.pc = self.stack_pull_u16();
+
+        self.reg.p.remove(Flags::BREAK);
+    }
+
+    fn rts(&mut self, opcode: &Opcode) {
+        self.reg.pc = self.stack_pull_u16();
     }
 
     fn tax(&mut self, opcode: &Opcode) {
@@ -608,21 +628,12 @@ impl CPU {
         self.update_nz_flags(self.reg.a);
     }
 
-    fn jsr(&mut self, opcode: &Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.stack_push_u16(self.reg.pc.wrapping_add(2));
-            self.reg.pc = self.bus.read_u16(addr);
-        }
+    fn tsx(&mut self, opcode: &Opcode) {
+        self.reg.x = self.reg.sp;
+        self.update_nz_flags(self.reg.x);
     }
 
-    fn rti(&mut self, opcode: &Opcode) {
-        self.reg.p.bits = self.stack_pull();
-        self.reg.pc = self.stack_pull_u16();
-
-        self.reg.p.remove(Flags::BREAK);
-    }
-
-    fn rts(&mut self, opcode: &Opcode) {
-        self.reg.pc = self.stack_pull_u16();
+    fn txs(&mut self, opcode: &Opcode) {
+        self.reg.sp = self.reg.x;
     }
 }

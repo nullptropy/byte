@@ -807,3 +807,19 @@ fn opcode_0x98_implied_tya() {
 
     assert_eq!(cpu.reg.a, 0x5);
 }
+
+#[test]
+fn opcode_0xba_implied_tsx() {
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.sp = 0xde, &[0xba, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.x, 0xde);
+}
+
+#[test]
+fn opcode_0x9a_implied_txs() {
+    let cpu = execute_nsteps(
+        |cpu| cpu.reg.x = 0xad, &[0x9a, 0x00], 0x8000, 1);
+
+    assert_eq!(cpu.reg.sp, 0xad);
+}

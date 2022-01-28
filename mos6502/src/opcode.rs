@@ -203,6 +203,8 @@ lazy_static! {
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
         (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
         (0x98, Opcode::new(0x98, 1, 2, "TYA", AddressingMode::Implied, None)),
+        (0x9a, Opcode::new(0x9a, 1, 2, "TXS", AddressingMode::Implied, None)),
+        (0xba, Opcode::new(0xba, 1, 2, "TSX", AddressingMode::Implied, None)),
 
         (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
         (0x60, Opcode::new(0x60, 1, 6, "RTS", AddressingMode::Implied, None)),
