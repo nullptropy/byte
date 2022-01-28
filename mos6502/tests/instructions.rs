@@ -679,6 +679,30 @@ fn opcode_0x28_implied_plp() {
 }
 
 #[test]
+fn opcode_0x2a_accumulator_rol() {
+    let cpu = execute_nsteps(|cpu| {
+        cpu.set_flag(Flags::CARRY, true);
+        cpu.reg.a = 0x88;
+    },
+    &[0x2a, 0x00], 0x8000, 1);
+
+    assert!(cpu.reg.a == 0x11);
+    assert!(cpu.reg.p.contains(Flags::CARRY));
+}
+
+#[test]
+fn opcode_0x26_zeropage_rol() {}
+
+#[test]
+fn opcode_0x36_zeropagex_rol() {}
+
+#[test]
+fn opcode_0x2e_absolute_rol() {}
+
+#[test]
+fn opcode_0x3e_absolutex_rol() {}
+
+#[test]
 fn opcode_0x40_implied_rti() {
     // BRK      ; 0xfffe: 0x8003
     // NOP

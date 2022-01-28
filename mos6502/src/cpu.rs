@@ -2,7 +2,7 @@ use bitflags::bitflags;
 
 use core::fmt;
 use std::cmp::Ordering;
-use std::ops::ControlFlow;
+use std::ops::{ControlFlow, BitAnd};
 
 use crate::bus::Bus;
 use crate::opcode::{self, *};
@@ -167,6 +167,7 @@ impl CPU {
             0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
+            0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
 
             0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
             0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
@@ -496,6 +497,29 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a |= self.bus.read(addr);
             self.update_nz_flags(self.reg.a);
+        }
+    }
+
+    #[inline]
+    fn _rol(&mut self, value: u8) -> u8 {
+        let carry = self.reg.p.contains(Flags::CARRY);
+        let result = (value.rotate_left(1) & 0xfe) | carry as u8;
+
+        self.set_flag(Flags::CARRY, value >> 7 != 0);
+        self.update_nz_flags(result);
+
+        result
+    }
+
+    fn rol(&mut self, opcode: &Opcode) {
+        match self.get_operand(opcode) {
+            Operand::Accumulator => {
+                self.reg.a = self._rol(self.reg.a);
+            },
+            Operand::Address(addr) => {
+                let byte = self._rol(self.bus.read(addr));
+                self.bus.write(addr, byte);
+            }
         }
     }
 

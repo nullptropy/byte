@@ -185,6 +185,12 @@ lazy_static! {
         (0x68, Opcode::new(0x68, 1, 4, "PLA", AddressingMode::Implied, None)),
         (0x28, Opcode::new(0x28, 1, 4, "PLP", AddressingMode::Implied, None)),
 
+        (0x2a, Opcode::new(0x2a, 1, 2, "ROL", AddressingMode::Accumulator, None)),
+        (0x26, Opcode::new(0x26, 2, 5, "ROL", AddressingMode::ZeroPage, None)),
+        (0x36, Opcode::new(0x36, 2, 6, "ROL", AddressingMode::ZeroPageX, None)),
+        (0x2e, Opcode::new(0x2e, 3, 6, "ROL", AddressingMode::Absolute, None)),
+        (0x3e, Opcode::new(0x3e, 3, 7, "ROL", AddressingMode::AbsoluteX, None)),
+
         (0xaa, Opcode::new(0xaa, 1, 2, "TAX", AddressingMode::Implied, None)),
         (0x8a, Opcode::new(0x8a, 1, 2, "TXA", AddressingMode::Implied, None)),
         (0xa8, Opcode::new(0xa8, 1, 2, "TAY", AddressingMode::Implied, None)),
