@@ -2,7 +2,7 @@ use bitflags::bitflags;
 
 use core::fmt;
 use std::cmp::Ordering;
-use std::ops::{ControlFlow, BitAnd};
+use std::ops::{ControlFlow, BitAnd, BitOr};
 
 use crate::bus::Bus;
 use crate::opcode::{self, *};
@@ -168,6 +168,7 @@ impl CPU {
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
+            0x6a | 0x66 | 0x76 | 0x6e | 0x7e                      => self.ror(opcode),
 
             0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
             0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
@@ -507,8 +508,10 @@ impl CPU {
 
     #[inline]
     fn _rol(&mut self, value: u8) -> u8 {
-        let carry = self.reg.p.contains(Flags::CARRY);
-        let result = (value.rotate_left(1) & 0xfe) | carry as u8;
+        let result = value
+            .rotate_left(1)
+            .bitand(0xfe)
+            .bitor(self.reg.p.contains(Flags::CARRY) as u8);
 
         self.set_flag(Flags::CARRY, value >> 7 != 0);
         self.update_nz_flags(result);
@@ -523,6 +526,31 @@ impl CPU {
             },
             Operand::Address(addr) => {
                 let byte = self._rol(self.bus.read(addr));
+                self.bus.write(addr, byte);
+            }
+        }
+    }
+
+    #[inline]
+    fn _ror(&mut self, value: u8) -> u8 {
+        let result = value
+            .rotate_right(1)
+            .bitand(0x7f)
+            .bitor((self.reg.p.contains(Flags::CARRY) as u8) << 7);
+
+        self.set_flag(Flags::CARRY, value & 0x1 != 0);
+        self.update_nz_flags(result);
+
+        result
+    }
+
+    fn ror(&mut self, opcode: &Opcode) {
+        match self.get_operand(opcode) {
+            Operand::Accumulator => {
+                self.reg.a = self._ror(self.reg.a);
+            },
+            Operand::Address(addr) => {
+                let byte = self._ror(self.bus.read(addr));
                 self.bus.write(addr, byte);
             }
         }
