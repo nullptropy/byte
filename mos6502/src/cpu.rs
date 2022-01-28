@@ -333,20 +333,22 @@ impl CPU {
         }
     }
 
+    #[inline]
+    fn _asl(&mut self, value: u8) -> u8 {
+        self.set_flag(Flags::CARRY, value >> 7 == 1);
+        let result = value.wrapping_shl(1);
+        self.update_nz_flags(result);
+        result
+    }
+
     fn asl(&mut self, opcode: &Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
-                self.set_flag(Flags::CARRY, self.reg.a >> 7 == 1);
-                self.reg.a = self.reg.a.wrapping_shl(1);
-                self.update_nz_flags(self.reg.a);
+                self.reg.a = self._asl(self.reg.a);
             },
             Operand::Address(addr) => {
-                let mut data = self.bus.read(addr);
-                self.set_flag(Flags::CARRY, data >> 7 == 1);
-
-                data = data.wrapping_shl(1);
-                self.bus.write(addr, data);
-                self.update_nz_flags(data);
+                let byte = self._asl(self.bus.read(addr));
+                self.bus.write(addr, byte);
             }
         }
     }
@@ -476,19 +478,22 @@ impl CPU {
         }
     }
 
+    #[inline]
+    fn _lsr(&mut self, value: u8) -> u8 {
+        self.set_flag(Flags::CARRY, value & 0x1 != 0);
+        let result = value.wrapping_shr(1);
+        self.set_flag(Flags::ZERO, value == 0);
+        result
+    }
+
     fn lsr(&mut self, opcode: &Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator   => {
-                self.set_flag(Flags::CARRY, self.reg.a & 0x1 != 0);
-                self.reg.a = self.reg.a.wrapping_shr(1);
-                self.set_flag(Flags::ZERO, self.reg.a == 0);
+                self.reg.a = self._lsr(self.reg.a);
             },
             Operand::Address(addr) => {
-                let mut data = self.bus.read(addr);
-                self.set_flag(Flags::CARRY, data & 0x1 != 0);
-                data = data.wrapping_shr(1);
-                self.bus.write(addr, data);
-                self.set_flag(Flags::ZERO, data == 0);
+                let byte = self._lsr(self.bus.read(addr));
+                self.bus.write(addr, byte);
             }
         }
     }
