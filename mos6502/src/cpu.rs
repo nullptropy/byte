@@ -1,11 +1,10 @@
 use bitflags::bitflags;
 
 use core::fmt;
-use std::cmp::Ordering;
 use std::ops::{ControlFlow, BitAnd, BitOr};
 
 use crate::bus::Bus;
-use crate::opcode::{self, *};
+use crate::opcode::*;
 
 pub const STACK_BASE: u16 = 0x0100;
 
@@ -172,9 +171,9 @@ impl CPU {
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
             0x6a | 0x66 | 0x76 | 0x6e | 0x7e                      => self.ror(opcode),
-            0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(&opcode),
-            0x86 | 0x96 | 0x8e                                    => self.str(&opcode),
-            0x84 | 0x94 | 0x8c                                    => self.str(&opcode),
+            0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(opcode),
+            0x86 | 0x96 | 0x8e                                    => self.str(opcode),
+            0x84 | 0x94 | 0x8c                                    => self.str(opcode),
 
             0x00 => self.interrupt(Interrupt::BRK),
 
@@ -419,12 +418,12 @@ impl CPU {
         }
     }
 
-    fn dex(&mut self, opcode: &Opcode) {
+    fn dex(&mut self, _opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_sub(1);
         self.update_nz_flags(self.reg.x);
     }
 
-    fn dey(&mut self, opcode: &Opcode) {
+    fn dey(&mut self, _opcode: &Opcode) {
         self.reg.y = self.reg.y.wrapping_sub(1);
         self.update_nz_flags(self.reg.y);
     }
@@ -444,12 +443,12 @@ impl CPU {
         }
     }
 
-    fn inx(&mut self, opcode: &Opcode) {
+    fn inx(&mut self, _opcode: &Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
         self.update_nz_flags(self.reg.x);
     }
 
-    fn iny(&mut self, opcode: &Opcode) {
+    fn iny(&mut self, _opcode: &Opcode) {
         self.reg.y = self.reg.y.wrapping_add(1);
         self.update_nz_flags(self.reg.y);
     }
@@ -485,11 +484,9 @@ impl CPU {
             let byte = self.bus.read(addr);
 
             match opcode.name {
-                "LDA" => self.reg.a = byte,
-                "LDX" => self.reg.x = byte,
-                "LDY" => self.reg.y = byte,
-
-                _ => panic!("making the compiler happy")
+                "LDA"     => self.reg.a = byte,
+                "LDX"     => self.reg.x = byte,
+                "LDY" | _ => self.reg.y = byte,
             };
 
             self.update_nz_flags(byte);
@@ -523,21 +520,21 @@ impl CPU {
         }
     }
 
-    fn pha(&mut self, opcode: &Opcode) {
+    fn pha(&mut self, _opcode: &Opcode) {
         self.stack_push(self.reg.a);
     }
 
-    fn php(&mut self, opcode: &Opcode) {
+    fn php(&mut self, _opcode: &Opcode) {
         self.set_flag(Flags::BREAK, true);
         self.set_flag(Flags::UNUSED, true);
         self.stack_push(self.reg.p.bits());
     }
 
-    fn pla(&mut self, opcode: &Opcode) {
+    fn pla(&mut self, _opcode: &Opcode) {
         self.reg.a = self.stack_pull();
     }
 
-    fn plp(&mut self, opcode: &Opcode) {
+    fn plp(&mut self, _opcode: &Opcode) {
         self.reg.p.bits = self.stack_pull();
         self.set_flag(Flags::BREAK, false);
         self.set_flag(Flags::UNUSED, false);
@@ -593,24 +590,22 @@ impl CPU {
         }
     }
 
-    fn rti(&mut self, opcode: &Opcode) {
+    fn rti(&mut self, _opcode: &Opcode) {
         self.reg.p.bits = self.stack_pull();
         self.reg.pc = self.stack_pull_u16();
 
         self.reg.p.remove(Flags::BREAK);
     }
 
-    fn rts(&mut self, opcode: &Opcode) {
+    fn rts(&mut self, _opcode: &Opcode) {
         self.reg.pc = self.stack_pull_u16();
     }
 
     fn str(&mut self, opcode: &Opcode) {
         let byte = match opcode.name {
-            "STA" => self.reg.a,
-            "STX" => self.reg.x,
-            "STY" => self.reg.y,
-
-            _ => panic!("making the compiler happy"),
+            "STA"     => self.reg.a,
+            "STX"     => self.reg.x,
+            "STY" | _ => self.reg.y,
         };
 
         if let Operand::Address(addr) = self.get_operand(opcode) {
@@ -618,32 +613,32 @@ impl CPU {
         }
     }
 
-    fn tax(&mut self, opcode: &Opcode) {
+    fn tax(&mut self, _opcode: &Opcode) {
         self.reg.x = self.reg.a;
         self.update_nz_flags(self.reg.x);
     }
 
-    fn txa(&mut self, opcode: &Opcode) {
+    fn txa(&mut self, _opcode: &Opcode) {
         self.reg.a = self.reg.x;
         self.update_nz_flags(self.reg.a);
     }
 
-    fn tay(&mut self, opcode: &Opcode) {
+    fn tay(&mut self, _opcode: &Opcode) {
         self.reg.y = self.reg.a;
         self.update_nz_flags(self.reg.y);
     }
 
-    fn tya(&mut self, opcode: &Opcode) {
+    fn tya(&mut self, _opcode: &Opcode) {
         self.reg.a = self.reg.y;
         self.update_nz_flags(self.reg.a);
     }
 
-    fn tsx(&mut self, opcode: &Opcode) {
+    fn tsx(&mut self, _opcode: &Opcode) {
         self.reg.x = self.reg.sp;
         self.update_nz_flags(self.reg.x);
     }
 
-    fn txs(&mut self, opcode: &Opcode) {
+    fn txs(&mut self, _opcode: &Opcode) {
         self.reg.sp = self.reg.x;
     }
 }

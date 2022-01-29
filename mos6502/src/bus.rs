@@ -2,13 +2,9 @@ use std::ops::Range;
 use std::ops::ControlFlow;
 
 pub trait Peripheral {
-    fn read(&self, _addr: u16) -> u8 {
-        todo!()
-    }
+    fn read(&self, addr: u16) -> u8;
 
-    fn write(&mut self, _addr: u16, _byte: u8) {
-        todo!()
-    }
+    fn write(&mut self, addr: u16, byte: u8);
 }
 
 pub struct Bus {
@@ -50,7 +46,7 @@ impl Bus {
     }
 
     pub fn get_peripheral_index(&self, addr: u16) -> Option<(u16, usize)> {
-        self.peripherals.iter().enumerate().try_for_each(|(i, (range, peripheral))| {
+        self.peripherals.iter().enumerate().try_for_each(|(i, (range, _))| {
             if range.contains(&(addr as usize)) {
                 return ControlFlow::Break((addr - range.start as u16, i));
             }
