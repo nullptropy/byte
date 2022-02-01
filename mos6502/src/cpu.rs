@@ -532,6 +532,7 @@ impl CPU {
 
     fn pla(&mut self, _opcode: &Opcode) {
         self.reg.a = self.stack_pull();
+        self.update_nz_flags(self.reg.a);
     }
 
     fn plp(&mut self, _opcode: &Opcode) {
