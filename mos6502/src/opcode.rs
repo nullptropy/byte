@@ -61,6 +61,15 @@ impl Opcode {
 
 lazy_static! {
     pub static ref OPCODE_MAP: HashMap<u8, Opcode> = HashMap::from([
+        (0x69, Opcode::new(0x69, 2, 2, "ADC", AddressingMode::Immediate, None)),
+        (0x65, Opcode::new(0x65, 2, 3, "ADC", AddressingMode::ZeroPage, None)),
+        (0x75, Opcode::new(0x75, 2, 4, "ADC", AddressingMode::ZeroPageX, None)),
+        (0x6d, Opcode::new(0x6d, 3, 4, "ADC", AddressingMode::Absolute, None)),
+        (0x7d, Opcode::new(0x7d, 3, 4, "ADC", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0x79, Opcode::new(0x79, 3, 4, "ADC", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0x61, Opcode::new(0x61, 2, 6, "ADC", AddressingMode::IndirectX, None)),
+        (0x71, Opcode::new(0x71, 2, 5, "ADC", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
+
         (0x29, Opcode::new(0x29, 2, 2, "AND", AddressingMode::Immediate, None)),
         (0x25, Opcode::new(0x25, 2, 3, "AND", AddressingMode::ZeroPage, None)),
         (0x35, Opcode::new(0x35, 2, 4, "AND", AddressingMode::ZeroPageX, None)),
@@ -199,6 +208,15 @@ lazy_static! {
 
         (0x40, Opcode::new(0x40, 1, 6, "RTI", AddressingMode::Implied, None)),
         (0x60, Opcode::new(0x60, 1, 6, "RTS", AddressingMode::Implied, None)),
+
+        (0xe9, Opcode::new(0xe9, 2, 2, "SBC", AddressingMode::Immediate, None)),
+        (0xe5, Opcode::new(0xe5, 2, 3, "SBC", AddressingMode::ZeroPage, None)),
+        (0xf5, Opcode::new(0xf5, 2, 4, "SBC", AddressingMode::ZeroPageX, None)),
+        (0xed, Opcode::new(0xed, 3, 4, "SBC", AddressingMode::Absolute, None)),
+        (0xfd, Opcode::new(0xfd, 3, 4, "SBC", AddressingMode::AbsoluteX, Some(TickModifier::PageCrossed))),
+        (0xf9, Opcode::new(0xf9, 3, 4, "SBC", AddressingMode::AbsoluteY, Some(TickModifier::PageCrossed))),
+        (0xe1, Opcode::new(0xe1, 2, 6, "SBC", AddressingMode::IndirectX, None)),
+        (0xf1, Opcode::new(0xf1, 2, 5, "SBC", AddressingMode::IndirectY, Some(TickModifier::PageCrossed))),
 
         (0x38, Opcode::new(0x38, 1, 2, "SEC", AddressingMode::Implied, None)),
         (0xf8, Opcode::new(0xf8, 1, 2, "SED", AddressingMode::Implied, None)),

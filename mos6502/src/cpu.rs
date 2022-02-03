@@ -154,6 +154,7 @@ impl CPU {
         let pc_state = self.reg.pc;
 
         match code {
+            0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
             0x24 | 0x2c                                           => self.bit(opcode),
@@ -171,6 +172,7 @@ impl CPU {
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
             0x6a | 0x66 | 0x76 | 0x6e | 0x7e                      => self.ror(opcode),
+            0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1 => self.sbc(opcode),
             0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(opcode),
             0x86 | 0x96 | 0x8e                                    => self.str(opcode),
             0x84 | 0x94 | 0x8c                                    => self.str(opcode),
@@ -339,7 +341,36 @@ impl CPU {
                 )
             }
 
-            _ => panic!("Eh"),
+            _ => unreachable!(),
+        }
+    }
+
+    fn adc(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let m = self.reg.a as u16;
+            let n = self.bus.read(addr) as u16;
+            let c = self.reg.p.contains(Flags::CARRY) as u16;
+
+            if self.reg.p.contains(Flags::DECIMAL) {
+                let mut l = (m & 0x0f) + (n & 0x0f) + c;
+                let mut h = (m >> 0x4) + (n >> 0x4);
+
+                if l > 0x9 { l += 0x06; h += 0x01; }
+                self.set_flag(Flags::OVERFLOW, !(m ^ n) & (m ^ h) & 0x80 != 0);
+                if h > 0x9 { h += 0x06; }
+                self.set_flag(Flags::CARRY, h >> 4 != 0);
+
+                self.reg.a = (h << 4 | l) as u8
+            } else {
+                let s = m + n + c;
+
+                self.set_flag(Flags::CARRY, s > 0xff);
+                self.set_flag(Flags::OVERFLOW, !(m ^ n) & (m ^ s) & 0x80 != 0);
+
+                self.reg.a = s as u8;
+            }
+
+            self.update_nz_flags(self.reg.a);
         }
     }
 
@@ -600,6 +631,35 @@ impl CPU {
 
     fn rts(&mut self, _opcode: &Opcode) {
         self.reg.pc = self.stack_pull_u16();
+    }
+
+    fn sbc(&mut self, opcode: &Opcode) {
+        let m = self.reg.a as u16;
+        let c = !self.reg.p.contains(Flags::CARRY) as u16;
+
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let n = self.bus.read(addr) as u16;
+            let s = m - n - c;
+
+            if self.reg.p.contains(Flags::DECIMAL) {
+                let mut l = (m & 0x0f) - (n & 0x0f) - c;
+                let mut h = (m & 0xf0) - (n & 0xf0);
+
+                if l & 0x10 > 0 { l -= 0x06; h -= 0x1; }
+                self.set_flag(Flags::CARRY, !(s >> 4) != 0);
+                self.set_flag(Flags::OVERFLOW, (m ^ n) & (m ^ s) & 0x80 != 0);
+                if h & 0x0100 > 0 { h -= 0x60; }
+
+                self.reg.a = ((h & 0xf0) | (l & 0x0f)) as u8;
+            } else {
+                self.set_flag(Flags::CARRY, !(s >> 8) != 0);
+                self.set_flag(Flags::OVERFLOW, (m ^ n) & (m ^ s) & 0x80 != 0);
+
+                self.reg.a = s as u8;
+            }
+
+            self.update_nz_flags(self.reg.a);
+        }
     }
 
     fn str(&mut self, opcode: &Opcode) {
