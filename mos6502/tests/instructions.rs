@@ -15,27 +15,6 @@ fn opcode_0x29_immediate_and() {
 }
 
 #[test]
-fn opcode_0x25_zeropage_and() {}
-
-#[test]
-fn opcode_0x35_zeropagex_and() {}
-
-#[test]
-fn opcode_0x2d_absolute_and() {}
-
-#[test]
-fn opcode_0x3d_absolutex_and() {}
-
-#[test]
-fn opcode_0x39_absolutey_and() {}
-
-#[test]
-fn opcode_0x21_indirectx_and() {}
-
-#[test]
-fn opcode_0x31_indirecty_and() {}
-
-#[test]
 fn opcode_0x0a_accumulator_asl() {
     // ASL A
     // BRK
@@ -60,15 +39,6 @@ fn opcode_0x06_zeropage_asl() {
 }
 
 #[test]
-fn opcode_0x16_zeropagex_asl() {}
-
-#[test]
-fn opcode_0x0e_absolute_asl() {}
-
-#[test]
-fn opcode_0x1e_absolutex_asl() {}
-
-#[test]
 fn opcode_0x24_zeropage_bit() {
     let cpu = execute_nsteps(|cpu| {
         cpu.reg.a = 0b1100_0000;
@@ -80,9 +50,6 @@ fn opcode_0x24_zeropage_bit() {
     assert!(cpu.reg.p.contains(Flags::OVERFLOW));
     assert!(cpu.reg.p.contains(Flags::ZERO) == false);
 }
-
-#[test]
-fn opcode_0x2c_absolute_bit() {}
 
 #[test]
 fn opcode_0x90_relative_bcc_1() {
@@ -152,12 +119,6 @@ fn opcode_0x10_relative_bpl() {
         |_| {}, &[0x10, 0xfb, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.pc, 0x7ffd); // 0x8000 - 5
-}
-
-#[test]
-fn opcode_0x00_implied_brk() {
-    let mut _cpu = common::init_cpu();
-    assert_eq!(2 + 2, 4);
 }
 
 #[test]
@@ -246,42 +207,6 @@ fn opcode_0xc5_zeropage_cmp() {
 }
 
 #[test]
-fn opcode_0xd5_zeropagex_cmp() {}
-
-#[test]
-fn opcode_0xcd_absolute_cmp() {}
-
-#[test]
-fn opcode_0xdd_absolutex_cmp() {}
-
-#[test]
-fn opcode_0xd9_absolutey_cmp() {}
-
-#[test]
-fn opcode_0xc1_indirectx_cmp() {}
-
-#[test]
-fn opcode_0xd1_indirecty_cmp() {}
-
-#[test]
-fn opcode_0xe0_immediate_cpx() {}
-
-#[test]
-fn opcode_0xe4_zeropage_cpx() {}
-
-#[test]
-fn opcode_0xec_absolute_cpx() {}
-
-#[test]
-fn opcode_0xc0_immediate_cpy() {}
-
-#[test]
-fn opcode_0xc4_zeropage_cpy() {}
-
-#[test]
-fn opcode_0xcc_absolute_cpy() {}
-
-#[test]
 fn opcode_0xc6_zeropage_dec() {
     // DEC $aa
     // BRK
@@ -290,15 +215,6 @@ fn opcode_0xc6_zeropage_dec() {
 
     assert_eq!(cpu.bus.read(0x00aa), 0xfe);
 }
-
-#[test]
-fn opcode_0xd6_zeropagex_dec() {}
-
-#[test]
-fn opcode_0xce_absolute_dec() {}
-
-#[test]
-fn opcode_0xde_absolutex_dec() {}
 
 #[test]
 fn opcode_0xca_implied_dex() {
@@ -334,27 +250,6 @@ fn opcode_0x49_immediate_eor() {
 }
 
 #[test]
-fn opcode_0x45_zeropage_eor() {}
-
-#[test]
-fn opcode_0x55_zeropagex_eor() {}
-
-#[test]
-fn opcode_0x4d_absolute_eor() {}
-
-#[test]
-fn opcode_0x5d_absolutex_eor() {}
-
-#[test]
-fn opcode_0x59_absolutey_eor() {}
-
-#[test]
-fn opcode_0x41_indirectx_eor() {}
-
-#[test]
-fn opcode_0x51_indirecty_eor() {}
-
-#[test]
 fn opcode_0xe6_zeropage_inc() {
     // INC $aa
     // BRK
@@ -363,15 +258,6 @@ fn opcode_0xe6_zeropage_inc() {
 
     assert_eq!(cpu.bus.read(0x00aa), 0xff);
 }
-
-#[test]
-fn opcode_0xf6_zeropagex_inc() {}
-
-#[test]
-fn opcode_0xee_absolute_inc() {}
-
-#[test]
-fn opcode_0xfe_absolutex_inc() {}
 
 #[test]
 fn opcode_0xe8_implied_inx() {
@@ -551,36 +437,12 @@ fn opcode_0xa2_immediate_ldx() {
 }
 
 #[test]
-fn opcode_0xa6_zeropage_ldx() {}
-
-#[test]
-fn opcode_0xb6_zeropagey_ldx() {}
-
-#[test]
-fn opcode_0xae_absolute_ldx() {}
-
-#[test]
-fn opcode_0xbe_absolutey_ldx() {}
-
-#[test]
 fn opcode_0xa0_immediate_ldy() {
     let cpu = execute_nsteps(
         |_| {}, &[0xa0, 0xff, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.y, 0xff);
 }
-
-#[test]
-fn opcode_0xa4_zeropage_ldy() {}
-
-#[test]
-fn opcode_0xb4_zeropagex_ldy() {}
-
-#[test]
-fn opcode_0xac_absolute_ldy() {}
-
-#[test]
-fn opcode_0xbc_absolutex_ldy() {}
 
 #[test]
 fn opcode_0x4a_accumulator_lsr() {
@@ -601,45 +463,12 @@ fn opcode_0x46_zeropage_lsr() {
 }
 
 #[test]
-fn opcode_0x56_zeropagex_lsr() {}
-
-#[test]
-fn opcode_0x4e_absolute_lsr() {}
-
-#[test]
-fn opcode_0x5e_absolutex_lsr() {}
-
-#[test]
 fn opcode_0x09_immediate_ora() {
     let cpu = execute_nsteps(
         |_| {}, &[0x09, 0xff], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
 }
-
-#[test]
-fn opcode_0x05_zeropage_ora() {}
-
-#[test]
-fn opcode_0x15_zeropagex_ora() {}
-
-#[test]
-fn opcode_0x0d_absolute_ora() {}
-
-#[test]
-fn opcode_0x1d_absolutex_ora() {}
-
-#[test]
-fn opcode_0x19_absolutey_ora() {}
-
-#[test]
-fn opcode_0x01_indirectx_ora() {}
-
-#[test]
-fn opcode_0x11_indirecty_ora() {}
-
-#[test]
-fn opcode_0xea_implied_nop() {}
 
 #[test]
 fn opcode_0x48_implied_pha() {
@@ -691,18 +520,6 @@ fn opcode_0x2a_accumulator_rol() {
 }
 
 #[test]
-fn opcode_0x26_zeropage_rol() {}
-
-#[test]
-fn opcode_0x36_zeropagex_rol() {}
-
-#[test]
-fn opcode_0x2e_absolute_rol() {}
-
-#[test]
-fn opcode_0x3e_absolutex_rol() {}
-
-#[test]
 fn opcode_0x6a_accumulator_ror() {
     let cpu = execute_nsteps(
         |cpu| {
@@ -714,18 +531,6 @@ fn opcode_0x6a_accumulator_ror() {
     assert!(cpu.reg.a == 0xc0);
     assert!(cpu.reg.p.contains(Flags::CARRY));
 }
-
-#[test]
-fn opcode_0x66_zeropage_ror() {}
-
-#[test]
-fn opcode_0x76_zeropagex_ror() {}
-
-#[test]
-fn opcode_0x6e_absolute_ror() {}
-
-#[test]
-fn opcode_0x7e_absolutex_ror() {}
 
 #[test]
 fn opcode_0x40_implied_rti() {
@@ -750,19 +555,19 @@ fn opcode_0x60_implied_rts() {
     // RTS
     // NOP
     let cpu = execute_nsteps(
-        |cpu| cpu.stack_push_u16(0x8001), &[0x60, 0xea], 0x8000, 2);
+        |cpu| cpu.stack_push_u16(0x8001), &[0x60, 0xea], 0x8000, 1);
     assert_eq!(cpu.reg.pc, 0x8002);
 }
 
 #[test]
 fn opcode_0x20_absolute_jsr() {
-    // JSR $0001 ; 0x0001: 0x8003
+    // JSR $80003
     // NOP       ; 0x8003
     let cpu = execute_nsteps(
         |cpu| {
             cpu.reg.sp = 0xff;  // initialize the stack pointer
             cpu.bus.write_u16(0x0001, 0x8003);
-        }, &[0x20, 0x01, 0x00, 0xea], 0x8000, 1);
+        }, &[0x20, 0x03, 0x80, 0xea], 0x8000, 1);
 
     assert_eq!(cpu.reg.sp, 0x00fd);
     assert_eq!(cpu.reg.pc, 0x8003);
@@ -777,24 +582,6 @@ fn opcode_0x85_zeropage_sta() {
 }
 
 #[test]
-fn opcode_0x95_zeropagex_sta() {}
-
-#[test]
-fn opcode_0x8d_absolute_sta() {}
-
-#[test]
-fn opcode_0x9d_absolutex_sta() {}
-
-#[test]
-fn opcode_0x99_absolutey_sta() {}
-
-#[test]
-fn opcode_0x81_indirectx_sta() {}
-
-#[test]
-fn opcode_0x91_indirecty_sta() {}
-
-#[test]
 fn opcode_0x86_zeropage_stx() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.x = 0xef, &[0x86, 0xbe, 0x00], 0x8000, 1);
@@ -803,24 +590,12 @@ fn opcode_0x86_zeropage_stx() {
 }
 
 #[test]
-fn opcode_0x96_zeropagey_stx() {}
-
-#[test]
-fn opcode_0x8e_absolute_stx() {}
-
-#[test]
 fn opcode_0x84_zeropage_sty() {
     let cpu = execute_nsteps(
         |cpu| cpu.reg.y = 0xed, &[0x84, 0xfe, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.bus.read(0xfe), 0xed);
 }
-
-#[test]
-fn opcode_0x94_zeropagex_sty() {}
-
-#[test]
-fn opcode_0x8c_absolute_sty() {}
 
 #[test]
 fn opcode_0xaa_implied_tax() {

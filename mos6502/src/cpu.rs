@@ -436,7 +436,7 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
 
-            self.set_flag(Flags::CARRY, reg <= operand);
+            self.set_flag(Flags::CARRY, reg >= operand);
             self.update_nz_flags(reg.wrapping_sub(operand));
         }
     }
@@ -486,8 +486,8 @@ impl CPU {
 
     fn jsr(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.stack_push_u16(self.reg.pc.wrapping_add(2));
-            self.reg.pc = self.bus.read_u16(addr);
+            self.stack_push_u16(self.reg.pc.wrapping_add(1));
+            self.reg.pc = addr;
         }
     }
 
@@ -630,7 +630,9 @@ impl CPU {
     }
 
     fn rts(&mut self, _opcode: &Opcode) {
-        self.reg.pc = self.stack_pull_u16();
+        dbg!(self.reg.pc);
+        self.reg.pc = self.stack_pull_u16() + 1;
+        dbg!(self.reg.pc);
     }
 
     fn sbc(&mut self, opcode: &Opcode) {
