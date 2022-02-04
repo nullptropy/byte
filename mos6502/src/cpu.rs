@@ -630,9 +630,7 @@ impl CPU {
     }
 
     fn rts(&mut self, _opcode: &Opcode) {
-        dbg!(self.reg.pc);
         self.reg.pc = self.stack_pull_u16() + 1;
-        dbg!(self.reg.pc);
     }
 
     fn sbc(&mut self, opcode: &Opcode) {
