@@ -118,20 +118,19 @@ impl CPU {
     }
 
     pub fn interrupt(&mut self, interrupt: Interrupt) {
-        let (pc, flag, vector): (u16, Option<Flags>, u16) = match interrupt {
-            Interrupt::BRK => (self.reg.pc + 1, Some(Flags::BREAK), IRQ_VECTOR),
-            Interrupt::IRQ => (self.reg.pc, Some(Flags::INTERRUPT), IRQ_VECTOR),
-            Interrupt::NMI => (self.reg.pc, None, NMI_VECTOR),
-            Interrupt::RST => (0, None, RST_VECTOR),
+        let is_brk = interrupt == Interrupt::BRK;
+
+        let (pc, vector) = match interrupt {
+            Interrupt::BRK => (self.reg.pc + 1, IRQ_VECTOR),
+            Interrupt::IRQ => (self.reg.pc, IRQ_VECTOR),
+            Interrupt::NMI => (self.reg.pc, NMI_VECTOR),
+            Interrupt::RST => (0, RST_VECTOR),
         };
 
         if interrupt != Interrupt::RST {
             self.stack_push_u16(pc);
-            self.stack_push(self.reg.p.bits());
-
-            if let Some(flag) = flag {
-                self.reg.p.insert(flag);
-            }
+            self.stack_push_p(is_brk);
+            self.set_flag(Flags::INTERRUPT, true);
         }
 
         self.reg.pc = self.bus.read_u16(vector);
@@ -257,6 +256,13 @@ impl CPU {
 
     pub fn set_flag(&mut self, flag: Flags, value: bool) {
         self.reg.p.set(flag, value);
+    }
+
+    fn stack_push_p(&mut self, brk: bool) {
+        let mut p = self.reg.p.clone();
+        p.insert(Flags::UNUSED);
+        p.set(Flags::BREAK, brk);
+        self.stack_push(p.bits());
     }
 
     fn update_nz_flags(&mut self, value: u8) {
@@ -424,11 +430,12 @@ impl CPU {
 
     fn bit(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            let value = self.reg.a & self.bus.read(addr);
+            let operand = self.bus.read(addr);
+            let result = self.reg.a & operand;
 
-            self.update_nz_flags(value);
-            self.reg.p.set(Flags::NEGATIVE, value & 0x80 > 0);
-            self.reg.p.set(Flags::OVERFLOW, value & 0x40 > 0);
+            self.update_nz_flags(result);
+            self.set_flag(Flags::NEGATIVE, operand & 0x80 > 0);
+            self.set_flag(Flags::OVERFLOW, operand & 0x40 > 0);
         }
     }
 
@@ -556,9 +563,7 @@ impl CPU {
     }
 
     fn php(&mut self, _opcode: &Opcode) {
-        self.set_flag(Flags::BREAK, true);
-        self.set_flag(Flags::UNUSED, true);
-        self.stack_push(self.reg.p.bits());
+        self.stack_push_p(true);
     }
 
     fn pla(&mut self, _opcode: &Opcode) {
@@ -568,8 +573,8 @@ impl CPU {
 
     fn plp(&mut self, _opcode: &Opcode) {
         self.reg.p.bits = self.stack_pull();
-        self.set_flag(Flags::BREAK, false);
-        self.set_flag(Flags::UNUSED, false);
+        self.reg.p.remove(Flags::BREAK);
+        self.reg.p.insert(Flags::UNUSED);
     }
 
     #[inline]
