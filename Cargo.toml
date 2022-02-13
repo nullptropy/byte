@@ -3,3 +3,6 @@ members = [
     "mos6502",
     "platform",
 ]
+
+[profile.test]
+opt-level = 3
