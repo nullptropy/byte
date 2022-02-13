@@ -32,13 +32,12 @@ pub fn init_cpu() -> cpu::CPU {
 
 pub fn execute_nsteps(config: fn(&mut cpu::CPU), program: &[u8], addr: u16, n: usize) -> cpu::CPU {
     let mut cpu = init_cpu();
-
     config(&mut cpu);
-    cpu.load(program, addr); cpu.reg.pc = addr;
 
-    for _ in 0..n {
-        cpu.step();
-    }
+    cpu.load(program, addr);
+    cpu.reg.pc = addr;
+
+    for _ in 0..n { cpu.step(); }
 
     cpu
 }
