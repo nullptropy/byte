@@ -153,7 +153,6 @@ impl CPU {
             0x86 | 0x96 | 0x8e                                    => self.str(opcode, self.reg.x),
             0x84 | 0x94 | 0x8c                                    => self.str(opcode, self.reg.y),
 
-
             0x90 => self.branch(opcode, !self.reg.p.contains(Flags::CARRY)),
             0xb0 => self.branch(opcode,  self.reg.p.contains(Flags::CARRY)),
             0xf0 => self.branch(opcode,  self.reg.p.contains(Flags::ZERO)),
@@ -239,7 +238,7 @@ impl CPU {
 
     // this function doesn't actually get called on `TickModifier::Branch`, instead
     // the `branch` function keeps track of branching to a different page
-    fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
+    fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, _modifier: TickModifier) -> Operand {
         let addr = ((hi as u16) << 8 | (lo as u16)).wrapping_add(byte as u16);
 
         if hi != (addr >> 8) as u8 {
