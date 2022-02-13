@@ -1,8 +1,21 @@
-use std::ops::ControlFlow;
 use mos6502::prelude::*;
+use minifb::{
+    Key, Window, WindowOptions};
 
-pub struct RAM {
-    data: Vec<u8>
+static PALETTE: [u32; 8] = [
+    0x00000000, 0x00ffffff, 0x00ff0000, 0x0000ff00,
+    0x000000ff, 0x00ffff00, 0x0000ffff, 0x00ff00ff,
+];
+static VRAM_START: u16 = 0xe000;
+
+struct RAM {
+    data: Vec<u8>,
+}
+
+struct Console {
+    cpu: CPU,
+    win: Window,
+    buf: [u32; 64 * 64],
 }
 
 impl RAM {
@@ -21,54 +34,55 @@ impl Peripheral for RAM {
     }
 }
 
-fn main() {
-    let mut cpu = CPU::new();
+impl Console {
+    fn new() -> Self {
+        let mut cpu = CPU::new();
+        cpu.bus.attach(0x000, 0xffff, RAM::new(0x10000)).unwrap();
 
-    cpu.bus.attach(0x0000, 0x01ff, RAM::new(0x0200))
-        .unwrap(); // first two pages of memory are required
-                   // for the cpu to function properly
-                   // [0x0000, 0x0100): zero page,
-                   // [0x0100, 0x0200): where stack lies
-    cpu.bus.attach(0x0200, 0xffff, RAM::new(0xfe00)).unwrap();
-
-    // cpu.bus.write(0x1000, 0x02);
-    // cpu.bus.write_u16(0xfffe, 0x8000);
-    cpu.bus.write_u16(0xfffc, 0x8000);
-
-    // load some arbitrary program into ram starting from the address 0x8000
-    // cpu.load(&[
-    //     0xad, 0x00, 0x10,  // LDA $1000
-    //     0xaa,              // TAX
-    //     0xa9, 0x00,        // LDA #$00
-    //     0xca,              // DEX
-    //     0xd0, 0xfd,        // BNE $0003
-    //     0x00,              // BRK
-    // ], 0x8000);
-
-    cpu.bus.write_u16(0x0000, 0x8006);
-    cpu.load(&[
-        0x20, 0x00, 0x00,  // JSR $00000
-        0x00,              // BRK
-        0xea,              // NOP
-        0xea,              // NOP
-        0xa9, 0xff,        // LDA #$0xff : $8006
-        0x60               // RTS
-    ], 0x8000);
-
-    // cpu.set_irq(false); // level triggered
-    cpu.interrupt(Interrupt::RST);
-
-    cpu.run_with_callback(|cpu| {
-        if cpu.reg.p.contains(Flags::BREAK) {
-            return ControlFlow::Break(());
+        Self {
+            cpu,
+            buf: [0; 64 * 64],
+            win: Window::new(
+                "mos6502", 64, 64,
+                WindowOptions {
+                    scale: minifb::Scale::X8,
+                    ..WindowOptions::default()
+                }
+            ).unwrap(),
         }
+    }
 
-        let code = cpu.bus.read(cpu.reg.pc);
-        let opcode = OPCODE_MAP.get(&code)
-            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", code));
+    fn load_rom(&mut self, data: &[u8], start: u16) {
+        self.cpu.load(data, start);
+    }
 
-        println!("[{:x?}:{:08}][{:?}]", cpu.reg, cpu.cycle, opcode);
+    fn main_loop(&mut self) {
+        self.cpu.interrupt(Interrupt::RST);
+        self.win.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
 
-        ControlFlow::Continue(())
-    });
+        while self.win.is_open() && !self.win.is_key_down(Key::Escape) {
+            self.cpu.cycle = 0;
+
+            while self.cpu.cycle < 16600 {
+                self.cpu.step();
+            }
+
+            self.buf.iter_mut().enumerate().for_each(|(i, b)| {
+                *b = PALETTE[self.cpu.bus.read(VRAM_START + i as u16) as usize];
+            });
+
+            self.win
+                .update_with_buffer(&self.buf, 64, 64)
+                .unwrap();
+        }
+    }
+}
+
+fn main() {
+    let mut console = Console::new();
+
+    console.load_rom(
+        &std::fs::read(
+            std::env::args().nth(1).unwrap()).unwrap(), 0x0000);
+    console.main_loop();
 }

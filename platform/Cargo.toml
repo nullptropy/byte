@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 mos6502 = { path = "../mos6502" }
+minifb  = "0.20.0"
