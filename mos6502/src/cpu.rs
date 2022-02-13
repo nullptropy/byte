@@ -1,13 +1,9 @@
 use bitflags::bitflags;
 
-use core::fmt;
-use std::ops::{ControlFlow, BitAnd, BitOr};
-
 use crate::bus::Bus;
 use crate::opcode::*;
 
 pub const STACK_BASE: u16 = 0x0100;
-
 pub const NMI_VECTOR: u16 = 0xfffa;
 pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
@@ -34,7 +30,7 @@ bitflags! {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Registers {
     pub sp: u8,
     pub pc: u16,
@@ -44,43 +40,32 @@ pub struct Registers {
 }
 
 pub struct CPU {
-    pub reg: Registers,
-    pub bus: Bus,
-    pub cycle: u32,
-
     pub irq: bool,
     pub nmi: bool, pub nmi_edge: bool,
+    pub bus: Bus,
+    pub reg: Registers,
+    pub cycle: u64,
 }
 
 impl Registers {
     fn new() -> Self {
         Self {
             pc: 0, sp: 0,
-
-            x: 0, y: 0,
-            a: 0, p: Flags::default()
+             x: 0,  y: 0,
+             a: 0,  p: Flags::default()
         }
-    }
-}
-
-impl fmt::Debug for Registers {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f, "{:04x}:{:02x}:{:08b}:{:02x}:{:02x}:{:02x}",
-            self.pc, self.sp, self.p, self.a, self.x, self.y
-        )
     }
 }
 
 impl CPU {
     pub fn new() -> Self {
         CPU {
-            reg: Registers::new(),
-            bus: Bus::new(),
-            cycle: 0,
-
             irq: true,
             nmi: true, nmi_edge: false,
+            bus: Bus::new(),
+            reg: Registers::new(),
+
+            cycle: 0,
         }
     }
 
@@ -89,37 +74,25 @@ impl CPU {
         self.reg.pc = self.bus.read_u16(0xfffc);
     }
 
-    pub fn load(&mut self, program: &[u8], addr: u16) {
+    pub fn load(&mut self, program: &[u8], start: u16) {
         program
             .iter()
             .enumerate()
-            .for_each(|(i, b)| self.bus.write(addr + i as u16, *b));
-    }
-
-    pub fn run_with_callback(&mut self, callback: fn(&mut CPU) -> ControlFlow<()>) {
-        loop {
-            if callback(self).is_break() {
-                break;
-            }
-
-            self.step();
-        }
+            .for_each(|(i, b)| self.bus.write(start + i as u16, *b));
     }
 
     pub fn set_irq(&mut self, irq: bool) {
         self.irq = irq;
     }
 
-    /// NMI is only executed once on a negative transition
-    /// from HIGH to LOW
+    // NMI is only executed once on a negative transition
+    // from HIGH to LOW
     pub fn set_nmi(&mut self, nmi: bool) {
         self.nmi_edge = !nmi;
         self.nmi = nmi;
     }
 
     pub fn interrupt(&mut self, interrupt: Interrupt) {
-        let is_brk = interrupt == Interrupt::BRK;
-
         let (pc, vector) = match interrupt {
             Interrupt::BRK => (self.reg.pc + 1, IRQ_VECTOR),
             Interrupt::IRQ => (self.reg.pc, IRQ_VECTOR),
@@ -128,8 +101,12 @@ impl CPU {
         };
 
         if interrupt != Interrupt::RST {
+            let mut p = self.reg.p;
+            p.set(Flags::UNUSED, true);
+            p.set(Flags::BREAK, interrupt == Interrupt::BRK);
+
             self.stack_push_u16(pc);
-            self.stack_push_p(is_brk);
+            self.stack_push(p.bits());
             self.set_flag(Flags::INTERRUPT, true);
         }
 
@@ -145,14 +122,14 @@ impl CPU {
             return self.interrupt(Interrupt::NMI);
         }
 
-        let code = self.bus.read(self.reg.pc);
-        let opcode = OPCODE_MAP.get(&code)
-            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", code));
+        let opcode = self.bus.read(self.reg.pc);
+        let opcode = OPCODE_MAP.get(&opcode)
+            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
 
-        self.reg.pc  = self.reg.pc.wrapping_add(1);
-        let pc_state = self.reg.pc;
+        self.reg.pc = self.reg.pc.wrapping_add(1);
+        let pc_copy = self.reg.pc;
 
-        match code {
+        match opcode.code {
             0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
@@ -172,11 +149,10 @@ impl CPU {
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
             0x6a | 0x66 | 0x76 | 0x6e | 0x7e                      => self.ror(opcode),
             0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1 => self.sbc(opcode),
-            0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(opcode),
-            0x86 | 0x96 | 0x8e                                    => self.str(opcode),
-            0x84 | 0x94 | 0x8c                                    => self.str(opcode),
+            0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91        => self.str(opcode, self.reg.a),
+            0x86 | 0x96 | 0x8e                                    => self.str(opcode, self.reg.x),
+            0x84 | 0x94 | 0x8c                                    => self.str(opcode, self.reg.y),
 
-            0x00 => self.interrupt(Interrupt::BRK),
 
             0x90 => self.branch(opcode, !self.reg.p.contains(Flags::CARRY)),
             0xb0 => self.branch(opcode,  self.reg.p.contains(Flags::CARRY)),
@@ -192,8 +168,6 @@ impl CPU {
 
             0xe8 => self.inx(opcode),
             0xc8 => self.iny(opcode),
-
-            0x20 => self.jsr(opcode),
 
             0x18 => self.set_flag(Flags::CARRY, false),
             0xd8 => self.set_flag(Flags::DECIMAL, false),
@@ -219,17 +193,17 @@ impl CPU {
             0xba => self.tsx(opcode),
             0x9a => self.txs(opcode),
 
+            0x00 => { self.interrupt(Interrupt::BRK); return; }
+            0x20 => self.jsr(opcode),
             0xea => {},
-
-            _ => ()
+            _    => {}
         }
 
-        if pc_state == self.reg.pc {
-            self.reg.pc += (opcode.size - 1) as u16;
+        if pc_copy == self.reg.pc {
+            self.reg.pc = self.reg.pc.wrapping_add((opcode.size - 1) as u16);
         }
-        if opcode.code != 0x00 {
-            self.cycle += opcode.tick as u32;
-        }
+
+        self.cycle += opcode.tick as u64;
     }
 
     pub fn stack_push(&mut self, byte: u8) {
@@ -258,27 +232,21 @@ impl CPU {
         self.reg.p.set(flag, value);
     }
 
-    fn stack_push_p(&mut self, brk: bool) {
-        let mut p = self.reg.p.clone();
-        p.insert(Flags::UNUSED);
-        p.set(Flags::BREAK, brk);
-        self.stack_push(p.bits());
-    }
-
     fn update_nz_flags(&mut self, value: u8) {
         self.set_flag(Flags::ZERO, value == 0);
-        self.set_flag(Flags::NEGATIVE, (value as i8) < 0);
+        self.set_flag(Flags::NEGATIVE, value & 0x80 > 0);
     }
 
+    // this function doesn't actually get called on `TickModifier::Branch`, instead
+    // the `branch` function keeps track of branching to a different page
     fn on_tick_modifier(&mut self, lo: u8, hi: u8, byte: u8, modifier: TickModifier) -> Operand {
-        match (lo.overflowing_add(byte).1, modifier) {
-            (true, TickModifier::PageCrossed) => self.cycle += 1,
-            (true, TickModifier::Branch)      => self.cycle += 1,
+        let addr = ((hi as u16) << 8 | (lo as u16)).wrapping_add(byte as u16);
 
-            _ => ()
+        if hi != (addr >> 8) as u8 {
+            self.cycle += 1
         }
 
-        Operand::Address(((hi as u16) << 8 | lo as u16).wrapping_add(byte as u16))
+        Operand::Address(addr)
     }
 
     fn get_operand(&mut self, opcode: &Opcode) -> Operand {
@@ -290,10 +258,10 @@ impl CPU {
             AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
             AddressingMode::ZeroPageX => {
                 Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)
-            }
+            },
             AddressingMode::ZeroPageY => {
                 Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16)
-            }
+            },
 
             AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
             AddressingMode::AbsoluteX => {
@@ -309,7 +277,7 @@ impl CPU {
                         .read_u16(self.reg.pc)
                         .wrapping_add(self.reg.x as u16),
                 )
-            }
+            },
             AddressingMode::AbsoluteY => {
                 if let Some(modifier) = opcode.tick_modifier {
                     let lo = self.bus.read(self.reg.pc);
@@ -323,11 +291,11 @@ impl CPU {
                         .read_u16(self.reg.pc)
                         .wrapping_add(self.reg.y as u16),
                 )
-            }
+            },
 
             AddressingMode::Indirect  => {
                 Operand::Address(self.bus.read_u16(self.bus.read_u16(self.reg.pc)))
-            }
+            },
             AddressingMode::IndirectX => Operand::Address(
                 self.bus
                     .read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
@@ -345,28 +313,33 @@ impl CPU {
                         .read_u16(self.bus.read(self.reg.pc) as u16)
                         .wrapping_add(self.reg.y as u16),
                 )
-            }
+            },
 
-            _ => unreachable!(),
+            _ => unreachable!()
         }
     }
 
     fn adc(&mut self, opcode: &Opcode) {
+        let m = self.reg.a as u16;
+        let c = self.reg.p.contains(Flags::CARRY) as u16;
+
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            let m = self.reg.a as u16;
             let n = self.bus.read(addr) as u16;
-            let c = self.reg.p.contains(Flags::CARRY) as u16;
 
             if self.reg.p.contains(Flags::DECIMAL) {
                 let mut l = (m & 0x0f) + (n & 0x0f) + c;
-                let mut h = (m >> 0x4) + (n >> 0x4);
+                let mut h = (m & 0xf0) + (n & 0xf0);
 
-                if l > 0x9 { l += 0x06; h += 0x01; }
+                if l > 0x09 {
+                    l = (l + 0x06) & 0x0f; h += 0x10;
+                };
                 self.set_flag(Flags::OVERFLOW, !(m ^ n) & (m ^ h) & 0x80 != 0);
-                if h > 0x9 { h += 0x06; }
-                self.set_flag(Flags::CARRY, h >> 4 != 0);
+                if h > 0x90 {
+                    h += 0x60;
+                };
+                self.set_flag(Flags::CARRY, h >> 8 > 0);
 
-                self.reg.a = (h << 4 | l) as u8
+                self.reg.a = (h | l) as u8
             } else {
                 let s = m + n + c;
 
@@ -427,7 +400,6 @@ impl CPU {
         }
     }
 
-
     fn bit(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
@@ -443,8 +415,9 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
 
+            self.set_flag(Flags::ZERO,  reg == operand);
             self.set_flag(Flags::CARRY, reg >= operand);
-            self.update_nz_flags(reg.wrapping_sub(operand));
+            self.set_flag(Flags::NEGATIVE, reg.wrapping_sub(operand) & 0x80 > 0);
         }
     }
 
@@ -503,7 +476,7 @@ impl CPU {
 
         if opcode.code == 0x6c {
             if operand & 0xff != 0xff {
-                return { self.reg.pc = self.bus.read_u16(operand); };
+                return self.reg.pc = self.bus.read_u16(operand);
             }
 
             // 6502 indirect jump bug
@@ -511,7 +484,7 @@ impl CPU {
             let lo = self.bus.read(operand) as u16;
             let hi = self.bus.read(operand & 0xff00) as u16;
 
-            return { self.reg.pc = (hi << 8) | lo; };
+            return self.reg.pc = (hi << 8) | lo;
         }
 
         self.reg.pc = operand;
@@ -536,6 +509,7 @@ impl CPU {
         self.set_flag(Flags::CARRY, value & 0x1 != 0);
         let result = value.wrapping_shr(1);
         self.set_flag(Flags::ZERO, value == 0);
+        self.set_flag(Flags::NEGATIVE, false);
         result
     }
 
@@ -563,7 +537,7 @@ impl CPU {
     }
 
     fn php(&mut self, _opcode: &Opcode) {
-        self.stack_push_p(true);
+        self.stack_push(self.reg.p.bits() | 0x30);
     }
 
     fn pla(&mut self, _opcode: &Opcode) {
@@ -572,19 +546,16 @@ impl CPU {
     }
 
     fn plp(&mut self, _opcode: &Opcode) {
-        self.reg.p.bits = self.stack_pull();
-        self.reg.p.remove(Flags::BREAK);
-        self.reg.p.insert(Flags::UNUSED);
+        self.reg.p.bits = self.stack_pull() | 0x30;
     }
 
     #[inline]
     fn _rol(&mut self, value: u8) -> u8 {
-        let result = value
-            .rotate_left(1)
-            .bitand(0xfe)
-            .bitor(self.reg.p.contains(Flags::CARRY) as u8);
+        let result = value.rotate_left(1)
+                   & 0xfe
+                   | self.reg.p.contains(Flags::CARRY) as u8;
 
-        self.set_flag(Flags::CARRY, value >> 7 != 0);
+        self.set_flag(Flags::CARRY, value & 0x80 > 0);
         self.update_nz_flags(result);
 
         result
@@ -604,12 +575,11 @@ impl CPU {
 
     #[inline]
     fn _ror(&mut self, value: u8) -> u8 {
-        let result = value
-            .rotate_right(1)
-            .bitand(0x7f)
-            .bitor((self.reg.p.contains(Flags::CARRY) as u8) << 7);
+        let result = value.rotate_right(1)
+                   & 0x7f
+                   | ((self.reg.p.contains(Flags::CARRY) as u8) << 7);
 
-        self.set_flag(Flags::CARRY, value & 0x1 != 0);
+        self.set_flag(Flags::CARRY, value & 0x1 > 0);
         self.update_nz_flags(result);
 
         result
@@ -628,10 +598,8 @@ impl CPU {
     }
 
     fn rti(&mut self, _opcode: &Opcode) {
-        self.reg.p.bits = self.stack_pull();
+        self.reg.p.bits = self.stack_pull() | 0x30;
         self.reg.pc = self.stack_pull_u16();
-
-        self.reg.p.remove(Flags::BREAK);
     }
 
     fn rts(&mut self, _opcode: &Opcode) {
@@ -639,43 +607,37 @@ impl CPU {
     }
 
     fn sbc(&mut self, opcode: &Opcode) {
-        let m = self.reg.a as u16;
-        let c = !self.reg.p.contains(Flags::CARRY) as u16;
+        let m = self.reg.a;
+        let c = self.reg.p.contains(Flags::CARRY) as u8;
 
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            let n = self.bus.read(addr) as u16;
-            let s = m - n - c;
+            let n = self.bus.read(addr);
+            let mut s =  m as u16
+                      + !n as u16
+                      +  c as u16;
+
+            self.update_nz_flags(s as u8);
+            self.set_flag(Flags::CARRY, s > 0xff);
+            self.set_flag(Flags::OVERFLOW, (m ^ n) & (m ^ s as u8) & 0x80 > 0);
 
             if self.reg.p.contains(Flags::DECIMAL) {
-                let mut l = (m & 0x0f) - (n & 0x0f) - c;
-                let mut h = (m & 0xf0) - (n & 0xf0);
+                let mut l = (m & 0x0f) as i16 - (n & 0x0f) as i16 + (c as i16) - 1;
+                let mut h = (m & 0xf0) as i16 - (n & 0xf0) as i16;
 
-                if l & 0x10 > 0 { l -= 0x06; h -= 0x1; }
-                self.set_flag(Flags::CARRY, !(s >> 4) != 0);
-                self.set_flag(Flags::OVERFLOW, (m ^ n) & (m ^ s) & 0x80 != 0);
-                if h & 0x0100 > 0 { h -= 0x60; }
+                if l < 0x00 { l = (l - 0x06) & 0x0f; h -= 0x10; }
+                if h < 0x00 { h = (h - 0x60) & 0xf0; }
 
-                self.reg.a = ((h & 0xf0) | (l & 0x0f)) as u8;
-            } else {
-                self.set_flag(Flags::CARRY, !(s >> 8) != 0);
-                self.set_flag(Flags::OVERFLOW, (m ^ n) & (m ^ s) & 0x80 != 0);
-
-                self.reg.a = s as u8;
+                s = (h | l) as u16;
             }
 
+            self.reg.a = s as u8;
             self.update_nz_flags(self.reg.a);
         }
     }
 
-    fn str(&mut self, opcode: &Opcode) {
-        let byte = match opcode.name {
-            "STA"     => self.reg.a,
-            "STX"     => self.reg.x,
-            "STY" | _ => self.reg.y,
-        };
-
+    fn str(&mut self, opcode: &Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.bus.write(addr, byte);
+            self.bus.write(addr, reg);
         }
     }
 
