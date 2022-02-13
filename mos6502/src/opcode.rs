@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TickModifier {
     Branch,
     PageCrossed,
@@ -27,6 +27,7 @@ pub struct Opcode {
     pub tick_modifier: Option<TickModifier>,
 }
 
+#[derive(Debug)]
 pub enum Operand {
     Accumulator,
     Address(u16),
