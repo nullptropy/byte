@@ -501,10 +501,10 @@ fn opcode_0x68_implied_pla() {
 fn opcode_0x28_implied_plp() {
     let cpu = execute_nsteps(|cpu| {
         cpu.reg.sp = 0xff;
-        cpu.stack_push(0b1111_1111);
+        cpu.stack_push(0b1111_0111);
     }, &[0x28, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.p.bits(), 0b1100_1111);
+    assert_eq!(cpu.reg.p.bits(), 0b1111_0111);
 }
 
 #[test]
