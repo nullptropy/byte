@@ -1,8 +1,8 @@
 [package]
-name = "platform"
+name = "winit-pixels"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mos6502 = { path = "../mos6502" }
+mos6502 = { path = "../.." }
 minifb  = "0.20.0"
