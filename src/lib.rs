@@ -1,5 +1,3 @@
-#![feature(control_flow_enum)]
-
 pub mod cpu;
 pub mod bus;
 pub mod opcode;

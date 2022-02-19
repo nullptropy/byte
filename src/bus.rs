@@ -7,6 +7,8 @@ pub trait Peripheral {
     fn write(&mut self, addr: u16, byte: u8);
 }
 
+// TODO: implement the `Bus` struct in some other way
+// that does not suck
 pub struct Bus {
     peripherals: Vec<(Range<usize>, Box<dyn Peripheral>)>,
 }
@@ -46,13 +48,21 @@ impl Bus {
     }
 
     pub fn get_peripheral_index(&self, addr: u16) -> Option<(u16, usize)> {
-        self.peripherals.iter().enumerate().try_for_each(|(i, (range, _))| {
+        let result = self.peripherals.iter().enumerate().try_for_each(|(i, (range, _))| {
             if range.contains(&(addr as usize)) {
                 return ControlFlow::Break((addr - range.start as u16, i));
             }
 
             ControlFlow::Continue(())
-        }).break_value()
+        });
+
+        // TODO: refactor this with `.break_value` when it is
+        // stabilized, feature: control_flow_enum
+        if let ControlFlow::Break((addr, i)) = result {
+            return Some((addr, i));
+        }
+
+        None
     }
 
     pub fn attach<T>(&mut self, lo: u16, hi: u16, peripheral: T) -> Result<(), String>
