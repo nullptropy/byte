@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mos6502 = { path = "../.." }
-minifb  = "0.20.0"
+winit = "0.26.1"
+pixels = "0.9.0"
+mos6502 = { path = '../..' }
+winit_input_helper = "0.11.0"
