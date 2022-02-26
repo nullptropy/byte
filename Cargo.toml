@@ -9,6 +9,3 @@ lazy_static = "1.4.0"
 
 [profile.test]
 opt-level = 3
-
-[workspace]
-members = ["examples/*"]
