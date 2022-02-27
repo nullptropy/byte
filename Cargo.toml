@@ -1,0 +1,5 @@
+[workspace]
+members = ["mos6502", "asm"]
+
+[profile.test]
+opt-level = 3
