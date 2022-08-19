@@ -1,8 +1,8 @@
 # mos6502
 
-This crate emulates the famous [MOS Technology 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) CPU. This implementation currently can pass [Klaus' test suite for 6502](https://github.com/Klaus2m5/6502_65C02_functional_tests).
+This crate emulates the famous [MOS Technology 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) CPU. Current implementation can pass [Klaus' test suite for 6502](https://github.com/Klaus2m5/6502_65C02_functional_tests).
 
-I intend to use this crate in anothor project of mine which will be a custom fantasy console with a wide set of tools to develop/debug/write software for.
+I intend to use this crate in another project of mine which will be a custom fantasy console with a wide set of tools to develop software for, purely for recreational purposes.
 
 # Example Usage
 ```rust
