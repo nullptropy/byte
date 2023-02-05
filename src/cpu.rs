@@ -30,7 +30,7 @@ bitflags! {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Registers {
     pub sp: u8,
     pub pc: u16,
@@ -47,30 +47,20 @@ pub struct CPU {
     pub cycle: u64,
 }
 
-impl Registers {
-    fn new() -> Self {
-        Self {
-            pc: 0, sp: 0,
-             x: 0,  y: 0,
-             a: 0,  p: Flags::default()
-        }
-    }
-}
-
 impl CPU {
     pub fn new() -> Self {
         CPU {
             irq: true,
             nmi: true, nmi_edge: false,
-            bus: Bus::new(),
-            reg: Registers::new(),
+            bus: Bus::default(),
+            reg: Registers::default(),
 
             cycle: 0,
         }
     }
 
     pub fn reset(&mut self) {
-        self.reg = Registers::new();
+        self.reg = Registers::default();
         self.reg.pc = self.bus.read_u16(0xfffc);
     }
 

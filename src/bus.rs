@@ -3,21 +3,17 @@ use std::ops::ControlFlow;
 
 pub trait Peripheral {
     fn read(&self, addr: u16) -> u8;
-
     fn write(&mut self, addr: u16, byte: u8);
 }
 
 // TODO: implement the `Bus` struct in some other way
 // that does not suck
+#[derive(Default)]
 pub struct Bus {
     peripherals: Vec<(Range<usize>, Box<dyn Peripheral>)>,
 }
 
 impl Bus {
-    pub fn new() -> Self {
-        Self { peripherals: vec![] }
-    }
-
     pub fn read(&self, addr: u16) -> u8 {
         match self.get_peripheral_index(addr) {
             Some((addr, index)) => self.peripherals[index].1.read(addr),
