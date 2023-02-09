@@ -4,6 +4,9 @@
 use minifb::{Scale, Window, WindowOptions};
 use mos6502::prelude::*;
 
+use std::fs::File;
+use std::io::Read;
+
 const W: usize = 32;
 const H: usize = 32;
 const S: usize = 10; // scale, TODO: make this into something configurable
@@ -158,14 +161,35 @@ fn main() {
         .attach(0x0000, 0xffff, RAM::new(0x10000))
         .expect("failed to attach the ram to the bus");
 
-    cpu.reg.pc = 0x8000;
-    cpu.load(&[
-        0xa5, 0xff,          // LDA $ff
-        0x8d, 0x00, 0x02,    // STA $200
-        0x8d, 0x01, 0x02,    // STA $200
-        0x8d, 0x02, 0x02,    // STA $200
-        0x4c, 0x00, 0x80,    // JMP $8000
-    ], 0x8000);
+    let program = match std::env::args().nth(1) {
+        Some(path) => {
+            let mut program = Vec::new();
+            let mut file = std::fs::File::open(path).expect("couldn't open the program file");
+
+            file.read_to_end(&mut program)
+                .expect("failed to read the program file to the end");
+            program
+        }
+        None => {
+            eprintln!("Usage: ./byte-emu program.bin");
+            return;
+        }
+    };
+
+    // cpu.reg.pc = 0x8000;
+    // cpu.load(
+    //     &[
+    //         0xa5, 0xff, // LDA $ff
+    //         0x8d, 0x00, 0x02, // STA $200
+    //         0x8d, 0x01, 0x02, // STA $200
+    //         0x8d, 0x02, 0x02, // STA $200
+    //         0x4c, 0x00, 0x80, // JMP $8000
+    //     ],
+    //     0x8000,
+    // );
+
+    cpu.load(&program, 0x0000);
+    cpu.interrupt(Interrupt::RST);
 
     State::new(W * S, H * S, cpu)
         // TODO: make this more configurable
