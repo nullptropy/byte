@@ -1,0 +1,8 @@
+[package]
+name = "byte-emu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+minifb = "0.23.0"
+mos6502 = { path = "../mos6502" }
