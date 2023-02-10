@@ -1,5 +1,5 @@
 [workspace]
 members = [
-  "mos6502",
-  "byte-emu"
+  "byte_core",
+  "byte_emu",
 ]

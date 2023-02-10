@@ -1,8 +1,8 @@
 [package]
-name = "byte-emu"
+name = "byte_emu"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 minifb = "0.23.0"
-mos6502 = { path = "../mos6502" }
+byte_core = { path = "../byte_core" }
