@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-pub use mos6502::*;
+pub use byte_core::*;
 
 pub struct MockRAM {
     pub data: Vec<u8>
