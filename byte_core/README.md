@@ -1,12 +1,10 @@
-# mos6502
+# byte_core
 
-This crate emulates the famous [MOS Technology 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) CPU. Current implementation can pass [Klaus' test suite for 6502](https://github.com/Klaus2m5/6502_65C02_functional_tests).
-
-I intend to use this crate in another project of mine which will be a custom fantasy console with a wide set of tools to develop software for, purely for recreational purposes.
+The `byte_core` crate emulates the well-known [MOS Technology 6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) CPU and has been designed to match its features. This implementation is capable of passing [Klaus' test suite for 6502](https://github.com/Klaus2m5/6502_65C02_functional_tests) and can be utilized as an independent component, separate from the `byte` project.
 
 # Example Usage
 ```rust
-use mos6502::*;
+use byte_core::*;
 
 struct RAM {
     pub data: Vec<u8>,

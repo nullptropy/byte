@@ -1,5 +1,6 @@
 # byte
-WIP fantasy console
+
+A work-in-progress fantasy console designed to provide a user-friendly platform for those who want to learn 6502 assembly.
 
 # Progress
 
