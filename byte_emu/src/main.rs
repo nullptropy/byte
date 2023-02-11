@@ -1,11 +1,10 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 
-// TODO: replace minifb with something that works on the web
-use minifb::{Scale, Window, WindowOptions};
 use std::fs::File;
 use std::io::Read;
 
 use byte_core::*;
+use minifb::{Scale, Window, WindowOptions};
 
 const W: usize = 32;
 const H: usize = 32;
@@ -22,7 +21,7 @@ struct RAM {
 
 struct State {
     cpu: cpu::CPU,
-    win: minifb::Window,
+    win: Window,
     buf: Vec<u32>,
     size: (usize, usize),
     rand: Box<dyn Iterator<Item = u32>>,
@@ -168,9 +167,7 @@ fn main() {
     };
 
     cpu.load(&program, 0x0000);
-    cpu.interrupt(prelude::Interrupt::RST);
+    cpu.interrupt(cpu::Interrupt::RST);
 
-    State::new(W * S, H * S, cpu)
-        // TODO: make this more configurable
-        .run();
+    State::new(W * S, H * S, cpu).run();
 }

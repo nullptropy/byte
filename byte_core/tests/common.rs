@@ -1,14 +1,14 @@
-#![allow(dead_code)]
-
 pub use byte_core::*;
 
 pub struct MockRAM {
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl MockRAM {
     pub fn new(size: usize) -> Self {
-        Self { data: vec![0; size] }
+        Self {
+            data: vec![0; size],
+        }
     }
 }
 
@@ -24,20 +24,21 @@ impl bus::Peripheral for MockRAM {
 
 pub fn init_cpu() -> cpu::CPU {
     let mut cpu = cpu::CPU::new();
+
     cpu.bus
         .attach(0x0000, 0xffff, MockRAM::new(0x10000))
         .unwrap();
     cpu
 }
 
+#[allow(dead_code)]
 pub fn execute_nsteps(config: fn(&mut cpu::CPU), program: &[u8], addr: u16, n: usize) -> cpu::CPU {
     let mut cpu = init_cpu();
     config(&mut cpu);
 
-    cpu.load(program, addr);
     cpu.reg.pc = addr;
+    cpu.load(program, addr);
 
-    for _ in 0..n { cpu.step(); }
-
+    (0..n).for_each(|_| cpu.step());
     cpu
 }
