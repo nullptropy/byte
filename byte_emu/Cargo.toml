@@ -4,5 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-minifb = "0.23.0"
 byte_core = { path = "../byte_core" }
+
+egui = "0.21.0"
+eframe = { version = "0.21.2", default-features = false, features = [
+    "default_fonts", # Embed the default egui fonts.
+    "wgpu",          # Use the wgpu rendering backend. Alternative: "glow".
+    "persistence",   # Enable restoring app state when restarting the app.
+] }
+
+serde = { version = "1.0.152", features = ["derive"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tracing-subscriber = "0.3.16"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.6"
+tracing-wasm = "0.2.1"
+wasm-bindgen-futures = "0.4.34"
