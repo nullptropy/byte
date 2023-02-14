@@ -47,8 +47,8 @@ pub struct CPU {
     pub cycle: u64,
 }
 
-impl CPU {
-    pub fn new() -> Self {
+impl Default for CPU {
+    fn default() -> Self {
         CPU {
             irq: true,
             nmi: true, nmi_edge: false,
@@ -58,7 +58,9 @@ impl CPU {
             cycle: 0,
         }
     }
+}
 
+impl CPU {
     pub fn reset(&mut self) {
         self.reg = Registers::default();
         self.reg.pc = self.bus.read_u16(0xfffc);

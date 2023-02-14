@@ -27,7 +27,7 @@ impl bus::Peripheral for RAM {
 }
 
 fn main() {
-    let mut cpu = cpu::CPU::new();
+    let mut cpu = cpu::CPU::default();
     cpu.bus
         .attach(0x0000, 0xffff, RAM::new(0x10000))
         .unwrap();

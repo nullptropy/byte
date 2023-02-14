@@ -23,7 +23,7 @@ impl bus::Peripheral for MockRAM {
 }
 
 pub fn init_cpu() -> cpu::CPU {
-    let mut cpu = cpu::CPU::new();
+    let mut cpu = cpu::CPU::default();
 
     cpu.bus
         .attach(0x0000, 0xffff, MockRAM::new(0x10000))
