@@ -2,7 +2,7 @@
 use byte_core::*;
 
 use eframe::{CreationContext, Frame, Storage};
-use egui::{Color32, ColorImage, Context};
+use egui::{pos2, vec2, Color32, ColorImage, Context, Rect, TextureHandle, TextureOptions};
 
 const INSTRUCTIONS_PER_FRAME: usize = 6400000 / 60;
 const COLOR_PALETTE: [u32; 16] = [
@@ -47,11 +47,17 @@ impl ByteEmuApp {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
         }
 
-        Self { cpu: cpu::CPU::default(), texture: None }
+        Self {
+            cpu: cpu::CPU::default(),
+            texture: None,
+        }
     }
 
-    pub fn laod_program(&mut self) {
-        self.cpu.bus.attach(0x0000, 0xffff, RAM::new(0x10000)).unwrap();
+    pub fn load_program(&mut self) {
+        let ram = RAM::new(0x10000);
+        self.cpu.bus.attach(0x0000, 0xffff, ram).unwrap();
+
+        self.cpu.reg.pc = 0x8000;
         self.cpu.load(
             &[
                 0xa9, 0x00, 0x8d, 0x00, 0x02, 0xa9, 0x01, 0x8d, 0x01, 0x02, 0xa9, 0x02, 0x8d, 0x02,
@@ -59,7 +65,6 @@ impl ByteEmuApp {
             ],
             0x8000,
         );
-        self.cpu.reg.pc = 0x8000;
     }
 
     pub fn framebuffer(&mut self) -> ColorImage {
@@ -90,11 +95,12 @@ impl eframe::App for ByteEmuApp {
 
     fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
         if let None = self.texture {
-            self.laod_program();
+            self.load_program();
         }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             let pixels = self.framebuffer();
-            let texture: &mut egui::TextureHandle = self.texture.get_or_insert_with(|| {
+            let texture: &mut TextureHandle = self.texture.get_or_insert_with(|| {
                 ui.ctx().load_texture(
                     "framebuffer",
                     ColorImage::new([320, 320], Color32::BLACK),
@@ -102,8 +108,13 @@ impl eframe::App for ByteEmuApp {
                 )
             });
 
-            texture.set(pixels, Default::default());
-            ui.image(texture as &_, texture.size_vec2());
+            texture.set(pixels, TextureOptions::NEAREST);
+            ui.painter().image(
+                texture.id(),
+                Rect::from_min_size(pos2(0.0, 0.0), vec2(320.0, 320.0)),
+                Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
+                Color32::WHITE,
+            );
         });
 
         self.run_cpu();
