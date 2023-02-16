@@ -1,6 +1,9 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod app;
+mod emu;
+
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
     tracing_subscriber::fmt::init();
@@ -8,7 +11,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "byte-emu",
         eframe::NativeOptions::default(),
-        Box::new(|cc| Box::new(byte_emu::ByteEmuApp::new(cc))),
+        Box::new(|cc| Box::new(app::ByteEmuApp::new(cc))),
     )
 }
 
@@ -21,7 +24,7 @@ fn main() {
         eframe::start_web(
             "byte_emu_app", // hardcode it
             eframe::WebOptions::default(),
-            Box::new(|cc| Box::new(byte_emu::ByteEmuApp::new(cc))),
+            Box::new(|cc| Box::new(app::ByteEmuApp::new(cc))),
         )
         .await
         .expect("failed to start eframe");
