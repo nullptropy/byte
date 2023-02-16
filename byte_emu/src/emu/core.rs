@@ -1,3 +1,4 @@
+use super::rand;
 use byte_core::*;
 
 const COLOR_PALETTE: [u32; 16] = [
@@ -8,6 +9,7 @@ const INSTRUCTIONS_PER_FRAME: usize = 6400000 / 60;
 
 pub struct ByteEmu {
     pub cpu: cpu::CPU,
+    rand: Box<dyn Iterator<Item = u32>>,
 }
 
 impl Default for ByteEmu {
@@ -17,7 +19,10 @@ impl Default for ByteEmu {
             .attach(0x0000, 0xffff, super::ram::Ram::default())
             .unwrap();
 
-        Self { cpu }
+        Self {
+            cpu,
+            rand: Box::new(rand::random_numbers(rand::random_seed() as u32)),
+        }
     }
 }
 
@@ -30,25 +35,20 @@ impl ByteEmu {
         let mut frame = [0u32; 32 * 32];
         frame.iter_mut().enumerate().for_each(|(i, p)| {
             let color = self.cpu.bus.read(0x200 + i as u16) & 0xf;
-            // print!("{color}:{i} ");
             *p = COLOR_PALETTE[color as usize];
         });
-        // print!("\n");
         frame
     }
 
     pub fn step(&mut self, key_pressed: Option<egui::Key>) {
-        let mut byte = [0u8];
-        if let Err(_why) = getrandom::getrandom(&mut byte) {
-            // TODO: log the error somehow
-        };
-
-        self.cpu.bus.write(0xfe, byte[0]);
         if let Some(key) = key_pressed {
             self.cpu.bus.write(0xff, key as u8);
         }
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
+            if let Some(n) = self.rand.next() {
+                self.cpu.bus.write(0xfe, n as u8);
+            }
             self.cpu.step();
         }
     }

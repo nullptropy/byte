@@ -30,7 +30,7 @@ impl ByteEmuApp {
     fn init_app(&mut self) {
         self.emu.load_program(
             &[
-                0xa5, 0xff, 0x8d, 0x00, 0x02, 0x8d, 0x01, 0x02, 0x8d, 0x02, 0x02, 0x8d, 0x03, 0x02,
+                0xa5, 0xfe, 0x8d, 0x00, 0x02, 0x8d, 0x01, 0x02, 0x8d, 0x02, 0x02, 0x8d, 0x03, 0x02,
                 0x8d, 0x04, 0x02, 0x4c, 0x00, 0x80,
             ],
             0x8000,
@@ -65,12 +65,14 @@ impl eframe::App for ByteEmuApp {
         self.frame_history
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::SidePanel::left("left").show(ctx, |ui| {
             self.frame_history.ui(ui);
+        });
 
+        egui::CentralPanel::default().show(ctx, |ui| {
             let pixels = self.framebuffer();
             let texture: &mut egui::TextureHandle = self.texture.get_or_insert_with(|| {
-                ui.ctx().load_texture(
+                ctx.load_texture(
                     "framebuffer",
                     ColorImage::new([320, 320], Color32::BLACK),
                     Default::default(),
@@ -80,13 +82,14 @@ impl eframe::App for ByteEmuApp {
             texture.set(pixels, egui::TextureOptions::NEAREST);
             ui.painter().image(
                 texture.id(),
-                Rect::from_min_size(egui::pos2(0.0, 200.0), egui::vec2(320.0, 320.0)),
+                Rect::from_min_size(ui.cursor().min, egui::vec2(320.0, 320.0)),
                 Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
                 Color32::WHITE,
             );
         });
 
-        self.emu.step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
+        self.emu
+            .step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
         ctx.request_repaint();
     }
 }
