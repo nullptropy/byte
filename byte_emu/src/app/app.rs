@@ -1,3 +1,4 @@
+use super::file_diag;
 use egui::{Color32, ColorImage, Context, Rect};
 
 #[derive(Default, serde::Deserialize, serde::Serialize)]
@@ -9,6 +10,8 @@ pub struct ByteEmuApp {
     texture: Option<egui::TextureHandle>,
     #[serde(skip)]
     frame_history: super::frame_history::FrameHistory,
+    #[serde(skip)]
+    file_processer: file_diag::FileProcesser,
 }
 
 impl ByteEmuApp {
@@ -20,6 +23,7 @@ impl ByteEmuApp {
                 emu: Default::default(),
                 texture: None,
                 frame_history: Default::default(),
+                file_processer: Default::default(),
             }
         };
 
@@ -62,14 +66,24 @@ impl eframe::App for ByteEmuApp {
     }
 
     fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        ctx.request_repaint();
+
         self.frame_history
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
         egui::SidePanel::left("left").show(ctx, |ui| {
+            self.file_processer.ui(ui);
             self.frame_history.ui(ui);
         });
 
+        self.file_processer
+            .consume_messages()
+            .iter()
+            .for_each(|m| tracing::debug!("{m:?}"));
+
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.label("this is a label");
+
             let pixels = self.framebuffer();
             let texture: &mut egui::TextureHandle = self.texture.get_or_insert_with(|| {
                 ctx.load_texture(
@@ -90,6 +104,5 @@ impl eframe::App for ByteEmuApp {
 
         self.emu
             .step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
-        ctx.request_repaint();
     }
 }
