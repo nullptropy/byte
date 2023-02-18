@@ -1,33 +1,25 @@
 use std::sync::mpsc;
 
 #[derive(Debug)]
-pub enum FileProcesserMessage {
-    BinaryFileOpen(String),
-    SourceFileOpen(String),
+pub struct FileProcesser<T> {
+    tx: mpsc::Sender<T>,
+    rx: mpsc::Receiver<T>,
 }
 
-#[derive(Debug)]
-pub struct FileProcesser {
-    ch: (
-        mpsc::Sender<FileProcesserMessage>,
-        mpsc::Receiver<FileProcesserMessage>,
-    ),
-}
-
-impl Default for FileProcesser {
-    fn default() -> Self {
-        Self {
-            ch: mpsc::channel(),
-        }
+impl<T> FileProcesser<T>
+where
+    T: Send + 'static,
+{
+    pub fn new() -> Self {
+        let (tx, rx) = mpsc::channel();
+        Self { tx, rx }
     }
-}
 
-impl FileProcesser {
-    pub fn consume_messages(&self) -> Vec<FileProcesserMessage> {
+    pub fn consume_messages(&self) -> Vec<T> {
         let mut messages = Vec::new();
 
         loop {
-            match self.ch.1.try_recv() {
+            match self.rx.try_recv() {
                 Ok(fm) => messages.push(fm),
                 Err(_) => break,
             }
@@ -36,34 +28,23 @@ impl FileProcesser {
         messages
     }
 
-    pub fn ui(&mut self, ui: &mut egui::Ui) {
-        // `false` for BinaryFileOpen
-        //  `true` for SourceFileOpen
-        let mut clicked_button: Option<bool> = None;
-        let binary_open_button = ui.button("Load binary file");
-        let source_open_button = ui.button("Load source file");
+    pub fn read<F>(&mut self, message_fn: F)
+    where
+        F: FnOnce(String, Vec<u8>) -> T,
+        F: Send + 'static,
+    {
+        let tx = self.tx.clone();
 
-        if binary_open_button.clicked() {
-            clicked_button = Some(false)
-        }
-        if source_open_button.clicked() {
-            clicked_button = Some(true)
-        }
+        execute(async move {
+            if let Some(file) = rfd::AsyncFileDialog::new().pick_file().await {
+                let name = file.file_name();
+                let data = file.read().await;
 
-        if let Some(clicked) = clicked_button {
-            let tx = self.ch.0.clone();
-            execute(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().pick_file().await {
-                    let message = if clicked {
-                        FileProcesserMessage::SourceFileOpen(file.file_name())
-                    } else {
-                        FileProcesserMessage::BinaryFileOpen(file.file_name())
-                    };
-
-                    tx.send(message).ok();
-                }
-            });
-        }
+                tx.send(message_fn(name, data))
+                    // ignore the error
+                    .ok();
+            }
+        });
     }
 }
 
@@ -71,8 +52,8 @@ use std::future::Future;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn execute<F: Future<Output = ()> + Send + 'static>(f: F) {
-    // this is stupid... use any executor of your choice instead
-    std::thread::spawn(move || futures::executor::block_on(f));
+    use pollster::FutureExt as _;
+    std::thread::spawn(move || f.block_on());
 }
 
 #[cfg(target_arch = "wasm32")]

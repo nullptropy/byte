@@ -49,13 +49,11 @@ impl FrameHistory {
         );
         egui::warn_if_debug_build(ui);
 
-        // if !cfg!(target_arch = "wasm32") {
         egui::CollapsingHeader::new("📊 CPU usage history")
-            .default_open(false)
+            .default_open(true)
             .show(ui, |ui| {
                 self.graph(ui);
             });
-        // }
     }
 
     fn graph(&mut self, ui: &mut egui::Ui) -> egui::Response {

@@ -1,7 +1,13 @@
-use super::file_diag;
+use super::file_diag::FileProcesser;
 use egui::{Color32, ColorImage, Context, Rect};
 
-#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[derive(Debug)]
+pub enum FileProcesserMessage {
+    BinaryFileOpen((String, Vec<u8>)),
+    SourceFileOpen((String, Vec<u8>)),
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct ByteEmuApp {
     #[serde(skip)]
@@ -11,7 +17,18 @@ pub struct ByteEmuApp {
     #[serde(skip)]
     frame_history: super::frame_history::FrameHistory,
     #[serde(skip)]
-    file_processer: file_diag::FileProcesser,
+    file_processer: FileProcesser<FileProcesserMessage>,
+}
+
+impl Default for ByteEmuApp {
+    fn default() -> Self {
+        Self {
+            emu: Default::default(),
+            texture: None,
+            frame_history: Default::default(),
+            file_processer: FileProcesser::new(),
+        }
+    }
 }
 
 impl ByteEmuApp {
@@ -19,12 +36,7 @@ impl ByteEmuApp {
         let mut app = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
         } else {
-            Self {
-                emu: Default::default(),
-                texture: None,
-                frame_history: Default::default(),
-                file_processer: Default::default(),
-            }
+            Self::default()
         };
 
         app.init_app();
@@ -71,21 +83,34 @@ impl eframe::App for ByteEmuApp {
         self.frame_history
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
-        egui::SidePanel::left("left").show(ctx, |ui| {
-            self.file_processer.ui(ui);
-            self.frame_history.ui(ui);
-        });
-
         self.file_processer
             .consume_messages()
             .iter()
             .for_each(|m| tracing::debug!("{m:?}"));
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.label("this is a label");
+        egui::TopBottomPanel::top("top").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                use FileProcesserMessage::*;
 
+                if ui.button("Load binary file").clicked() {
+                    self.file_processer
+                        .read(|name, data| BinaryFileOpen((name, data)));
+                }
+                if ui.button("Load source file").clicked() {
+                    self.file_processer
+                        .read(|name, data| SourceFileOpen((name, data)));
+                }
+            });
+        });
+
+        egui::TopBottomPanel::bottom("bottom").show(ctx, |ui| {
+            ui.label(format!("FPS: {}", self.frame_history.fps()));
+            self.frame_history.ui(ui);
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
             let pixels = self.framebuffer();
-            let texture: &mut egui::TextureHandle = self.texture.get_or_insert_with(|| {
+            let texture = self.texture.get_or_insert_with(|| {
                 ctx.load_texture(
                     "framebuffer",
                     ColorImage::new([320, 320], Color32::BLACK),
