@@ -11,7 +11,7 @@ pub enum FileProcesserMessage {
 #[serde(default)]
 pub struct ByteEmuApp {
     #[serde(skip)]
-    emu: crate::emu::ByteEmu,
+    pub emu: crate::emu::ByteEmu,
     #[serde(skip)]
     file_processer: FileProcesser<FileProcesserMessage>,
     #[serde(skip)]
