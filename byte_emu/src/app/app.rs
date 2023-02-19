@@ -54,7 +54,7 @@ impl ByteEmuApp {
             0x8000,
         );
         self.emu.cpu.reg.pc = 0x8000;
-        // self.emu.cpu.reg.sp = 0xff;
+        self.emu.cpu.reg.sp = 0xff;
     }
 
     fn framebuffer(&mut self) -> ColorImage {
@@ -81,10 +81,7 @@ impl eframe::App for ByteEmuApp {
     }
 
     fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
-        ctx.request_repaint();
-
-        self.frame_history
-            .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
+        self.show_ui(ctx, frame);
 
         self.file_processer
             .consume_messages()
@@ -100,11 +97,41 @@ impl eframe::App for ByteEmuApp {
                 }
             });
 
+        self.emu
+            .step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
+    }
+}
+
+impl ByteEmuApp {
+    fn show_ui(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        self.frame_history
+            .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
+
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
+            self.show_menu_bar(ui);
+        });
+
+        egui::TopBottomPanel::bottom("bottom").show(ctx, |ui| {
+            ui.label(format!("FPS: {}", self.frame_history.fps()));
+            self.frame_history.ui(ui);
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
+                self.show_pixel_buffer(ui);
+                self.show_code_editor(ui);
+            });
+        });
+
+        ctx.request_repaint();
+    }
+
+    fn show_menu_bar(&mut self, ui: &mut egui::Ui) {
+        egui::menu::bar(ui, |ui| {
+            ui.menu_button("File", |ui| {
                 use FileProcesserMessage::*;
 
-                if ui.button("Load binary file").clicked() {
+                if ui.button("Load binary program").clicked() {
                     self.file_processer
                         .read(|name, data| BinaryFile((name, data)));
                 }
@@ -114,45 +141,37 @@ impl eframe::App for ByteEmuApp {
                 }
             });
         });
+    }
 
-        egui::TopBottomPanel::bottom("bottom").show(ctx, |ui| {
-            ui.label(format!("FPS: {}", self.frame_history.fps()));
-            self.frame_history.ui(ui);
+    fn show_code_editor(&mut self, ui: &mut egui::Ui) {
+        egui::ScrollArea::both().show(ui, |ui| {
+            ui.add_sized(
+                ui.available_size(),
+                egui::TextEdit::multiline(&mut self.text)
+                    .font(egui::TextStyle::Monospace)
+                    .code_editor()
+                    .desired_width(f32::INFINITY),
+            );
+        });
+    }
+
+    fn show_pixel_buffer(&mut self, ui: &mut egui::Ui) {
+        let pixels = self.framebuffer();
+        let texture = self.texture.get_or_insert_with(|| {
+            ui.ctx().load_texture(
+                "framebuffer",
+                ColorImage::new([320, 320], Color32::BLACK),
+                Default::default(),
+            )
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let pixels = self.framebuffer();
-            let texture = self.texture.get_or_insert_with(|| {
-                ctx.load_texture(
-                    "framebuffer",
-                    ColorImage::new([320, 320], Color32::BLACK),
-                    Default::default(),
-                )
-            });
-
-            texture.set(pixels, egui::TextureOptions::NEAREST);
-            ui.horizontal(|ui| {
-                let (_, rect) = ui.allocate_space(egui::vec2(320.0, 320.0));
-                ui.painter().image(
-                    texture.id(),
-                    rect,
-                    Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-                    Color32::WHITE,
-                );
-
-                egui::ScrollArea::both().show(ui, |ui| {
-                    ui.add_sized(
-                        ui.available_size(),
-                        egui::TextEdit::multiline(&mut self.text)
-                            .font(egui::TextStyle::Monospace)
-                            .code_editor()
-                            .desired_width(f32::INFINITY),
-                    );
-                });
-            });
-        });
-
-        self.emu
-            .step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
+        texture.set(pixels, egui::TextureOptions::NEAREST);
+        let (_, rect) = ui.allocate_space(egui::vec2(320.0, 320.0));
+        ui.painter().image(
+            texture.id(),
+            rect,
+            Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+            Color32::WHITE,
+        );
     }
 }
