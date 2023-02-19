@@ -49,8 +49,6 @@ impl ByteEmuApp {
         self.emu
             .load_program(include_bytes!("../../assets/static.bin"), 0x0000);
         self.text = include_str!("../../assets/static.s").to_string();
-        // self.emu.cpu.reg.pc = 0x8000;
-        // self.emu.cpu.reg.sp = 0xff;
     }
 
     fn framebuffer(&mut self) -> ColorImage {
