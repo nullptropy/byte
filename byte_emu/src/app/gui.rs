@@ -94,7 +94,7 @@ impl eframe::App for ByteEmuApp {
             });
 
         self.emu
-            .step(ctx.input(|i| i.keys_down.iter().nth(0).copied()));
+            .step(ctx.input(|i| i.keys_down.iter().next().copied()));
     }
 }
 

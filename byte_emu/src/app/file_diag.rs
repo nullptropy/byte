@@ -18,11 +18,8 @@ where
     pub fn consume_messages(&self) -> Vec<T> {
         let mut messages = Vec::new();
 
-        loop {
-            match self.rx.try_recv() {
-                Ok(fm) => messages.push(fm),
-                Err(_) => break,
-            }
+        while let Ok(fm) = self.rx.try_recv() {
+            messages.push(fm);
         }
 
         messages

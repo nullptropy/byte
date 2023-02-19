@@ -486,9 +486,10 @@ impl CPU {
             let byte = self.bus.read(addr);
 
             match opcode.name {
-                "LDA"     => self.reg.a = byte,
-                "LDX"     => self.reg.x = byte,
-                "LDY" | _ => self.reg.y = byte,
+                "LDA" => self.reg.a = byte,
+                "LDX" => self.reg.x = byte,
+                "LDY" => self.reg.y = byte,
+                _ => unreachable!(),
             };
 
             self.update_nz_flags(byte);

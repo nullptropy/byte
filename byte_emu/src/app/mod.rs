@@ -1,5 +1,5 @@
-mod app;
+mod gui;
 mod file_diag;
 mod frame_history;
 
-pub(crate) use app::ByteEmuApp;
+pub(crate) use gui::ByteEmuApp;
