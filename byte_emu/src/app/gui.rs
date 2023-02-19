@@ -1,5 +1,5 @@
 use super::file_diag::FileProcesser;
-use egui::{Color32, ColorImage, Context, Rect};
+use egui::{Color32, ColorImage, Context, Rect, Visuals};
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {
@@ -35,6 +35,8 @@ impl Default for ByteEmuApp {
 
 impl ByteEmuApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        cc.egui_ctx.set_visuals(Visuals::dark());
+
         let mut app = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
         } else {
