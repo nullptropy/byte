@@ -3,8 +3,8 @@ use egui::{Color32, ColorImage, Context, Rect};
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {
-    BinaryFileOpen((String, Vec<u8>)),
-    SourceFileOpen((String, Vec<u8>)),
+    BinaryFile((String, Vec<u8>)),
+    SourceFile((String, Vec<u8>)),
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -13,20 +13,22 @@ pub struct ByteEmuApp {
     #[serde(skip)]
     emu: crate::emu::ByteEmu,
     #[serde(skip)]
-    texture: Option<egui::TextureHandle>,
+    file_processer: FileProcesser<FileProcesserMessage>,
     #[serde(skip)]
     frame_history: super::frame_history::FrameHistory,
+    text: String,
     #[serde(skip)]
-    file_processer: FileProcesser<FileProcesserMessage>,
+    texture: Option<egui::TextureHandle>,
 }
 
 impl Default for ByteEmuApp {
     fn default() -> Self {
         Self {
             emu: Default::default(),
-            texture: None,
-            frame_history: Default::default(),
             file_processer: FileProcesser::new(),
+            frame_history: Default::default(),
+            text: String::new(),
+            texture: None,
         }
     }
 }
@@ -52,6 +54,7 @@ impl ByteEmuApp {
             0x8000,
         );
         self.emu.cpu.reg.pc = 0x8000;
+        // self.emu.cpu.reg.sp = 0xff;
     }
 
     fn framebuffer(&mut self) -> ColorImage {
@@ -86,7 +89,16 @@ impl eframe::App for ByteEmuApp {
         self.file_processer
             .consume_messages()
             .iter()
-            .for_each(|m| tracing::debug!("{m:?}"));
+            .for_each(|m| match m {
+                FileProcesserMessage::BinaryFile((_, data)) => {
+                    // load the program
+                    // and then issue a RST interrupt
+                    self.emu.load_program(data, 0x0000);
+                }
+                FileProcesserMessage::SourceFile((_, data)) => {
+                    self.text = String::from_utf8_lossy(data).to_string()
+                }
+            });
 
         egui::TopBottomPanel::top("top").show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -94,11 +106,11 @@ impl eframe::App for ByteEmuApp {
 
                 if ui.button("Load binary file").clicked() {
                     self.file_processer
-                        .read(|name, data| BinaryFileOpen((name, data)));
+                        .read(|name, data| BinaryFile((name, data)));
                 }
                 if ui.button("Load source file").clicked() {
                     self.file_processer
-                        .read(|name, data| SourceFileOpen((name, data)));
+                        .read(|name, data| SourceFile((name, data)));
                 }
             });
         });
@@ -119,12 +131,25 @@ impl eframe::App for ByteEmuApp {
             });
 
             texture.set(pixels, egui::TextureOptions::NEAREST);
-            ui.painter().image(
-                texture.id(),
-                Rect::from_min_size(ui.cursor().min, egui::vec2(320.0, 320.0)),
-                Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-                Color32::WHITE,
-            );
+            ui.horizontal(|ui| {
+                let (_, rect) = ui.allocate_space(egui::vec2(320.0, 320.0));
+                ui.painter().image(
+                    texture.id(),
+                    rect,
+                    Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                    Color32::WHITE,
+                );
+
+                egui::ScrollArea::both().show(ui, |ui| {
+                    ui.add_sized(
+                        ui.available_size(),
+                        egui::TextEdit::multiline(&mut self.text)
+                            .font(egui::TextStyle::Monospace)
+                            .code_editor()
+                            .desired_width(f32::INFINITY),
+                    );
+                });
+            });
         });
 
         self.emu

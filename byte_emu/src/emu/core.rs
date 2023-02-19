@@ -28,7 +28,9 @@ impl Default for ByteEmu {
 
 impl ByteEmu {
     pub fn load_program(&mut self, program: &[u8], start: u16) {
+        // TODO: this sucks
         self.cpu.load(program, start);
+        self.cpu.interrupt(cpu::Interrupt::RST);
     }
 
     pub fn framebuffer(&self) -> [u32; 32 * 32] {
