@@ -140,12 +140,6 @@ impl ByteEmuApp {
     }
 
     fn show_code_editor(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 1.0;
-            ui.small_button("⏸");
-            ui.small_button("⏹");
-        });
-        ui.separator();
         egui::ScrollArea::both().show(ui, |ui| {
             ui.add_sized(
                 ui.available_size(),
