@@ -100,23 +100,23 @@ impl eframe::App for ByteEmuApp {
 
 impl ByteEmuApp {
     fn show_ui(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        let top = |name: &str| egui::TopBottomPanel::top(name.to_string());
+        let win = |name: &str| egui::Window::new(name);
+
         self.frame_history
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
-        egui::TopBottomPanel::top("top").show(ctx, |ui| {
+        top("top").show(ctx, |ui| {
             self.show_menu_bar(ui);
         });
-
-        egui::TopBottomPanel::bottom("bottom").show(ctx, |ui| {
-            ui.label(format!("FPS: {}", self.frame_history.fps()));
-            self.frame_history.ui(ui);
+        win("screen").show(ctx, |ui| {
+            self.show_pixel_buffer(ui);
         });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                self.show_pixel_buffer(ui);
-                self.show_code_editor(ui);
-            });
+        win("code editor").show(ctx, |ui| {
+            self.show_code_editor(ui);
+        });
+        win("performance").show(ctx, |ui| {
+            self.frame_history.ui(ui);
         });
 
         ctx.request_repaint();
@@ -140,6 +140,12 @@ impl ByteEmuApp {
     }
 
     fn show_code_editor(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 1.0;
+            ui.small_button("⏸");
+            ui.small_button("⏹");
+        });
+        ui.separator();
         egui::ScrollArea::both().show(ui, |ui| {
             ui.add_sized(
                 ui.available_size(),

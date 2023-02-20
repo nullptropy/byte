@@ -34,8 +34,9 @@ impl FrameHistory {
 
     pub fn ui(&mut self, ui: &mut egui::Ui) {
         ui.label(format!(
-            "Total frames painted: {}",
-            self.frame_times.total_count()
+            "Total frames painted: {}, FPS: {}",
+            self.frame_times.total_count(),
+            self.fps(),
         ))
         .on_hover_text("Includes this frame.");
 
@@ -58,8 +59,6 @@ impl FrameHistory {
 
     fn graph(&mut self, ui: &mut egui::Ui) -> egui::Response {
         use egui::*;
-
-        ui.label("egui CPU usage history");
 
         let history = &self.frame_times;
 
