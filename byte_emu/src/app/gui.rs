@@ -33,6 +33,18 @@ impl Default for ByteEmuApp {
     }
 }
 
+impl eframe::App for ByteEmuApp {
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
+    }
+
+    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        self.show_ui(ctx, frame);
+        self.process_files();
+        self.step_emulator(ctx.input(|i| i.keys_down.iter().next().copied()))
+    }
+}
+
 impl ByteEmuApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         cc.egui_ctx.set_visuals(Visuals::dark());
@@ -50,7 +62,10 @@ impl ByteEmuApp {
     fn init_app(&mut self) {
         self.emu
             .load_program(include_bytes!("../../assets/static.bin"), 0x0000);
-        self.text = include_str!("../../assets/static.s").to_string();
+
+        if self.text.is_empty() {
+            self.text = include_str!("../../assets/static.s").to_string();
+        }
     }
 
     fn framebuffer(&mut self) -> ColorImage {
@@ -69,16 +84,12 @@ impl ByteEmuApp {
             pixels,
         }
     }
-}
 
-impl eframe::App for ByteEmuApp {
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
+    fn step_emulator(&mut self, key_pressed: Option<egui::Key>) {
+        self.emu.step(key_pressed);
     }
 
-    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
-        self.show_ui(ctx, frame);
-
+    fn process_files(&mut self) {
         self.file_processer
             .consume_messages()
             .iter()
@@ -92,13 +103,8 @@ impl eframe::App for ByteEmuApp {
                     self.text = String::from_utf8_lossy(data).to_string()
                 }
             });
-
-        self.emu
-            .step(ctx.input(|i| i.keys_down.iter().next().copied()));
     }
-}
 
-impl ByteEmuApp {
     fn show_ui(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         let top = |name: &str| egui::TopBottomPanel::top(name.to_string());
         let win = |name: &str| egui::Window::new(name);
