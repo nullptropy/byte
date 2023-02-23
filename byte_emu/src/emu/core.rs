@@ -43,9 +43,14 @@ impl ByteEmu {
     }
 
     pub fn step(&mut self, key_pressed: Option<egui::Key>) {
-        if let Some(key) = key_pressed {
-            self.cpu.bus.write(0xff, key as u8);
-        }
+        self.cpu.bus.write(
+            0xff,
+            if let Some(key) = key_pressed {
+                key as u8
+            } else {
+                0x00
+            },
+        );
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {
