@@ -34,7 +34,7 @@ impl FrameHistory {
 
     pub fn ui(&mut self, ui: &mut egui::Ui) {
         ui.label(format!(
-            "Total frames painted: {}, FPS: {}",
+            "Total frames painted: {}, FPS: {:.2}",
             self.frame_times.total_count(),
             self.fps(),
         ))

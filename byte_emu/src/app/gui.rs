@@ -136,10 +136,12 @@ impl ByteEmuApp {
                 if ui.button("Load binary program").clicked() {
                     self.file_processer
                         .read(|name, data| BinaryFile((name, data)));
+                    ui.close_menu();
                 }
                 if ui.button("Load source file").clicked() {
                     self.file_processer
                         .read(|name, data| SourceFile((name, data)));
+                    ui.close_menu();
                 }
             });
         });
@@ -162,18 +164,12 @@ impl ByteEmuApp {
         let texture = self.texture.get_or_insert_with(|| {
             ui.ctx().load_texture(
                 "framebuffer",
-                ColorImage::new([320, 320], Color32::BLACK),
+                ColorImage::new([32, 32], Color32::BLACK),
                 Default::default(),
             )
         });
 
         texture.set(pixels, egui::TextureOptions::NEAREST);
-        let (_, rect) = ui.allocate_space(egui::vec2(320.0, 320.0));
-        ui.painter().image(
-            texture.id(),
-            rect,
-            Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-            Color32::WHITE,
-        );
+        ui.image(texture.id(), egui::vec2(320.0, 320.0));
     }
 }
