@@ -1,5 +1,5 @@
 use super::file_diag::FileProcesser;
-use egui::{Color32, ColorImage, Context, Rect, Visuals};
+use egui::{Color32, ColorImage, Context, Visuals};
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {
