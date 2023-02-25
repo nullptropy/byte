@@ -80,7 +80,7 @@ impl ByteEmuApp {
             .collect::<Vec<Color32>>();
 
         ColorImage {
-            size: [32, 32],
+            size: [64, 64],
             pixels,
         }
     }

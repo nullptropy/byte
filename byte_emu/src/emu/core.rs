@@ -7,6 +7,11 @@ const COLOR_PALETTE: [u32; 16] = [
 ];
 const INSTRUCTIONS_PER_FRAME: usize = 6400000 / 60;
 
+const REG_VIDEO: u16 = 0xfd;
+const REG_RANDOM: u16 = 0xfe;
+const REG_INPUT: u16 = 0xff;
+const FRAMEBUFFER_SIZE: usize = 64 * 64;
+
 pub struct ByteEmu {
     pub cpu: cpu::CPU,
     rand: Box<dyn Iterator<Item = u32>>,
@@ -33,18 +38,21 @@ impl ByteEmu {
         self.cpu.interrupt(cpu::Interrupt::RST);
     }
 
-    pub fn framebuffer(&self) -> [u32; 32 * 32] {
-        let mut frame = [0u32; 32 * 32];
+    pub fn framebuffer(&self) -> [u32; FRAMEBUFFER_SIZE] {
+        let mut frame = [0u32; FRAMEBUFFER_SIZE];
+        let video_ptr = (self.cpu.bus.read(REG_VIDEO) as u16 & 0xf) << 0xc;
+
         frame.iter_mut().enumerate().for_each(|(i, p)| {
-            let color = self.cpu.bus.read(0x200 + i as u16) & 0xf;
+            let color = self.cpu.bus.read(video_ptr + i as u16) & 0xf;
             *p = COLOR_PALETTE[color as usize];
         });
         frame
     }
 
     pub fn step(&mut self, key_pressed: Option<egui::Key>) {
+        // TODO: filter out the non-relevant keys
         self.cpu.bus.write(
-            0xff,
+            REG_INPUT,
             if let Some(key) = key_pressed {
                 key as u8
             } else {
@@ -54,7 +62,7 @@ impl ByteEmu {
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {
-                self.cpu.bus.write(0xfe, n as u8);
+                self.cpu.bus.write(REG_RANDOM, n as u8);
             }
             self.cpu.step();
         }
