@@ -40,7 +40,7 @@ fn main() {
 
     wasm_bindgen_futures::spawn_local(async {
         eframe::start_web(
-            "byte_emu_app", // hardcode it
+            "byte_emu_app",
             eframe::WebOptions::default(),
             Box::new(|cc| Box::new(app::ByteEmuApp::new(cc, None))),
         )
