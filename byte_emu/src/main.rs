@@ -16,18 +16,19 @@ fn main() -> eframe::Result<()> {
         "byte-emu",
         eframe::NativeOptions::default(),
         Box::new(|cc| {
-            let mut app = app::ByteEmuApp::new(cc);
+            let program = match args().nth(1) {
+                Some(path) => {
+                    let mut data = Vec::new();
+                    let mut file = File::open(path).expect("failed to open the file");
+                    file.read_to_end(&mut data)
+                        .expect("failed to read the file");
 
-            if let Some(path) = args().nth(1) {
-                let mut data = Vec::new();
-                let mut file = File::open(path).expect("failed to open the file");
-                file.read_to_end(&mut data)
-                    .expect("failed to read the file");
+                    Some((data, 0x000))
+                }
+                None => None,
+            };
 
-                app.emu.load_program(&data, 0x0000);
-            }
-
-            Box::new(app)
+            Box::new(app::ByteEmuApp::new(cc, program))
         }),
     )
 }
@@ -41,7 +42,7 @@ fn main() {
         eframe::start_web(
             "byte_emu_app", // hardcode it
             eframe::WebOptions::default(),
-            Box::new(|cc| Box::new(app::ByteEmuApp::new(cc))),
+            Box::new(|cc| Box::new(app::ByteEmuApp::new(cc, None))),
         )
         .await
         .expect("failed to start eframe");

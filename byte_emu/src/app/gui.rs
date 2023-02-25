@@ -1,5 +1,10 @@
 use super::file_diag::FileProcesser;
+use crate::emu::ByteEmu;
+
 use egui::{Color32, ColorImage, Context, Visuals};
+
+const DEFAULT_BINARY: &[u8; 1 << 16] = include_bytes!("../../assets/static.bin");
+const DEFAULT_SOURCE: &str = include_str!("../../assets/static.s");
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {
@@ -7,27 +12,41 @@ pub enum FileProcesserMessage {
     SourceFile((String, Vec<u8>)),
 }
 
+// `State` that we would like to persist (serialize).
 #[derive(serde::Deserialize, serde::Serialize)]
-#[serde(default)]
-pub struct ByteEmuApp {
-    #[serde(skip)]
-    pub emu: crate::emu::ByteEmu,
-    #[serde(skip)]
-    file_processer: FileProcesser<FileProcesserMessage>,
-    #[serde(skip)]
-    frame_history: super::frame_history::FrameHistory,
+pub struct State {
     text: String,
-    #[serde(skip)]
+}
+
+pub struct ByteEmuApp {
+    emu: ByteEmu,
+    file_processer: FileProcesser<FileProcesserMessage>,
+    frame_history: super::frame_history::FrameHistory,
+    state: State,
     texture: Option<egui::TextureHandle>,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            text: DEFAULT_SOURCE.to_string(),
+        }
+    }
 }
 
 impl Default for ByteEmuApp {
     fn default() -> Self {
+        let mut emu = ByteEmu::default();
+        let mut state = State::default();
+
+        emu.load_program(DEFAULT_BINARY, 0x0000);
+        state.text = DEFAULT_SOURCE.to_string();
+
         Self {
-            emu: Default::default(),
+            emu,
             file_processer: FileProcesser::new(),
             frame_history: Default::default(),
-            text: String::new(),
+            state,
             texture: None,
         }
     }
@@ -35,7 +54,7 @@ impl Default for ByteEmuApp {
 
 impl eframe::App for ByteEmuApp {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
+        eframe::set_value(storage, eframe::APP_KEY, &self.state);
     }
 
     fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
@@ -46,26 +65,21 @@ impl eframe::App for ByteEmuApp {
 }
 
 impl ByteEmuApp {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, program: Option<(Vec<u8>, u16)>) -> Self {
         cc.egui_ctx.set_visuals(Visuals::dark());
 
-        let mut app = if let Some(storage) = cc.storage {
-            eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
-        } else {
-            Self::default()
-        };
+        let mut app = Self::default();
 
-        app.init_app();
-        app
-    }
-
-    fn init_app(&mut self) {
-        self.emu
-            .load_program(include_bytes!("../../assets/static.bin"), 0x0000);
-
-        if self.text.is_empty() {
-            self.text = include_str!("../../assets/static.s").to_string();
+        if let Some(storage) = cc.storage {
+            if let Some(state) = eframe::get_value(storage, eframe::APP_KEY) {
+                app.state = state;
+            }
         }
+        if let Some((program, start)) = program {
+            app.emu.load_program(&program, start);
+        }
+
+        app
     }
 
     fn framebuffer(&mut self) -> ColorImage {
@@ -100,7 +114,7 @@ impl ByteEmuApp {
                     self.emu.load_program(data, 0x0000);
                 }
                 FileProcesserMessage::SourceFile((_, data)) => {
-                    self.text = String::from_utf8_lossy(data).to_string()
+                    self.state.text = String::from_utf8_lossy(data).to_string()
                 }
             });
     }
@@ -115,15 +129,22 @@ impl ByteEmuApp {
         top("top").show(ctx, |ui| {
             self.show_menu_bar(ui);
         });
-        win("screen").show(ctx, |ui| {
-            self.show_pixel_buffer(ui);
-        });
-        win("code editor").show(ctx, |ui| {
-            self.show_code_editor(ui);
-        });
-        win("performance").show(ctx, |ui| {
-            self.frame_history.ui(ui);
-        });
+        win("screen")
+            .default_pos(egui::pos2(170.0, 125.0))
+            .show(ctx, |ui| {
+                self.show_pixel_buffer(ui);
+            });
+        win("code editor")
+            .default_size(egui::vec2(666.0, 588.0))
+            .default_pos(egui::pos2(693.0, 216.0))
+            .show(ctx, |ui| {
+                self.show_code_editor(ui);
+            });
+        win("performance")
+            .default_pos(egui::pos2(58.0, 700.0))
+            .show(ctx, |ui| {
+                self.frame_history.ui(ui);
+            });
 
         ctx.request_repaint();
     }
@@ -143,6 +164,18 @@ impl ByteEmuApp {
                         .read(|name, data| SourceFile((name, data)));
                     ui.close_menu();
                 }
+
+                ui.separator();
+
+                if ui.button("Reset GUI state").clicked() {
+                    ui.ctx().memory_mut(|mem| *mem = Default::default());
+                    ui.close_menu();
+                }
+                if ui.button("Reset everything").clicked() {
+                    self.state = State::default();
+                    ui.ctx().memory_mut(|mem| *mem = Default::default());
+                    ui.close_menu();
+                }
             });
         });
     }
@@ -151,7 +184,7 @@ impl ByteEmuApp {
         egui::ScrollArea::both().show(ui, |ui| {
             ui.add_sized(
                 ui.available_size(),
-                egui::TextEdit::multiline(&mut self.text)
+                egui::TextEdit::multiline(&mut self.state.text)
                     .font(egui::TextStyle::Monospace)
                     .code_editor()
                     .desired_width(f32::INFINITY),
