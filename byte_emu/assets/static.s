@@ -22,9 +22,14 @@ init:
     rts
 
 loop:
+    ; jsr draw
+    ; jsr update
+    jmp loop
+
+VBLANK_IRQ:
     jsr draw
     jsr update
-    jmp loop
+    rti
 
 draw:
     ldy #$00
@@ -50,4 +55,4 @@ ret:
 
 .org $fffc
     .DW reset
-    .DW $0000
+    .DW VBLANK_IRQ
