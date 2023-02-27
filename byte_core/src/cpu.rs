@@ -1,12 +1,24 @@
 use bitflags::bitflags;
+use lazy_static::lazy_static;
 
 use crate::bus::Bus;
 use crate::opcode::*;
+
+lazy_static! {
+    pub static ref OPCODES: Vec<Option<Opcode>> =
+        include!(concat!(env!("OUT_DIR"), "/opcode_vec.rs"));
+}
 
 pub const STACK_BASE: u16 = 0x0100;
 pub const NMI_VECTOR: u16 = 0xfffa;
 pub const RST_VECTOR: u16 = 0xfffc;
 pub const IRQ_VECTOR: u16 = 0xfffe;
+
+#[derive(Debug)]
+pub enum Operand {
+    Accumulator,
+    Address(u16),
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Interrupt {
@@ -115,7 +127,7 @@ impl CPU {
         }
 
         let opcode = self.bus.read(self.reg.pc);
-        let opcode = OPCODE_MAP.get(&opcode)
+        let opcode = OPCODES[opcode as usize]
             .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
 
         self.reg.pc = self.reg.pc.wrapping_add(1);
@@ -240,7 +252,7 @@ impl CPU {
         Operand::Address(addr)
     }
 
-    fn get_operand(&mut self, opcode: &Opcode) -> Operand {
+    fn get_operand(&mut self, opcode: Opcode) -> Operand {
         match opcode.mode {
             AddressingMode::Relative    => Operand::Address(self.reg.pc),
             AddressingMode::Immediate   => Operand::Address(self.reg.pc),
@@ -310,7 +322,8 @@ impl CPU {
         }
     }
 
-    fn adc(&mut self, opcode: &Opcode) {
+    #[rustfmt::skip]
+    fn adc(&mut self, opcode: Opcode) {
         let m = self.reg.a as u16;
         let c = self.reg.p.contains(Flags::CARRY) as u16;
 
@@ -344,7 +357,7 @@ impl CPU {
         }
     }
 
-    fn and(&mut self, opcode: &Opcode) {
+    fn and(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a &= self.bus.read(addr);
             self.update_nz_flags(self.reg.a);
@@ -359,7 +372,7 @@ impl CPU {
         result
     }
 
-    fn asl(&mut self, opcode: &Opcode) {
+    fn asl(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._asl(self.reg.a);
@@ -371,7 +384,7 @@ impl CPU {
         }
     }
 
-    fn branch(&mut self, opcode: &Opcode, condition: bool) {
+    fn branch(&mut self, opcode: Opcode, condition: bool) {
         if !condition {
             return;
         }
@@ -391,7 +404,7 @@ impl CPU {
         }
     }
 
-    fn bit(&mut self, opcode: &Opcode) {
+    fn bit(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
             let result = self.reg.a & operand;
@@ -402,7 +415,7 @@ impl CPU {
         }
     }
 
-    fn compare(&mut self, opcode: &Opcode, reg: u8) {
+    fn compare(&mut self, opcode: Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
 
@@ -412,7 +425,7 @@ impl CPU {
         }
     }
 
-    fn dec(&mut self, opcode: &Opcode) {
+    fn dec(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let value = self.bus.read(addr).wrapping_sub(1);
             self.bus.write(addr, value);
@@ -420,24 +433,24 @@ impl CPU {
         }
     }
 
-    fn dex(&mut self, _opcode: &Opcode) {
+    fn dex(&mut self, _opcode: Opcode) {
         self.reg.x = self.reg.x.wrapping_sub(1);
         self.update_nz_flags(self.reg.x);
     }
 
-    fn dey(&mut self, _opcode: &Opcode) {
+    fn dey(&mut self, _opcode: Opcode) {
         self.reg.y = self.reg.y.wrapping_sub(1);
         self.update_nz_flags(self.reg.y);
     }
 
-    fn eor(&mut self, opcode: &Opcode) {
+    fn eor(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a ^= self.bus.read(addr);
             self.update_nz_flags(self.reg.a);
         }
     }
 
-    fn inc(&mut self, opcode: &Opcode) {
+    fn inc(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let value = self.bus.read(addr).wrapping_add(1);
             self.bus.write(addr, value);
@@ -445,24 +458,24 @@ impl CPU {
         }
     }
 
-    fn inx(&mut self, _opcode: &Opcode) {
+    fn inx(&mut self, _opcode: Opcode) {
         self.reg.x = self.reg.x.wrapping_add(1);
         self.update_nz_flags(self.reg.x);
     }
 
-    fn iny(&mut self, _opcode: &Opcode) {
+    fn iny(&mut self, _opcode: Opcode) {
         self.reg.y = self.reg.y.wrapping_add(1);
         self.update_nz_flags(self.reg.y);
     }
 
-    fn jsr(&mut self, opcode: &Opcode) {
+    fn jsr(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.stack_push_u16(self.reg.pc.wrapping_add(1));
             self.reg.pc = addr;
         }
     }
 
-    fn jmp(&mut self, opcode: &Opcode) {
+    fn jmp(&mut self, opcode: Opcode) {
         let operand = self.bus.read_u16(self.reg.pc);
 
         if opcode.code == 0x6c {
@@ -481,7 +494,7 @@ impl CPU {
         self.reg.pc = operand;
     }
 
-    fn ldr(&mut self, opcode: &Opcode) {
+    fn ldr(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let byte = self.bus.read(addr);
 
@@ -505,7 +518,7 @@ impl CPU {
         result
     }
 
-    fn lsr(&mut self, opcode: &Opcode) {
+    fn lsr(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator   => {
                 self.reg.a = self._lsr(self.reg.a);
@@ -517,27 +530,27 @@ impl CPU {
         }
     }
 
-    fn ora(&mut self, opcode: &Opcode) {
+    fn ora(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.reg.a |= self.bus.read(addr);
             self.update_nz_flags(self.reg.a);
         }
     }
 
-    fn pha(&mut self, _opcode: &Opcode) {
+    fn pha(&mut self, _opcode: Opcode) {
         self.stack_push(self.reg.a);
     }
 
-    fn php(&mut self, _opcode: &Opcode) {
+    fn php(&mut self, _opcode: Opcode) {
         self.stack_push(self.reg.p.bits() | 0x30);
     }
 
-    fn pla(&mut self, _opcode: &Opcode) {
+    fn pla(&mut self, _opcode: Opcode) {
         self.reg.a = self.stack_pull();
         self.update_nz_flags(self.reg.a);
     }
 
-    fn plp(&mut self, _opcode: &Opcode) {
+    fn plp(&mut self, _opcode: Opcode) {
         self.reg.p.bits = self.stack_pull() | 0x30;
     }
 
@@ -553,7 +566,7 @@ impl CPU {
         result
     }
 
-    fn rol(&mut self, opcode: &Opcode) {
+    fn rol(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._rol(self.reg.a);
@@ -565,6 +578,7 @@ impl CPU {
         }
     }
 
+    #[rustfmt::skip]
     #[inline]
     fn _ror(&mut self, value: u8) -> u8 {
         let result = value.rotate_right(1)
@@ -577,7 +591,7 @@ impl CPU {
         result
     }
 
-    fn ror(&mut self, opcode: &Opcode) {
+    fn ror(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._ror(self.reg.a);
@@ -589,16 +603,17 @@ impl CPU {
         }
     }
 
-    fn rti(&mut self, _opcode: &Opcode) {
+    fn rti(&mut self, _opcode: Opcode) {
         self.reg.p.bits = self.stack_pull() | 0x30;
         self.reg.pc = self.stack_pull_u16();
     }
 
-    fn rts(&mut self, _opcode: &Opcode) {
+    fn rts(&mut self, _opcode: Opcode) {
         self.reg.pc = self.stack_pull_u16() + 1;
     }
 
-    fn sbc(&mut self, opcode: &Opcode) {
+    #[rustfmt::skip]
+    fn sbc(&mut self, opcode: Opcode) {
         let m = self.reg.a;
         let c = self.reg.p.contains(Flags::CARRY) as u8;
 
@@ -627,38 +642,38 @@ impl CPU {
         }
     }
 
-    fn str(&mut self, opcode: &Opcode, reg: u8) {
+    fn str(&mut self, opcode: Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             self.bus.write(addr, reg);
         }
     }
 
-    fn tax(&mut self, _opcode: &Opcode) {
+    fn tax(&mut self, _opcode: Opcode) {
         self.reg.x = self.reg.a;
         self.update_nz_flags(self.reg.x);
     }
 
-    fn txa(&mut self, _opcode: &Opcode) {
+    fn txa(&mut self, _opcode: Opcode) {
         self.reg.a = self.reg.x;
         self.update_nz_flags(self.reg.a);
     }
 
-    fn tay(&mut self, _opcode: &Opcode) {
+    fn tay(&mut self, _opcode: Opcode) {
         self.reg.y = self.reg.a;
         self.update_nz_flags(self.reg.y);
     }
 
-    fn tya(&mut self, _opcode: &Opcode) {
+    fn tya(&mut self, _opcode: Opcode) {
         self.reg.a = self.reg.y;
         self.update_nz_flags(self.reg.a);
     }
 
-    fn tsx(&mut self, _opcode: &Opcode) {
+    fn tsx(&mut self, _opcode: Opcode) {
         self.reg.x = self.reg.sp;
         self.update_nz_flags(self.reg.x);
     }
 
-    fn txs(&mut self, _opcode: &Opcode) {
+    fn txs(&mut self, _opcode: Opcode) {
         self.reg.sp = self.reg.x;
     }
 }
