@@ -326,6 +326,50 @@ impl CPU {
             _ => unreachable!(),
         }
     }
+}
+
+// Opcode implementations
+
+impl CPU {
+    #[inline]
+    fn _asl(&mut self, value: u8) -> u8 {
+        self.set_flag(Flags::CARRY, value >> 7 == 1);
+        let result = value.wrapping_shl(1);
+        self.update_nz_flags(result);
+        result
+    }
+
+    #[inline]
+    fn _lsr(&mut self, value: u8) -> u8 {
+        self.set_flag(Flags::CARRY, value & 0x1 != 0);
+        let result = value.wrapping_shr(1);
+        self.set_flag(Flags::ZERO, value == 0);
+        self.set_flag(Flags::NEGATIVE, false);
+        result
+    }
+
+    #[inline]
+    fn _rol(&mut self, value: u8) -> u8 {
+        let result = value.rotate_left(1) & 0xfe | self.reg.p.contains(Flags::CARRY) as u8;
+
+        self.set_flag(Flags::CARRY, value & 0x80 > 0);
+        self.update_nz_flags(result);
+
+        result
+    }
+
+    #[rustfmt::skip]
+    #[inline]
+    fn _ror(&mut self, value: u8) -> u8 {
+        let result = value.rotate_right(1)
+                   & 0x7f
+                   | ((self.reg.p.contains(Flags::CARRY) as u8) << 7);
+
+        self.set_flag(Flags::CARRY, value & 0x1 > 0);
+        self.update_nz_flags(result);
+
+        result
+    }
 
     #[rustfmt::skip]
     fn adc(&mut self, opcode: Opcode) {
@@ -369,14 +413,6 @@ impl CPU {
         }
     }
 
-    #[inline]
-    fn _asl(&mut self, value: u8) -> u8 {
-        self.set_flag(Flags::CARRY, value >> 7 == 1);
-        let result = value.wrapping_shl(1);
-        self.update_nz_flags(result);
-        result
-    }
-
     fn asl(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
@@ -386,6 +422,17 @@ impl CPU {
                 let byte = self._asl(self.bus.read(addr));
                 self.bus.write(addr, byte);
             }
+        }
+    }
+
+    fn bit(&mut self, opcode: Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            let operand = self.bus.read(addr);
+            let result = self.reg.a & operand;
+
+            self.update_nz_flags(result);
+            self.set_flag(Flags::NEGATIVE, operand & 0x80 > 0);
+            self.set_flag(Flags::OVERFLOW, operand & 0x40 > 0);
         }
     }
 
@@ -408,17 +455,6 @@ impl CPU {
             if page != self.reg.pc >> 8 {
                 self.cycle += 1;
             }
-        }
-    }
-
-    fn bit(&mut self, opcode: Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            let operand = self.bus.read(addr);
-            let result = self.reg.a & operand;
-
-            self.update_nz_flags(result);
-            self.set_flag(Flags::NEGATIVE, operand & 0x80 > 0);
-            self.set_flag(Flags::OVERFLOW, operand & 0x40 > 0);
         }
     }
 
@@ -475,13 +511,6 @@ impl CPU {
         self.update_nz_flags(self.reg.y);
     }
 
-    fn jsr(&mut self, opcode: Opcode) {
-        if let Operand::Address(addr) = self.get_operand(opcode) {
-            self.stack_push_u16(self.reg.pc.wrapping_add(1));
-            self.reg.pc = addr;
-        }
-    }
-
     fn jmp(&mut self, opcode: Opcode) {
         let operand = self.bus.read_u16(self.reg.pc);
 
@@ -501,6 +530,13 @@ impl CPU {
         self.reg.pc = operand;
     }
 
+    fn jsr(&mut self, opcode: Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.stack_push_u16(self.reg.pc.wrapping_add(1));
+            self.reg.pc = addr;
+        }
+    }
+
     fn ldr(&mut self, opcode: Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let byte = self.bus.read(addr);
@@ -514,15 +550,6 @@ impl CPU {
 
             self.update_nz_flags(byte);
         }
-    }
-
-    #[inline]
-    fn _lsr(&mut self, value: u8) -> u8 {
-        self.set_flag(Flags::CARRY, value & 0x1 != 0);
-        let result = value.wrapping_shr(1);
-        self.set_flag(Flags::ZERO, value == 0);
-        self.set_flag(Flags::NEGATIVE, false);
-        result
     }
 
     fn lsr(&mut self, opcode: Opcode) {
@@ -561,16 +588,6 @@ impl CPU {
         self.reg.p.bits = self.stack_pull() | 0x30;
     }
 
-    #[inline]
-    fn _rol(&mut self, value: u8) -> u8 {
-        let result = value.rotate_left(1) & 0xfe | self.reg.p.contains(Flags::CARRY) as u8;
-
-        self.set_flag(Flags::CARRY, value & 0x80 > 0);
-        self.update_nz_flags(result);
-
-        result
-    }
-
     fn rol(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
@@ -581,19 +598,6 @@ impl CPU {
                 self.bus.write(addr, byte);
             }
         }
-    }
-
-    #[rustfmt::skip]
-    #[inline]
-    fn _ror(&mut self, value: u8) -> u8 {
-        let result = value.rotate_right(1)
-                   & 0x7f
-                   | ((self.reg.p.contains(Flags::CARRY) as u8) << 7);
-
-        self.set_flag(Flags::CARRY, value & 0x1 > 0);
-        self.update_nz_flags(result);
-
-        result
     }
 
     fn ror(&mut self, opcode: Opcode) {
@@ -658,19 +662,9 @@ impl CPU {
         self.update_nz_flags(self.reg.x);
     }
 
-    fn txa(&mut self, _opcode: Opcode) {
-        self.reg.a = self.reg.x;
-        self.update_nz_flags(self.reg.a);
-    }
-
     fn tay(&mut self, _opcode: Opcode) {
         self.reg.y = self.reg.a;
         self.update_nz_flags(self.reg.y);
-    }
-
-    fn tya(&mut self, _opcode: Opcode) {
-        self.reg.a = self.reg.y;
-        self.update_nz_flags(self.reg.a);
     }
 
     fn tsx(&mut self, _opcode: Opcode) {
@@ -678,7 +672,17 @@ impl CPU {
         self.update_nz_flags(self.reg.x);
     }
 
+    fn txa(&mut self, _opcode: Opcode) {
+        self.reg.a = self.reg.x;
+        self.update_nz_flags(self.reg.a);
+    }
+
     fn txs(&mut self, _opcode: Opcode) {
         self.reg.sp = self.reg.x;
+    }
+
+    fn tya(&mut self, _opcode: Opcode) {
+        self.reg.a = self.reg.y;
+        self.update_nz_flags(self.reg.a);
     }
 }
