@@ -101,7 +101,7 @@ impl ByteEmuApp {
 
     fn step_emulator(&mut self, key_pressed: Option<egui::Key>) {
         self.emu
-            .step(key_pressed.map(|key| key.try_into().ok()).flatten());
+            .step(key_pressed.and_then(|key| key.try_into().ok()));
     }
 
     fn process_files(&mut self) {

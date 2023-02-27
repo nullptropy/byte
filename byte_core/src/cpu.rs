@@ -47,27 +47,30 @@ pub struct Registers {
     pub sp: u8,
     pub pc: u16,
 
-    pub x: u8, pub y: u8,
-    pub a: u8, pub p: Flags,
+    pub x: u8,
+    pub y: u8,
+    pub a: u8,
+    pub p: Flags,
 }
 
 pub struct CPU {
-    pub irq: bool,
-    pub nmi: bool, pub nmi_edge: bool,
     pub bus: Bus,
-    pub reg: Registers,
     pub cycle: u64,
+    pub irq: bool,
+    pub nmi: bool,
+    pub nmi_edge: bool,
+    pub reg: Registers,
 }
 
 impl Default for CPU {
     fn default() -> Self {
         CPU {
-            irq: true,
-            nmi: true, nmi_edge: false,
             bus: Bus::default(),
-            reg: Registers::default(),
-
             cycle: 0,
+            irq: true,
+            nmi: true,
+            nmi_edge: false,
+            reg: Registers::default(),
         }
     }
 }
@@ -127,12 +130,13 @@ impl CPU {
         }
 
         let opcode = self.bus.read(self.reg.pc);
-        let opcode = OPCODES[opcode as usize]
-            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
+        let opcode =
+            OPCODES[opcode as usize].unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
 
         self.reg.pc = self.reg.pc.wrapping_add(1);
         let pc_copy = self.reg.pc;
 
+        #[rustfmt::skip]
         match opcode.code {
             0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
@@ -210,7 +214,8 @@ impl CPU {
     }
 
     pub fn stack_push(&mut self, byte: u8) {
-        self.bus.write(STACK_BASE.wrapping_add(self.reg.sp as u16), byte);
+        self.bus
+            .write(STACK_BASE.wrapping_add(self.reg.sp as u16), byte);
         self.reg.sp = self.reg.sp.wrapping_sub(1);
     }
 
@@ -254,19 +259,19 @@ impl CPU {
 
     fn get_operand(&mut self, opcode: Opcode) -> Operand {
         match opcode.mode {
-            AddressingMode::Relative    => Operand::Address(self.reg.pc),
-            AddressingMode::Immediate   => Operand::Address(self.reg.pc),
+            AddressingMode::Relative => Operand::Address(self.reg.pc),
+            AddressingMode::Immediate => Operand::Address(self.reg.pc),
             AddressingMode::Accumulator => Operand::Accumulator,
 
-            AddressingMode::ZeroPage  => Operand::Address(self.bus.read(self.reg.pc) as u16),
+            AddressingMode::ZeroPage => Operand::Address(self.bus.read(self.reg.pc) as u16),
             AddressingMode::ZeroPageX => {
                 Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16)
-            },
+            }
             AddressingMode::ZeroPageY => {
                 Operand::Address(self.bus.read(self.reg.pc).wrapping_add(self.reg.y) as u16)
-            },
+            }
 
-            AddressingMode::Absolute  => Operand::Address(self.bus.read_u16(self.reg.pc)),
+            AddressingMode::Absolute => Operand::Address(self.bus.read_u16(self.reg.pc)),
             AddressingMode::AbsoluteX => {
                 if let Some(modifier) = opcode.tick_modifier {
                     let lo = self.bus.read(self.reg.pc);
@@ -280,7 +285,7 @@ impl CPU {
                         .read_u16(self.reg.pc)
                         .wrapping_add(self.reg.x as u16),
                 )
-            },
+            }
             AddressingMode::AbsoluteY => {
                 if let Some(modifier) = opcode.tick_modifier {
                     let lo = self.bus.read(self.reg.pc);
@@ -294,11 +299,11 @@ impl CPU {
                         .read_u16(self.reg.pc)
                         .wrapping_add(self.reg.y as u16),
                 )
-            },
+            }
 
-            AddressingMode::Indirect  => {
+            AddressingMode::Indirect => {
                 Operand::Address(self.bus.read_u16(self.bus.read_u16(self.reg.pc)))
-            },
+            }
             AddressingMode::IndirectX => Operand::Address(
                 self.bus
                     .read_u16(self.bus.read(self.reg.pc).wrapping_add(self.reg.x) as u16),
@@ -316,9 +321,9 @@ impl CPU {
                         .read_u16(self.bus.read(self.reg.pc) as u16)
                         .wrapping_add(self.reg.y as u16),
                 )
-            },
+            }
 
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -376,7 +381,7 @@ impl CPU {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._asl(self.reg.a);
-            },
+            }
             Operand::Address(addr) => {
                 let byte = self._asl(self.bus.read(addr));
                 self.bus.write(addr, byte);
@@ -394,7 +399,9 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let page = self.reg.pc >> 8;
 
-            self.reg.pc = self.reg.pc
+            self.reg.pc = self
+                .reg
+                .pc
                 .wrapping_add(1)
                 .wrapping_add(i8::from_le_bytes(self.bus.read(addr).to_le_bytes()) as u16);
 
@@ -419,7 +426,7 @@ impl CPU {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
 
-            self.set_flag(Flags::ZERO,  reg == operand);
+            self.set_flag(Flags::ZERO, reg == operand);
             self.set_flag(Flags::CARRY, reg >= operand);
             self.set_flag(Flags::NEGATIVE, reg.wrapping_sub(operand) & 0x80 > 0);
         }
@@ -520,9 +527,9 @@ impl CPU {
 
     fn lsr(&mut self, opcode: Opcode) {
         match self.get_operand(opcode) {
-            Operand::Accumulator   => {
+            Operand::Accumulator => {
                 self.reg.a = self._lsr(self.reg.a);
-            },
+            }
             Operand::Address(addr) => {
                 let byte = self._lsr(self.bus.read(addr));
                 self.bus.write(addr, byte);
@@ -556,9 +563,7 @@ impl CPU {
 
     #[inline]
     fn _rol(&mut self, value: u8) -> u8 {
-        let result = value.rotate_left(1)
-                   & 0xfe
-                   | self.reg.p.contains(Flags::CARRY) as u8;
+        let result = value.rotate_left(1) & 0xfe | self.reg.p.contains(Flags::CARRY) as u8;
 
         self.set_flag(Flags::CARRY, value & 0x80 > 0);
         self.update_nz_flags(result);
@@ -570,7 +575,7 @@ impl CPU {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._rol(self.reg.a);
-            },
+            }
             Operand::Address(addr) => {
                 let byte = self._rol(self.bus.read(addr));
                 self.bus.write(addr, byte);
@@ -595,7 +600,7 @@ impl CPU {
         match self.get_operand(opcode) {
             Operand::Accumulator => {
                 self.reg.a = self._ror(self.reg.a);
-            },
+            }
             Operand::Address(addr) => {
                 let byte = self._ror(self.bus.read(addr));
                 self.bus.write(addr, byte);
