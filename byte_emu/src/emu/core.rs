@@ -17,6 +17,39 @@ pub struct ByteEmu {
     rand: Box<dyn Iterator<Item = u32>>,
 }
 
+#[derive(Debug)]
+pub enum ByteKey {
+    Up = 0x01,
+    Down,
+    Left,
+    Right,
+    Select,
+    Start,
+    A,
+    B,
+}
+
+impl TryInto<ByteKey> for egui::Key {
+    type Error = ();
+
+    fn try_into(self) -> Result<ByteKey, Self::Error> {
+        use egui::Key;
+        use ByteKey::*;
+
+        match self {
+            Key::ArrowUp => Ok(Up),
+            Key::ArrowDown => Ok(Down),
+            Key::ArrowLeft => Ok(Left),
+            Key::ArrowRight => Ok(Right),
+            Key::A => Ok(Select),
+            Key::S => Ok(Start),
+            Key::D => Ok(A),
+            Key::F => Ok(B),
+            _ => Err(()),
+        }
+    }
+}
+
 impl Default for ByteEmu {
     fn default() -> Self {
         let mut cpu = cpu::CPU::default();
@@ -33,7 +66,6 @@ impl Default for ByteEmu {
 
 impl ByteEmu {
     pub fn load_program(&mut self, program: &[u8], start: u16) {
-        // TODO: this sucks
         self.cpu.load(program, start);
         self.cpu.interrupt(cpu::Interrupt::RST);
     }
@@ -49,16 +81,10 @@ impl ByteEmu {
         frame
     }
 
-    pub fn step(&mut self, key_pressed: Option<egui::Key>) {
-        // TODO: filter out the non-relevant keys
-        self.cpu.bus.write(
-            REG_INPUT,
-            if let Some(key) = key_pressed {
-                key as u8
-            } else {
-                0x00
-            },
-        );
+    pub fn step(&mut self, key_pressed: Option<ByteKey>) {
+        self.cpu
+            .bus
+            .write(REG_INPUT, key_pressed.map(|key| key as u8).unwrap_or(0x00));
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {
