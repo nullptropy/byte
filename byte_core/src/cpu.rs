@@ -136,7 +136,6 @@ impl CPU {
         self.reg.pc = self.reg.pc.wrapping_add(1);
         let pc_copy = self.reg.pc;
 
-        #[rustfmt::skip]
         match opcode.code {
             0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
