@@ -1,13 +1,15 @@
 use core::fmt;
-use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy, PartialEq)]
+pub const OPCODE_MAP: [Option<Opcode>; 255] =
+    include!(concat!(env!("OUT_DIR"), "/opcode_arr.rs"));
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TickModifier {
     Branch,
     PageCrossed,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum AddressingMode {
     Implied,
     Immediate,
@@ -24,7 +26,7 @@ pub enum AddressingMode {
     IndirectY,
 }
 
-#[derive(Deserialize, Serialize, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Opcode {
     pub code: u8,
     pub size: u8,
