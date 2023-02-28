@@ -1,13 +1,7 @@
 use bitflags::bitflags;
-use lazy_static::lazy_static;
 
 use crate::bus::Bus;
 use crate::opcode::*;
-
-lazy_static! {
-    pub static ref OPCODES: Vec<Option<Opcode>> =
-        include!(concat!(env!("OUT_DIR"), "/opcode_vec.rs"));
-}
 
 pub const STACK_BASE: u16 = 0x0100;
 pub const NMI_VECTOR: u16 = 0xfffa;
@@ -56,9 +50,6 @@ pub struct Registers {
 pub struct CPU {
     pub bus: Bus,
     pub cycle: u64,
-    pub irq: bool,
-    pub nmi: bool,
-    pub nmi_edge: bool,
     pub reg: Registers,
 }
 
@@ -67,9 +58,6 @@ impl Default for CPU {
         CPU {
             bus: Bus::default(),
             cycle: 0,
-            irq: true,
-            nmi: true,
-            nmi_edge: false,
             reg: Registers::default(),
         }
     }
@@ -86,17 +74,6 @@ impl CPU {
             .iter()
             .enumerate()
             .for_each(|(i, b)| self.bus.write(start + i as u16, *b));
-    }
-
-    pub fn set_irq(&mut self, irq: bool) {
-        self.irq = irq;
-    }
-
-    // NMI is only executed once on a negative transition
-    // from HIGH to LOW
-    pub fn set_nmi(&mut self, nmi: bool) {
-        self.nmi_edge = !nmi;
-        self.nmi = nmi;
     }
 
     pub fn interrupt(&mut self, interrupt: Interrupt) {
@@ -122,15 +99,10 @@ impl CPU {
     }
 
     pub fn step(&mut self) {
-        if !self.irq && !self.reg.p.contains(Flags::INTERRUPT) {
-            return self.interrupt(Interrupt::IRQ);
-        } else if self.nmi_edge {
-            self.nmi_edge = false;
-            return self.interrupt(Interrupt::NMI);
-        }
-
         let opcode = self.bus.read(self.reg.pc);
-        let opcode = &OPCODES[opcode as usize]
+        let opcode = OPCODE_MAP
+            .get(opcode as usize)
+            .and_then(|opcode| opcode.as_ref())
             .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
 
         self.reg.pc = self.reg.pc.wrapping_add(1);
