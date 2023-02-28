@@ -39,6 +39,6 @@ pub fn execute_nsteps(config: fn(&mut cpu::CPU), program: &[u8], addr: u16, n: u
     cpu.reg.pc = addr;
     cpu.load(program, addr);
 
-    (0..n).for_each(|_| cpu.step());
+    (0..n).for_each(|_| cpu.step().unwrap());
     cpu
 }

@@ -23,6 +23,6 @@ fn test_6502_functional_tests() {
         if cpu.reg.pc == 0x3469 { break; }
         if      pc[0] == pc[1]  { dbg!(cpu.reg.pc); assert!(false); }
 
-        cpu.step();
+        cpu.step().unwrap();
     }
 }

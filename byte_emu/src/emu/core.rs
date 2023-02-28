@@ -90,7 +90,9 @@ impl ByteEmu {
             if let Some(n) = self.rand.next() {
                 self.cpu.bus.write(REG_RANDOM, n as u8);
             }
-            self.cpu.step();
+            if let Err(err) = self.cpu.step() {
+                tracing::error!("{err}");
+            };
         }
 
         self.cpu.interrupt(cpu::Interrupt::IRQ);

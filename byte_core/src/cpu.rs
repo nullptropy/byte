@@ -2,6 +2,7 @@ use bitflags::bitflags;
 
 use crate::bus::Bus;
 use crate::opcode::*;
+use crate::Error;
 
 pub const STACK_BASE: u16 = 0x0100;
 pub const NMI_VECTOR: u16 = 0xfffa;
@@ -89,16 +90,18 @@ impl CPU {
         self.cycle += 7;
     }
 
-    pub fn step(&mut self) {
+    pub fn step(&mut self) -> Result<(), Error> {
         let opcode = self.bus.read(self.reg.pc);
-        let opcode = OPCODE_MAP
-            .get(opcode as usize)
-            .and_then(|opcode| opcode.as_ref())
-            .unwrap_or_else(|| panic!("unrecognized opcode: {:x}", opcode));
-
         self.reg.pc = self.reg.pc.wrapping_add(1);
         let pc_copy = self.reg.pc;
 
+        let opcode = OPCODE_MAP
+            .get(opcode as usize)
+            .and_then(|opcode| opcode.as_ref())
+            .ok_or(Error::UnrecognizedOpcode(opcode))?;
+
+        // comment out when pushing to the repo
+        // #[rustfmt::skip]
         match opcode.code {
             0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
@@ -162,7 +165,10 @@ impl CPU {
             0xba => self.tsx(opcode),
             0x9a => self.txs(opcode),
 
-            0x00 => { self.interrupt(Interrupt::BRK); return; }
+            0x00 => {
+                self.interrupt(Interrupt::BRK);
+                return Ok(());
+            }
             0x20 => self.jsr(opcode),
             0xea => {},
             _    => {}
@@ -173,6 +179,7 @@ impl CPU {
         }
 
         self.cycle += opcode.tick as u64;
+        Ok(())
     }
 
     pub fn stack_push(&mut self, byte: u8) {
