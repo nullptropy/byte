@@ -47,20 +47,11 @@ pub struct Registers {
     pub p: Flags,
 }
 
+#[derive(Default)]
 pub struct CPU {
     pub bus: Bus,
     pub cycle: u64,
     pub reg: Registers,
-}
-
-impl Default for CPU {
-    fn default() -> Self {
-        CPU {
-            bus: Bus::default(),
-            cycle: 0,
-            reg: Registers::default(),
-        }
-    }
 }
 
 impl CPU {
