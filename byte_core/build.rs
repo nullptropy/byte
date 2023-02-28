@@ -15,7 +15,7 @@ fn main() {
 
     // serde doesn't support serializing/deserializing big arrays (yet)
     // so i'm just serializing a `Vec<Option<Opcode>>` of size 0xff
-    // and modifiying the output of the serializer intoto something like:
+    // and modifiying the output of the serializer into something like:
     // ```rust
     // [Some(Opcode { .. }), None, ..]
     // ```
