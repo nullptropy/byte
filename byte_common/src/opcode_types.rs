@@ -1,8 +1,5 @@
 use core::fmt;
 
-pub const OPCODE_MAP: [Option<Opcode>; 255] =
-    include!(concat!(env!("OUT_DIR"), "/opcode_arr.rs"));
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TickModifier {
     Branch,

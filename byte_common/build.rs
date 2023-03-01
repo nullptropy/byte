@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 fn main() {
     let opcodes: Vec<Option<Opcode>> = {
         let mut result = vec![None; 0xff];
-        let opcodes: Vec<Opcode> = serde_json::from_str(include_str!("scripts/instructions.json"))
+        let opcodes: Vec<Opcode> = serde_json::from_str(include_str!("misc/instructions.json"))
             .expect("failed to parse json file");
 
         opcodes
@@ -42,8 +42,8 @@ fn main() {
 }
 
 // these definitions are directly mirrored
-// from the `byte_core::opcode` module so that
-// `byte_core` itself doesn't depend on serde.
+// from the `byte_common::opcode` module so that
+// `byte_common` itself doesn't depend on serde.
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum TickModifier {

@@ -1,8 +1,8 @@
-use bitflags::bitflags;
-
 use crate::bus::Bus;
-use crate::opcode::*;
 use crate::Error;
+
+use bitflags::bitflags;
+use byte_common::opcode::*;
 
 pub const STACK_BASE: u16 = 0x0100;
 pub const NMI_VECTOR: u16 = 0xfffa;
