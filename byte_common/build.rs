@@ -19,7 +19,7 @@ fn main() {
     // ```rust
     // [Some(Opcode { .. }), None, ..]
     // ```
-    // and then in the `byte_core::opcode` module, `OPCODE_MAP` is defined as:
+    // and then in the `byte_common::opcode` module, `OPCODE_MAP` is defined as:
     // ```rust
     // pub const OPCODE_MAP: [Option<Opcode>; 255] =
     //     include!(concat!(env!("OUT_DIR"), "/opcode_arr.rs"));
