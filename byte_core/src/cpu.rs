@@ -56,11 +56,6 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn reset(&mut self) {
-        self.reg = Registers::default();
-        self.reg.pc = self.bus.read_u16(0xfffc);
-    }
-
     pub fn load(&mut self, program: &[u8], start: u16) {
         program
             .iter()
