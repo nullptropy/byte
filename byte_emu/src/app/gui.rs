@@ -23,31 +23,13 @@ pub struct ByteEmuApp {
     file_processer: FileProcesser<FileProcesserMessage>,
     frame_history: super::frame_history::FrameHistory,
     state: State,
-    texture: Option<egui::TextureHandle>,
+    texture: egui::TextureHandle,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
             text: DEFAULT_SOURCE.to_string(),
-        }
-    }
-}
-
-impl Default for ByteEmuApp {
-    fn default() -> Self {
-        let mut emu = ByteEmu::default();
-        let mut state = State::default();
-
-        emu.load_program(DEFAULT_BINARY, 0x0000);
-        state.text = DEFAULT_SOURCE.to_string();
-
-        Self {
-            emu,
-            file_processer: FileProcesser::new(),
-            frame_history: Default::default(),
-            state,
-            texture: None,
         }
     }
 }
@@ -68,15 +50,27 @@ impl ByteEmuApp {
     pub fn new(cc: &eframe::CreationContext<'_>, program: Option<(Vec<u8>, u16)>) -> Self {
         cc.egui_ctx.set_visuals(Visuals::dark());
 
-        let mut app = Self::default();
+        let mut app = Self {
+            emu: ByteEmu::default(),
+            file_processer: FileProcesser::new(),
+            frame_history: Default::default(),
+            state: State::default(),
+            texture: cc.egui_ctx.load_texture(
+                "framebuffer",
+                ColorImage::new([64, 64], Color32::BLACK),
+                Default::default(),
+            ),
+        };
 
         if let Some(storage) = cc.storage {
             if let Some(state) = eframe::get_value(storage, eframe::APP_KEY) {
                 app.state = state;
             }
         }
-        if let Some((program, start)) = program {
-            app.emu.load_program(&program, start);
+
+        match program {
+            Some((program, start)) => app.emu.load_program(&program, start),
+            None => app.emu.load_program(DEFAULT_BINARY, 0x0000),
         }
 
         app
@@ -119,7 +113,9 @@ impl ByteEmuApp {
                 }
             });
     }
+}
 
+impl ByteEmuApp {
     fn show_ui(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         let top = |name: &str| egui::TopBottomPanel::top(name.to_string());
         let win = |name: &str| egui::Window::new(name);
@@ -195,15 +191,7 @@ impl ByteEmuApp {
 
     fn show_pixel_buffer(&mut self, ui: &mut egui::Ui) {
         let pixels = self.framebuffer();
-        let texture = self.texture.get_or_insert_with(|| {
-            ui.ctx().load_texture(
-                "framebuffer",
-                ColorImage::new([32, 32], Color32::BLACK),
-                Default::default(),
-            )
-        });
-
-        texture.set(pixels, egui::TextureOptions::NEAREST);
-        ui.image(texture.id(), egui::vec2(320.0, 320.0));
+        self.texture.set(pixels, egui::TextureOptions::NEAREST);
+        ui.image(self.texture.id(), egui::vec2(320.0, 320.0));
     }
 }
