@@ -1,10 +1,7 @@
 use super::file_diag::FileProcesser;
-use crate::emu::ByteEmu;
+use crate::{emu::ByteEmu, DEFAULT_BINARY, DEFAULT_SOURCE};
 
 use egui::{Color32, ColorImage, Context, Visuals};
-
-const DEFAULT_BINARY: &[u8; 1 << 16] = include_bytes!("../../assets/static.bin");
-const DEFAULT_SOURCE: &str = include_str!("../../assets/static.s");
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {

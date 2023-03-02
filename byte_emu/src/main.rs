@@ -4,6 +4,9 @@
 mod app;
 mod emu;
 
+const DEFAULT_BINARY: &[u8; 1 << 16] = include_bytes!("../assets/static.bin");
+const DEFAULT_SOURCE: &str = include_str!("../assets/static.s");
+
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
     use std::env::args;
