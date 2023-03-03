@@ -15,7 +15,7 @@ There is a simple PoC deployed at [brkp.github.io/byte](https://brkp.github.io/b
 
 **[WIP]**: Everything described here is intended solely as a starting point; nothing is definitive or permanent.
 
-Byte is a 6502 based fantasy console that features a 64x64 and 8 key game pad keyboard. It is designed to create a platform for those who want to learn 6502 assembly, its aim is to lower the entry barrier.
+Byte is a fantasy console that runs on the 6502 microprocessor and features a compact 64x64 screen and an 8-key gamepad keyboard. Its primary purpose is to provide a user-friendly platform for learning 6502 assembly language programming, with the goal of lowering the barrier to entry for aspiring developers.
 
 # Special Registers
 
