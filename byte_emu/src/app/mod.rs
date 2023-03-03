@@ -1,8 +1,8 @@
-mod file_diag;
+mod file_processor;
 mod ui;
 
 use crate::{emu::ByteEmu, DEFAULT_BINARY, DEFAULT_SOURCE};
-use file_diag::FileProcesser;
+use file_processor::FileProcesser;
 
 #[derive(Debug)]
 pub enum FileProcesserMessage {

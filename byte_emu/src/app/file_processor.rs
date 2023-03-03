@@ -37,9 +37,8 @@ where
                 let name = file.file_name();
                 let data = file.read().await;
 
-                tx.send(message_fn(name, data))
-                    // ignore the error
-                    .ok();
+                // ignore the error
+                tx.send(message_fn(name, data)).ok();
             }
         });
     }
