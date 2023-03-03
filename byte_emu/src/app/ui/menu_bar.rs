@@ -35,6 +35,22 @@ impl ByteEmuApp {
                     ui.close_menu();
                 }
             });
+
+            ui.menu_button("Tools", |ui| {
+                if ui.button("Code Editor").clicked() {
+                    self.state.is_code_editor_open = true;
+                    ui.close_menu();
+                }
+
+                if ui.button("Frame History").clicked() {
+                    self.state.is_frame_history_open = true;
+                    ui.close_menu();
+                }
+            });
+
+            if ui.button("About").clicked() {
+                self.state.is_about_open = true;
+            }
         });
     }
 }

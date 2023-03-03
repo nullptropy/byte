@@ -17,11 +17,14 @@ impl Default for FrameHistory {
 
 impl ByteEmuApp {
     pub fn show_frame_history(&mut self, ctx: &egui::Context) {
+        let mut open = self.state.is_frame_history_open;
         egui::Window::new("frame history")
+            .open(&mut open)
             .default_pos(egui::pos2(58.0, 700.0))
             .show(ctx, |ui| {
                 self.frame_history.ui(ui);
             });
+        self.state.is_frame_history_open = open;
     }
 }
 

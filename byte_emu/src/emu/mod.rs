@@ -1,5 +1,3 @@
-mod core;
-mod ram;
-mod rand;
-
-pub(crate) use self::core::ByteEmu;
+pub mod core;
+pub mod ram;
+pub mod rand;

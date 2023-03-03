@@ -1,7 +1,7 @@
 mod file_processor;
 mod ui;
 
-use crate::{emu::ByteEmu, DEFAULT_BINARY, DEFAULT_SOURCE};
+use crate::{emu::core::ByteEmu, DEFAULT_BINARY, DEFAULT_SOURCE};
 use file_processor::FileProcesser;
 
 #[derive(Debug)]
@@ -14,6 +14,10 @@ pub enum FileProcesserMessage {
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct State {
     text: String,
+
+    is_about_open: bool,
+    is_code_editor_open: bool,
+    is_frame_history_open: bool,
 }
 
 pub struct ByteEmuApp {
@@ -28,6 +32,9 @@ impl Default for State {
     fn default() -> Self {
         Self {
             text: DEFAULT_SOURCE.to_string(),
+            is_about_open: false,
+            is_code_editor_open: true,
+            is_frame_history_open: true,
         }
     }
 }
