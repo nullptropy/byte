@@ -53,6 +53,7 @@ impl eframe::App for ByteEmuApp {
         self.show_byte_console(ctx);
         self.show_code_editor(ctx);
         self.show_frame_history(ctx);
+        self.show_about(ctx);
 
         self.process_files();
         self.step_emulator(ctx.input(|i| i.keys_down.iter().next().copied()))
