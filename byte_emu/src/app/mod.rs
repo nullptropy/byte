@@ -32,7 +32,7 @@ impl Default for State {
     fn default() -> Self {
         Self {
             text: DEFAULT_SOURCE.to_string(),
-            is_about_open: false,
+            is_about_open: true,
             is_code_editor_open: true,
             is_frame_history_open: true,
         }

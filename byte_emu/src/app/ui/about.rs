@@ -1,10 +1,10 @@
 use crate::app::ByteEmuApp;
 
 const ABOUT_TEXT: &str = "\
-Byte is a fantasy console that runs on the 6502 microprocessor\
-and features a compact 64x64 screen and an 8-key gamepad keyboard.\
-Its primary purpose is to provide a user-friendly platform for learning\
-6502 assembly language programming, with the goal of lowering the barrier\
+Byte is a fantasy console that runs on the 6502 microprocessor \
+and features a compact 64x64 screen and an 8-key gamepad keyboard. \
+Its primary purpose is to provide a user-friendly platform for learning \
+6502 assembly language programming, with the goal of lowering the barrier \
 to entry for aspiring developers.";
 
 impl ByteEmuApp {
