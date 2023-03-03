@@ -1,3 +1,4 @@
+use crate::app::ByteEmuApp;
 use egui::util::History;
 
 pub struct FrameHistory {
@@ -11,6 +12,16 @@ impl Default for FrameHistory {
         Self {
             frame_times: History::new(0..max_len, max_age),
         }
+    }
+}
+
+impl ByteEmuApp {
+    pub fn show_frame_history(&mut self, ctx: &egui::Context) {
+        egui::Window::new("frame history")
+            .default_pos(egui::pos2(58.0, 700.0))
+            .show(ctx, |ui| {
+                self.frame_history.ui(ui);
+            });
     }
 }
 
