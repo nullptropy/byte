@@ -26,13 +26,15 @@ Byte is a fantasy console that runs on the 6502 microprocessor and features a co
 * **0xff**: **Input Register**
   - This register holds the key that is currently being pressed down.
 
-|Key  |Mapping|Value|
-|-----|-------|-----|
-|Up   |Up     |0x01 |
-|Down |Down   |0x02 |
-|Left |Left   |0x03 |
-|Right|Right  |0x04 |
-|A    |Select |0x05 |
-|S    |Start  |0x06 |
-|D    |A      |0x07 |
-|F    |B      |0x08 |
+**Key mapping**:
+
+| Key    | Mapping    | Mask |
+|--------|------------|------|
+| Right  | ArrowRight | 0x1  |
+| Left   | ArrowLeft  | 0x2  |
+| Down   | ArrowDown  | 0x4  |
+| Up     | ArrowUp    | 0x8  |
+| Start  | S          | 0x10 |
+| Select | A          | 0x20 |
+| B      | F          | 0x40 |
+| A      | D          | 0x80 |
