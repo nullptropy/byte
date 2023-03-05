@@ -17,6 +17,8 @@ pub enum FileProcesserMessage {
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct State {
     text: String,
+
+    // TODO: this is getting out of hand
     is_about_open: bool,
     is_code_editor_open: bool,
     is_emu_controls_open: bool,
@@ -61,6 +63,8 @@ impl eframe::App for ByteEmuApp {
         self.show_byte_console(ctx, &mut input_state);
         self.show_code_editor(ctx);
         self.show_frame_history(ctx);
+        self.show_emu_controls(ctx);
+        self.show_memory_monitor(ctx);
         self.show_about(ctx);
 
         self.process_files();
