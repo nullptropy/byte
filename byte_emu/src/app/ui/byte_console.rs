@@ -86,7 +86,7 @@ fn btn(
             .rect(rect, 1.0, visuals.bg_fill, visuals.bg_stroke);
     }
 
-    if response.clicked() {
+    if response.is_pointer_button_down_on() {
         input_state.insert(state);
     }
 }
