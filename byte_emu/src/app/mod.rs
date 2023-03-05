@@ -56,7 +56,7 @@ impl eframe::App for ByteEmuApp {
         self.show_about(ctx);
 
         self.process_files();
-        self.step_emulator(ctx.input(|i| i.keys_down.iter().next().copied()))
+        self.emu.step(ctx.input(|i| i.keys_down.clone()));
     }
 }
 
@@ -88,11 +88,6 @@ impl ByteEmuApp {
         }
 
         app
-    }
-
-    fn step_emulator(&mut self, key_pressed: Option<egui::Key>) {
-        self.emu
-            .step(key_pressed.and_then(|key| key.try_into().ok()));
     }
 
     fn process_files(&mut self) {

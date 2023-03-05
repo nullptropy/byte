@@ -1,5 +1,7 @@
 use super::rand;
+use bitflags::bitflags;
 use byte_core::*;
+use std::collections::HashSet;
 
 const COLOR_PALETTE: [u32; 16] = [
     0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF, 0xEEEE77FF,
@@ -17,36 +19,38 @@ pub struct ByteEmu {
     rand: Box<dyn Iterator<Item = u32>>,
 }
 
-#[derive(Debug)]
-pub enum ByteKey {
-    Up = 0x01,
-    Down,
-    Left,
-    Right,
-    Select,
-    Start,
-    A,
-    B,
+bitflags! {
+    struct ByteInputState: u8 {
+        const RIGHT  = 0b00000001;
+        const LEFT   = 0b00000010;
+        const DOWN   = 0b00000100;
+        const UP     = 0b00001000;
+        const START  = 0b00010000;
+        const SELECT = 0b00100000;
+        const B      = 0b01000000;
+        const A      = 0b10000000;
+    }
 }
 
-impl TryInto<ByteKey> for egui::Key {
-    type Error = ();
+impl From<HashSet<egui::Key>> for ByteInputState {
+    fn from(val: HashSet<egui::Key>) -> ByteInputState {
+        use egui::Key::*;
+        let mut state = ByteInputState::empty();
 
-    fn try_into(self) -> Result<ByteKey, Self::Error> {
-        use egui::Key;
-        use ByteKey::*;
+        #[rustfmt::skip]
+        val.iter().for_each(|key| match key {
+            A          => state.insert(ByteInputState::SELECT),
+            S          => state.insert(ByteInputState::START),
+            D          => state.insert(ByteInputState::A),
+            F          => state.insert(ByteInputState::B),
+            ArrowUp    => state.insert(ByteInputState::UP),
+            ArrowDown  => state.insert(ByteInputState::DOWN),
+            ArrowLeft  => state.insert(ByteInputState::LEFT),
+            ArrowRight => state.insert(ByteInputState::RIGHT),
+            _          => ()
+        });
 
-        match self {
-            Key::ArrowUp => Ok(Up),
-            Key::ArrowDown => Ok(Down),
-            Key::ArrowLeft => Ok(Left),
-            Key::ArrowRight => Ok(Right),
-            Key::A => Ok(Select),
-            Key::S => Ok(Start),
-            Key::D => Ok(A),
-            Key::F => Ok(B),
-            _ => Err(()),
-        }
+        state
     }
 }
 
@@ -81,10 +85,10 @@ impl ByteEmu {
         frame
     }
 
-    pub fn step(&mut self, key_pressed: Option<ByteKey>) {
+    pub fn step(&mut self, keys: HashSet<egui::Key>) {
         self.cpu
             .bus
-            .write(REG_INPUT, key_pressed.map(|key| key as u8).unwrap_or(0x00));
+            .write(REG_INPUT, ByteInputState::from(keys).bits());
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {
