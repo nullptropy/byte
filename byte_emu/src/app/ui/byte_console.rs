@@ -20,6 +20,7 @@ impl ByteEmuApp {
             });
     }
 
+    // TODO: this kinda sucks, find some other way to draw the gamepad ui
     fn ui_byte_console(&mut self, ui: &mut egui::Ui, input_state: &mut ByteInputState) {
         #[rustfmt::skip]
         ui.vertical(|ui| {
