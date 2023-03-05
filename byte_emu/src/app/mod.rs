@@ -17,10 +17,11 @@ pub enum FileProcesserMessage {
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct State {
     text: String,
-
     is_about_open: bool,
     is_code_editor_open: bool,
+    is_emu_controls_open: bool,
     is_frame_history_open: bool,
+    is_memory_monitor_open: bool,
 }
 
 pub struct ByteEmuApp {
@@ -38,6 +39,8 @@ impl Default for State {
             is_about_open: true,
             is_code_editor_open: true,
             is_frame_history_open: true,
+            is_emu_controls_open: false,
+            is_memory_monitor_open: false,
         }
     }
 }
