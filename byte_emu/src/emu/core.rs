@@ -1,7 +1,8 @@
 use super::rand;
+use std::collections::HashSet;
+
 use bitflags::bitflags;
 use byte_core::*;
-use std::collections::HashSet;
 
 const COLOR_PALETTE: [u32; 16] = [
     0x000000FF, 0xFFFFFFFF, 0x880000FF, 0xAAFFEEFF, 0xCC44CCFF, 0x00CC55FF, 0x0000AAFF, 0xEEEE77FF,
@@ -20,7 +21,7 @@ pub struct ByteEmu {
 }
 
 bitflags! {
-    struct ByteInputState: u8 {
+    pub struct ByteInputState: u8 {
         const RIGHT  = 0b00000001;
         const LEFT   = 0b00000010;
         const DOWN   = 0b00000100;
