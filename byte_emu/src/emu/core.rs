@@ -86,10 +86,8 @@ impl ByteEmu {
         frame
     }
 
-    pub fn step(&mut self, keys: HashSet<egui::Key>) {
-        self.cpu
-            .bus
-            .write(REG_INPUT, ByteInputState::from(keys).bits());
+    pub fn step(&mut self, input_state: ByteInputState) {
+        self.cpu.bus.write(REG_INPUT, input_state.bits());
 
         for _ in 0..INSTRUCTIONS_PER_FRAME {
             if let Some(n) = self.rand.next() {

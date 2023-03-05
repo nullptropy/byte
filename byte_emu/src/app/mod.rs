@@ -1,7 +1,10 @@
 mod file_processor;
 mod ui;
 
-use crate::{emu::core::ByteEmu, DEFAULT_BINARY, DEFAULT_SOURCE};
+use crate::{
+    emu::core::{ByteEmu, ByteInputState},
+    DEFAULT_BINARY, DEFAULT_SOURCE,
+};
 use file_processor::FileProcesser;
 
 #[derive(Debug)]
@@ -46,17 +49,21 @@ impl eframe::App for ByteEmuApp {
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         ctx.request_repaint();
+        let mut input_state = ByteInputState::empty();
+
         self.frame_history
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
         self.show_menu_bar(ctx);
-        self.show_byte_console(ctx);
+        self.show_byte_console(ctx, &mut input_state);
         self.show_code_editor(ctx);
         self.show_frame_history(ctx);
         self.show_about(ctx);
 
         self.process_files();
-        self.emu.step(ctx.input(|i| i.keys_down.clone()));
+
+        input_state.insert(ctx.input(|i| i.keys_down.clone()).into());
+        self.emu.step(input_state);
     }
 }
 
