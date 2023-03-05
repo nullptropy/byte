@@ -17,6 +17,18 @@ impl ByteEmuApp {
             .default_pos(egui::pos2(170.0, 125.0))
             .show(ctx, |ui| {
                 self.ui_byte_console(ui, input_state);
+                // hacky way to ensure that we update the
+                // input_state only when this window is focused
+                ctx.memory(|mem| {
+                    if mem
+                        .layer_ids()
+                        .filter(|l| l.order == egui::layers::Order::Middle)
+                        .last()
+                        == Some(ui.layer_id())
+                    {
+                        input_state.insert(ctx.input(|i| i.keys_down.clone()).into());
+                    }
+                })
             });
     }
 
@@ -79,7 +91,7 @@ fn btn(
     input_state: &mut ByteInputState,
     state: ByteInputState,
 ) {
-    let (rect, response) = ui.allocate_exact_size(size.into(), egui::Sense::click());
+    let (rect, response) = ui.allocate_exact_size(size.into(), egui::Sense::click_and_drag());
     let visuals = ui.style().interact(&response);
 
     if ui.is_rect_visible(rect) {

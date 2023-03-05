@@ -60,16 +60,14 @@ impl eframe::App for ByteEmuApp {
             .on_new_frame(ctx.input(|i| i.time), frame.info().cpu_usage);
 
         self.show_menu_bar(ctx);
-        self.show_byte_console(ctx, &mut input_state);
         self.show_code_editor(ctx);
         self.show_frame_history(ctx);
         self.show_emu_controls(ctx);
         self.show_memory_monitor(ctx);
         self.show_about(ctx);
+        self.show_byte_console(ctx, &mut input_state);
 
         self.process_files();
-
-        input_state.insert(ctx.input(|i| i.keys_down.clone()).into());
         self.emu.step(input_state);
     }
 }
