@@ -8,6 +8,6 @@ impl ByteEmuApp {
             .show(ctx, |ui| {
                 ui.label("TODO");
             });
-        self.state.is_memory_monitor_open= open;
+        self.state.is_memory_monitor_open = open;
     }
 }
