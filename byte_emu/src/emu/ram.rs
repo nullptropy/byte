@@ -6,7 +6,7 @@ pub struct Ram {
 
 impl Default for Ram {
     fn default() -> Self {
-        Self { data: [0; 0x10000 ]}
+        Self { data: [0; 0x10000] }
     }
 }
 
