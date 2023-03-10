@@ -104,11 +104,11 @@ impl Bus {
         Ok(())
     }
 
+    // TODO: come back to this to fix the API
     pub fn get_memory_region(&self, range: (u16, u16)) -> Option<&[u8]> {
-        if range.0 < range.1 && range.1 < u16::MAX {
-            Some(&self.mirror[range.0 as usize..range.1 as usize])
-        } else {
-            None
-        }
+        let addr = range.0 as usize;
+        let size = range.1 as usize;
+
+        Some(&self.mirror[addr..(addr + size).clamp(0, u16::MAX as usize - 1)])
     }
 }
