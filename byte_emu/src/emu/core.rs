@@ -16,7 +16,7 @@ const REG_INPUT: u16 = 0xff;
 const FRAMEBUFFER_SIZE: usize = 64 * 64;
 
 pub struct ByteEmu {
-    cpu: cpu::CPU,
+    pub cpu: cpu::CPU,
     rand: Box<dyn Iterator<Item = u32>>,
 }
 
