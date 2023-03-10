@@ -77,6 +77,8 @@ input_right:
 input_select:
     lda INPUT
     and #%00100000
+    ; TODO: change the color only on a KeyUp event
+    ; rather than every frame that the SELECT key is being held
     beq input_ret
     inc COLOR
 input_ret:
