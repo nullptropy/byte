@@ -8,9 +8,18 @@ struct PeripheralItem {
     peripheral: Box<dyn Peripheral>,
 }
 
-#[derive(Default)]
 pub struct Bus {
+    mirror: [u8; 1 << 16],
     peripherals: Vec<PeripheralItem>,
+}
+
+impl Default for Bus {
+    fn default() -> Self {
+        Self {
+            mirror: [0; 1 << 16],
+            peripherals: Vec::new(),
+        }
+    }
 }
 
 impl PeripheralItem {
@@ -37,6 +46,9 @@ impl Bus {
     }
 
     pub fn write(&mut self, addr: u16, byte: u8) {
+        // mirror everything written into memory
+        self.mirror[addr as usize] = byte;
+
         if let Some((i, addr)) = self.get_peripheral_index(addr) {
             self.peripherals[i].peripheral.write(addr, byte);
         }
@@ -90,5 +102,13 @@ impl Bus {
         self.peripherals
             .push(PeripheralItem::new((lo, hi), Box::new(peripheral)));
         Ok(())
+    }
+
+    pub fn get_memory_region(&self, range: (u16, u16)) -> Option<&[u8]> {
+        if range.0 < range.1 && range.1 < u16::MAX {
+            Some(&self.mirror[range.0 as usize..range.1 as usize])
+        } else {
+            None
+        }
     }
 }
