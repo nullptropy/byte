@@ -2,6 +2,7 @@
 ; TODO: add bounds checking so that we don't corrupt the memory when moving around
 
 .org $0000
+    .DB "memory monitor"
 .org $8000
 
 VIDEO  EQU $fd
