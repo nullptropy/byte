@@ -13,7 +13,7 @@ impl ByteEmuApp {
             self.ui_tools_button(ui);
 
             if ui.button("About").clicked() {
-                self.state.is_about_open = true;
+                self.state.is_about_open = !self.state.is_about_open;
             }
         });
     }
@@ -48,26 +48,24 @@ impl ByteEmuApp {
     }
 
     fn ui_tools_button(&mut self, ui: &mut egui::Ui) {
-        // TODO: maybe i should make this toggle instead of setting
-        // state to true
         ui.menu_button("Tools", |ui| {
             if ui.button("Code Editor").clicked() {
-                self.state.is_code_editor_open = true;
+                self.state.is_code_editor_open = !self.state.is_code_editor_open;
                 ui.close_menu();
             }
 
             if ui.button("Emulator Controls").clicked() {
-                self.state.is_emu_controls_open = true;
+                self.state.is_emu_controls_open = !self.state.is_emu_controls_open;
                 ui.close_menu();
             }
 
             if ui.button("Memory Monitor").clicked() {
-                self.state.is_memory_monitor_open = true;
+                self.state.is_memory_monitor_open = !self.state.is_memory_monitor_open;
                 ui.close_menu();
             }
 
             if ui.button("Frame History").clicked() {
-                self.state.is_frame_history_open = true;
+                self.state.is_frame_history_open = !self.state.is_frame_history_open;
                 ui.close_menu();
             }
         });
