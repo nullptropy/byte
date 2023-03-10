@@ -12,21 +12,21 @@ impl ByteEmuApp {
     }
 
     fn ui_memory_monitor(&mut self, ui: &mut egui::Ui) {
-        let start_str = &mut self.state.memory_window_range_str.0;
-        let end_str = &mut self.state.memory_window_range_str.1;
+        let addr_str = &mut self.state.memory_window_range_str.0;
+        let size_str = &mut self.state.memory_window_range_str.1;
 
         ui.horizontal(|ui| {
-            ui.label("Start: ");
-            ui.text_edit_singleline(start_str);
+            ui.label("addr: ");
+            ui.text_edit_singleline(addr_str);
         });
         ui.horizontal(|ui| {
-            ui.label("  End: ");
-            ui.text_edit_singleline(end_str);
+            ui.label("size: ");
+            ui.text_edit_singleline(size_str);
         });
 
         if let (Ok(start), Ok(end)) = (
-            u16::from_str_radix(start_str.trim_start_matches("0x"), 16),
-            u16::from_str_radix(end_str.trim_start_matches("0x"), 16),
+            u16::from_str_radix(addr_str.trim_start_matches("0x"), 16),
+            u16::from_str_radix(size_str.trim_start_matches("0x"), 16),
         ) {
             self.state.memory_window_range = (start, end);
         }
@@ -43,10 +43,13 @@ impl ByteEmuApp {
             mem_slice.chunks(16).for_each(|chunk| {
                 let ascii = format!(
                     "{: <16}",
-                    chunk.iter().map(|b| match b {
-                        0 => '.',
-                        _ => *b as char,
-                    }).collect::<String>()
+                    chunk
+                        .iter()
+                        .map(|b| match b {
+                            0 => '.',
+                            _ => *b as char,
+                        })
+                        .collect::<String>()
                 );
                 self.state
                     .memory_window_text_area
