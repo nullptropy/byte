@@ -38,21 +38,31 @@ impl ByteEmuApp {
             .get_memory_region(self.state.memory_window_range)
         {
             self.state.memory_window_text_area.clear();
+            let mut counter = self.state.memory_window_range.0;
+
             mem_slice.chunks(16).for_each(|chunk| {
+                let ascii = format!(
+                    "{: <16}",
+                    chunk.iter().map(|b| match b {
+                        0 => '.',
+                        _ => *b as char,
+                    }).collect::<String>()
+                );
                 self.state
                     .memory_window_text_area
-                    .push_str(format!("{:02X?}\n", chunk).as_str());
-            });
-
-            egui::ScrollArea::both().show(ui, |ui| {
-                ui.add_sized(
-                    ui.available_size(),
-                    egui::TextEdit::multiline(&mut self.state.memory_window_text_area)
-                        .font(egui::TextStyle::Monospace)
-                        .code_editor()
-                        .desired_width(f32::INFINITY),
-                );
+                    .push_str(format!("{counter:04X}: {chunk:02X?} |{ascii}|\n").as_str());
+                counter += chunk.len() as u16;
             });
         }
+
+        egui::ScrollArea::both().show(ui, |ui| {
+            ui.add_sized(
+                ui.available_size(),
+                egui::TextEdit::multiline(&mut self.state.memory_window_text_area)
+                    .font(egui::TextStyle::Monospace)
+                    .code_editor()
+                    .desired_width(f32::INFINITY),
+            );
+        });
     }
 }
