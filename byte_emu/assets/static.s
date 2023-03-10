@@ -10,18 +10,8 @@ RANDOM EQU $fe
 INPUT  EQU $ff
 COLOR  EQU $fc
 
-; bitflags! {
-;     pub struct ByteInputState: u8 {
-;         const RIGHT  = 0b00000001;
-;         const LEFT   = 0b00000010;
-;         const DOWN   = 0b00000100;
-;         const UP     = 0b00001000;
-;         const START  = 0b00010000;
-;         const SELECT = 0b00100000;
-;         const B      = 0b01000000;
-;         const A      = 0b10000000;
-;     }
-; }
+POS_L EQU $10
+POS_H EQU $11
 
 reset:
     cld         ; disable decimal mode
@@ -35,14 +25,15 @@ reset:
 
 init:
     lda #$00
-    sta $10     ; low byte of the counter
-    lda #$10
-    sta $11     ; high byte of the counter
+    sta POS_L     ; low byte of the counter
+    lda #POS_L
+    sta POS_H     ; high byte of the counter
+
+    lda #$01      ; initial color
+    sta COLOR
     rts
 
 loop:
-    ; jsr draw
-    ; jsr update
     jmp loop
 
 VBLANK_IRQ:
@@ -54,12 +45,10 @@ VBLANK_IRQ:
 draw:
     ldy #$00
     lda COLOR
-    sta ($10), y
+    sta (POS_L), y
     rts
 
 update:
-    lda RANDOM
-    sta COLOR
     rts
 
 handle_input:
@@ -83,59 +72,68 @@ input_left:
 input_right:
     lda INPUT
     and #%00000001
-    beq input_ret
+    beq input_select
     jsr move_right
+input_select:
+    lda INPUT
+    and #%00100000
+    beq input_ret
+    inc COLOR
 input_ret:
     rts
 
 move_left:
     jsr clear
-    lda $10
+    lda POS_L
     sec
     sbc #$01
-    sta $10
+    sta POS_L
     bcs move_left_ret:
-    dec $11
+    dec POS_H
 move_left_ret:
     rts
 
 move_right:
     jsr clear
-    lda $10
+    lda POS_L
     clc
     adc #$01
-    sta $10
+    sta POS_L
     bcc move_right_ret
-    inc $11
+    inc POS_H
 move_right_ret:
     rts
 
 move_down:
     jsr clear
-    lda $10
+    lda POS_L
     clc
     adc #$40
-    sta $10
+    sta POS_L
     bcc move_down_ret 
-    inc $11
+    inc POS_H
 move_down_ret:
     rts
 
 move_up:
     jsr clear
-    lda $10
+    lda POS_L
     sec
     sbc #$40
-    sta $10
+    sta POS_L
     bcs move_up_ret
-    dec $11
+    dec POS_H
 move_up_ret:
     rts
 
 clear:
+    lda COLOR
+    pha
     lda #$00
     sta COLOR
     jsr draw
+    pla
+    sta COLOR
     rts
 
 .org $fffc
