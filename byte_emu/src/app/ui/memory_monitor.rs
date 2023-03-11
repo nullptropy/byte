@@ -15,13 +15,19 @@ impl ByteEmuApp {
         let addr_str = &mut self.state.memory_window_range_str.0;
         let size_str = &mut self.state.memory_window_range_str.1;
 
-        ui.horizontal(|ui| {
-            ui.label("addr: ");
-            ui.text_edit_singleline(addr_str);
-        });
-        ui.horizontal(|ui| {
-            ui.label("size: ");
-            ui.text_edit_singleline(size_str);
+        ui.scope(|ui| {
+            ui.style_mut().override_font_id = Some(egui::FontId::monospace(14.0));
+
+            ui.horizontal(|ui| {
+                ui.label("addr:");
+                ui.text_edit_singleline(addr_str);
+            });
+            ui.horizontal(|ui| {
+                ui.label("size:");
+                ui.text_edit_singleline(size_str);
+            });
+
+            ui.add_space(14.0);
         });
 
         if let (Ok(start), Ok(end)) = (
@@ -31,38 +37,35 @@ impl ByteEmuApp {
             self.state.memory_window_range = (start, end);
         }
 
-        if let Some(mem_slice) = self
-            .emu
-            .cpu
-            .bus
-            .get_memory_region(self.state.memory_window_range)
-        {
-            self.state.memory_window_text_area.clear();
-            let mut counter = self.state.memory_window_range.0;
+        let mut counter = self.state.memory_window_range.0;
+        let mem_slice = self.emu.get_memory_region(self.state.memory_window_range);
+        self.state.memory_window_text_area.clear();
 
-            mem_slice.chunks(16).for_each(|chunk| {
-                let ascii = format!(
-                    "{: <16}",
-                    chunk
-                        .iter()
-                        .map(|b| match b {
-                            0 => '.',
-                            _ => *b as char,
-                        })
-                        .collect::<String>()
-                );
-                self.state
-                    .memory_window_text_area
-                    .push_str(format!("{counter:04X}: {chunk:02X?} |{ascii}|\n").as_str());
-                counter += chunk.len() as u16;
-            });
-        }
+        mem_slice.chunks(16).for_each(|chunk| {
+            let ascii = format!(
+                "{: <16}",
+                chunk
+                    .iter()
+                    .map(|b| match b {
+                        0x20..=0x7e => *b as char,
+                        _ => '.',
+                    })
+                    .collect::<String>()
+            );
+            let bytes = format!("{chunk:02x?}").replace(',', "");
+            let output = format!(
+                "{counter:04x}: {: <47} |{ascii}|\n",
+                &bytes[1..bytes.len() - 1]
+            );
+            self.state.memory_window_text_area.push_str(output.as_str());
 
-        egui::ScrollArea::both().show(ui, |ui| {
+            counter += chunk.len() as u16;
+        });
+
+        egui::ScrollArea::vertical().show(ui, |ui| {
             ui.add_sized(
                 ui.available_size(),
                 egui::TextEdit::multiline(&mut self.state.memory_window_text_area)
-                    .font(egui::TextStyle::Monospace)
                     .code_editor()
                     .desired_width(f32::INFINITY),
             );

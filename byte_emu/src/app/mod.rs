@@ -16,14 +16,12 @@ pub enum FileProcesserMessage {
 // `State` that we would like to persist (serialize).
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct State {
-    // TODO: this is getting out of hand,
-    // find a way to decouple all of this
+    // TODO: this is getting out of hand
     text: String,
     memory_window_range: (u16, u16),
     memory_window_range_str: (String, String),
     memory_window_text_area: String,
 
-    // TODO: this is getting out of hand
     is_about_open: bool,
     is_code_editor_open: bool,
     is_emu_controls_open: bool,
@@ -44,7 +42,7 @@ impl Default for State {
         Self {
             text: DEFAULT_SOURCE.to_string(),
             memory_window_range: (0, 0x100),
-            memory_window_range_str: Default::default(),
+            memory_window_range_str: ("0x0000".into(), "0xff".into()),
             memory_window_text_area: String::new(),
 
             is_about_open: true,
