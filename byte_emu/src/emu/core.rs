@@ -16,7 +16,7 @@ const REG_INPUT: u16 = 0xff;
 const FRAMEBUFFER_SIZE: usize = 64 * 64;
 
 pub struct ByteEmu {
-    pub cpu: cpu::CPU,
+    cpu: cpu::CPU,
     rand: Box<dyn Iterator<Item = u32>>,
 }
 
@@ -99,5 +99,9 @@ impl ByteEmu {
         }
 
         self.cpu.interrupt(cpu::Interrupt::IRQ);
+    }
+
+    pub fn get_memory_region(&self, range: (u16, u16)) -> &[u8] {
+        self.cpu.bus.get_memory_region(range)
     }
 }
