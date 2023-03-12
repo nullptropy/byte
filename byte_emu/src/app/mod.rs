@@ -42,7 +42,7 @@ impl Default for State {
         Self {
             text: DEFAULT_SOURCE.to_string(),
             memory_window_range: (0, 0x100),
-            memory_window_range_str: ("0x0000".into(), "0xff".into()),
+            memory_window_range_str: ("0x0000".into(), "0x100".into()),
             memory_window_text_area: String::new(),
 
             is_about_open: true,

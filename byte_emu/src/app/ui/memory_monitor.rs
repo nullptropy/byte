@@ -5,7 +5,7 @@ impl ByteEmuApp {
         let mut open = self.state.is_memory_monitor_open;
         egui::Window::new("Memory Monitor")
             .open(&mut open)
-            .default_width(590.0)
+            .default_width(610.0)
             .show(ctx, |ui| {
                 self.ui_memory_monitor(ui);
             });
@@ -25,13 +25,13 @@ impl ByteEmuApp {
             ui.label("size:");
             ui.text_edit_singleline(size_str);
         });
-        ui.add_space(14.0);
+        ui.add_space(10.0);
 
-        if let (Ok(start), Ok(end)) = (
+        if let (Ok(start), Ok(size)) = (
             u16::from_str_radix(addr_str.trim_start_matches("0x"), 16),
             u16::from_str_radix(size_str.trim_start_matches("0x"), 16),
         ) {
-            self.state.memory_window_range = (start, end);
+            self.state.memory_window_range = (start, size.saturating_sub(1));
         }
 
         let mut counter = self.state.memory_window_range.0;
@@ -41,22 +41,29 @@ impl ByteEmuApp {
         egui::ScrollArea::both().show(ui, |ui| {
             ui.vertical(|ui| {
                 mem_slice.chunks(16).for_each(|chunk| {
+                    let mut bytes = format!("{chunk:02x?}")
+                        .replace(',', "")
+                        .replace("[", "")
+                        .replace("]", "");
                     let ascii = format!(
                         "{: <16}",
                         chunk
                             .iter()
                             .map(|b| match b {
+                                // printable range
                                 0x20..=0x7e => *b as char,
                                 _ => '.',
                             })
                             .collect::<String>()
                     );
-                    let bytes = format!("{chunk:02x?}").replace(',', "");
-                    let output = format!(
-                        "{counter:04x}: {: <47} |{ascii}|",
-                        &bytes[1..bytes.len() - 1]
+                    if bytes.len() > 24 {
+                        bytes.insert(24, ' ');
+                    }
+
+                    ui.add(
+                        egui::Label::new(format!("{counter:04x}: {: <48}  |{ascii}|", bytes))
+                            .wrap(false),
                     );
-                    ui.add(egui::Label::new(output).wrap(false));
 
                     counter += chunk.len() as u16;
                 });
