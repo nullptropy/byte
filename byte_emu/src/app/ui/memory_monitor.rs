@@ -41,10 +41,6 @@ impl ByteEmuApp {
         egui::ScrollArea::both().show(ui, |ui| {
             ui.vertical(|ui| {
                 mem_slice.chunks(16).for_each(|chunk| {
-                    let mut bytes = format!("{chunk:02x?}")
-                        .replace(',', "")
-                        .replace("[", "")
-                        .replace("]", "");
                     let ascii = format!(
                         "{: <16}",
                         chunk
@@ -56,6 +52,7 @@ impl ByteEmuApp {
                             })
                             .collect::<String>()
                     );
+                    let mut bytes = format!("{chunk:02x?}").replace(['[', ']', ','], "");
                     if bytes.len() > 24 {
                         bytes.insert(24, ' ');
                     }
