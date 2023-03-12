@@ -1,3 +1,5 @@
+use egui::{Label, ScrollArea};
+
 use crate::app::ByteEmuApp;
 
 impl ByteEmuApp {
@@ -15,6 +17,7 @@ impl ByteEmuApp {
     fn ui_memory_monitor(&mut self, ui: &mut egui::Ui) {
         let addr_str = &mut self.state.memory_window_range_str.0;
         let size_str = &mut self.state.memory_window_range_str.1;
+        self.state.memory_window_text_area.clear();
 
         ui.style_mut().override_font_id = Some(egui::FontId::monospace(14.0));
         ui.horizontal(|ui| {
@@ -29,42 +32,41 @@ impl ByteEmuApp {
 
         if let (Ok(start), Ok(size)) = (
             u16::from_str_radix(addr_str.trim_start_matches("0x"), 16),
-            u16::from_str_radix(size_str.trim_start_matches("0x"), 16),
+            u32::from_str_radix(size_str.trim_start_matches("0x"), 16),
         ) {
-            self.state.memory_window_range = (start, size.saturating_sub(1));
+            self.state.memory_window_range = (start, size.saturating_sub(1) as u16);
         }
 
-        let mut counter = self.state.memory_window_range.0;
-        let mem_slice = self.emu.get_memory_region(self.state.memory_window_range);
-        self.state.memory_window_text_area.clear();
-
-        egui::ScrollArea::both().show(ui, |ui| {
+        ScrollArea::both().show(ui, |ui| {
             ui.vertical(|ui| {
-                mem_slice.chunks(16).for_each(|chunk| {
-                    let ascii = format!(
-                        "{: <16}",
-                        chunk
-                            .iter()
-                            .map(|b| match b {
-                                // printable range
-                                0x20..=0x7e => *b as char,
-                                _ => '.',
-                            })
-                            .collect::<String>()
-                    );
-                    let mut bytes = format!("{chunk:02x?}").replace(['[', ']', ','], "");
-                    if bytes.len() > 24 {
-                        bytes.insert(24, ' ');
-                    }
-
-                    ui.add(
-                        egui::Label::new(format!("{counter:04x}: {: <48}  |{ascii}|", bytes))
-                            .wrap(false),
-                    );
-
-                    counter += chunk.len() as u16;
-                });
+                self.ui_memory_monitor_scroll(ui);
             });
+        });
+    }
+
+    fn ui_memory_monitor_scroll(&mut self, ui: &mut egui::Ui) {
+        let mut count = self.state.memory_window_range.0 as usize;
+        let mem_slice = self.emu.get_memory_region(self.state.memory_window_range);
+
+        mem_slice.chunks(16).for_each(|chunk| {
+            let ascii = format!(
+                "{: <16}",
+                chunk
+                    .iter()
+                    .map(|b| match b {
+                        // printable range
+                        0x20..=0x7e => *b as char,
+                        _ => '.',
+                    })
+                    .collect::<String>()
+            );
+            let mut bytes = format!("{chunk:02x?}").replace(['[', ']', ','], "");
+            if bytes.len() > 24 {
+                bytes.insert(24, ' ');
+            }
+
+            ui.add(Label::new(format!("{count:04x}: {: <48}  |{ascii}|", bytes)).wrap(false));
+            count += chunk.len();
         });
     }
 }
