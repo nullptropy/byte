@@ -38,9 +38,9 @@ reset:
     jmp loop
 
 init:
-    lda #$00
+    lda #$20
     sta POS_L     ; low byte of the counter
-    lda #$10
+    lda #$18
     sta POS_H     ; high byte of the counter
 
     lda #$01      ; initial color
