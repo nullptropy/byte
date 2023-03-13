@@ -102,16 +102,16 @@ impl CPU {
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),
             0x0a | 0x06 | 0x16 | 0x0e | 0x1e                      => self.asl(opcode),
             0x24 | 0x2c                                           => self.bit(opcode),
-            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.compare(opcode, self.reg.a),
-            0xe0 | 0xe4 | 0xec                                    => self.compare(opcode, self.reg.x),
-            0xc0 | 0xc4 | 0xcc                                    => self.compare(opcode, self.reg.y),
+            0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => self.cmp(opcode, self.reg.a),
+            0xe0 | 0xe4 | 0xec                                    => self.cmp(opcode, self.reg.x),
+            0xc0 | 0xc4 | 0xcc                                    => self.cmp(opcode, self.reg.y),
             0xc6 | 0xd6 | 0xce | 0xde                             => self.dec(opcode),
             0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51 => self.eor(opcode),
             0xe6 | 0xf6 | 0xee | 0xfe                             => self.inc(opcode),
             0x4c | 0x6c                                           => self.jmp(opcode),
-            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.ldr(opcode),
-            0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldr(opcode),
-            0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldr(opcode),
+            0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(opcode),
+            0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe                      => self.ldx(opcode),
+            0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc                      => self.ldy(opcode),
             0x4a | 0x46 | 0x56 | 0x4e | 0x5e                      => self.lsr(opcode),
             0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => self.ora(opcode),
             0x2a | 0x26 | 0x36 | 0x2e | 0x3e                      => self.rol(opcode),
@@ -422,7 +422,7 @@ impl CPU {
         }
     }
 
-    fn compare(&mut self, opcode: &Opcode, reg: u8) {
+    fn cmp(&mut self, opcode: &Opcode, reg: u8) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
             let operand = self.bus.read(addr);
 
@@ -484,7 +484,6 @@ impl CPU {
             }
 
             // 6502 indirect jump bug
-
             let lo = self.bus.read(operand) as u16;
             let hi = self.bus.read(operand & 0xff00) as u16;
 
@@ -501,18 +500,24 @@ impl CPU {
         }
     }
 
-    fn ldr(&mut self, opcode: &Opcode) {
+    fn lda(&mut self, opcode: &Opcode) {
         if let Operand::Address(addr) = self.get_operand(opcode) {
-            let byte = self.bus.read(addr);
+            self.reg.a = self.bus.read(addr);
+            self.update_nz_flags(self.reg.a);
+        }
+    }
 
-            match opcode.name {
-                "LDA" => self.reg.a = byte,
-                "LDX" => self.reg.x = byte,
-                "LDY" => self.reg.y = byte,
-                _ => unreachable!(),
-            };
+    fn ldx(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.x = self.bus.read(addr);
+            self.update_nz_flags(self.reg.x);
+        }
+    }
 
-            self.update_nz_flags(byte);
+    fn ldy(&mut self, opcode: &Opcode) {
+        if let Operand::Address(addr) = self.get_operand(opcode) {
+            self.reg.y = self.bus.read(addr);
+            self.update_nz_flags(self.reg.y);
         }
     }
 
