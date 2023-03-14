@@ -1,4 +1,4 @@
-use egui::{Label, ScrollArea};
+use egui::{Color32, Label, RichText, ScrollArea};
 
 use crate::app::ByteEmuApp;
 
@@ -65,7 +65,17 @@ impl ByteEmuApp {
                 bytes.insert(24, ' ');
             }
 
-            ui.add(Label::new(format!("{count:04x}: {: <48}  |{ascii}|", bytes)).wrap(false));
+            ui.horizontal(|ui| {
+                ui.add(Label::new(
+                    RichText::new(format!("{count:04x}")).color(Color32::from_rgb(100, 149, 237)),
+                ));
+                ui.add(Label::new(
+                    RichText::new(format!("{bytes: <48}")).color(Color32::LIGHT_GRAY),
+                ));
+                ui.add(Label::new(
+                    RichText::new(format!("|{ascii}|")).color(Color32::from_rgb(100, 149, 237)),
+                ));
+            });
             count += chunk.len();
         });
     }
