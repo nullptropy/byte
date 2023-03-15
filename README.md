@@ -6,6 +6,12 @@ A work-in-progress fantasy console designed to provide a user-friendly platform 
 
 - [x] core emulation of 6502, passes [Klaus' test suite](https://github.com/Klaus2m5/6502_65C02_functional_tests)
 - [ ] functional emulator
+  - [x] loading binary/text files
+  - [x] base emulator implementation (the console with a screen and keypad)
+  - [x] interactive memory monitor
+  - [ ] step debugger
+  - [ ] code editor
+  - [ ] in memory virtual file system for the wasm target [fork: gh/brkp/rust-vfs](https://github.com/brkp/rust-vfs)
 - [ ] custom assembler
 - [ ] custom programming language
 
