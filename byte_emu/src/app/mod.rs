@@ -27,6 +27,8 @@ pub struct State {
     is_emu_controls_open: bool,
     is_frame_history_open: bool,
     is_memory_monitor_open: bool,
+
+    file_system: vfs::MemoryFS,
 }
 
 pub struct ByteEmuApp {
@@ -50,6 +52,8 @@ impl Default for State {
             is_frame_history_open: true,
             is_emu_controls_open: false,
             is_memory_monitor_open: false,
+
+            file_system: vfs::MemoryFS::new(),
         }
     }
 }

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 byte_core = { path = "../byte_core" }
+vfs = { git = "https://github.com/brkp/rust-vfs.git", features = ["serde"] }
 
 rfd = "0.11.1"
 egui = "0.21.0"
