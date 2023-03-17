@@ -64,7 +64,6 @@ impl eframe::App for ByteEmuApp {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        ctx.request_repaint();
         let mut input_state = ByteInputState::empty();
 
         self.frame_history
@@ -80,6 +79,15 @@ impl eframe::App for ByteEmuApp {
 
         self.process_files();
         self.emu.step(input_state);
+
+        // TODO: this might cause some problems when
+        // `State` (specifically `file_system`) gets too big
+        if let Some(storage) = frame.storage_mut() {
+            self.save(storage);
+            storage.flush();
+        }
+
+        ctx.request_repaint();
     }
 }
 
