@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "byte_asm",
   "byte_common",
   "byte_core",
   "byte_emu",
