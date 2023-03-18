@@ -6,6 +6,8 @@ pub enum ScannerError {
     UnknownDirective(String),
     #[error("Unknown character at line {0} index {1}: {2}")]
     UnknownCharacter(usize, usize, char),
+    #[error("No number is specified after hex or binary number symbol")]
+    NumberExpected,
     #[error("place-holder error value")]
     Unknown,
 }
