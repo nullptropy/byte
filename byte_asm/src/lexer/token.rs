@@ -23,6 +23,7 @@ pub enum TokenType {
     DollarSign,
     NumberSign,
     PercentSign,
+    Colon,
 
     EndOfFile,
 }

@@ -36,6 +36,7 @@ impl Lexer {
                 '+' => return Ok(self.make_token(TokenType::Plus)),
                 '-' => return Ok(self.make_token(TokenType::Minus)),
                 '*' => return Ok(self.make_token(TokenType::Star)),
+                ':' => return Ok(self.make_token(TokenType::Colon)),
                 ';' => self.scan_comment(),
 
                 '=' => {
@@ -48,9 +49,15 @@ impl Lexer {
                 }
 
                 '\n' => self.line += 1,
+
+                // skip whitespace
                 ' ' | '\t' | '\r' => (),
 
                 // scan assembler directives
+                // so assembler directives can also be parsed
+                // with the `scan_identifier` function
+                // there's quite a bit of overlap with all these functions
+                // maybe i should come up with a better architecture for this
                 '.' => return Ok(self.make_token(TokenType::Dot)),
                 // scan binary number
                 '%' => return Ok(self.make_token(TokenType::PercentSign)),
@@ -59,18 +66,31 @@ impl Lexer {
                 // scan a decimal number
                 _ if c.is_digit(10) => {}
                 // scan an identifier
-                _ if c.is_alphabetic() => {}
+                _ if c.is_alphabetic() => self.scan_identifier(),
 
                 // there are a couple of different number representations that we would like to support
                 // * #$0000    : hex format
                 // * #6500     : decimal format
                 // * #%00001000: binary format
                 // it's not super clear if scanning the numbers should be done here
-                _ => todo!(),
+                n => todo!("idk what to do (yet): {n}"),
             }
         }
 
         Ok(None)
+    }
+
+    pub fn is_at_end(&self) -> bool {
+        self.current >= self.source.len()
+    }
+
+    // TODO: maybe make this accept an offset
+    pub fn peek(&self) -> char {
+        if self.is_at_end() {
+            '\0'
+        } else {
+            self.source[self.current]
+        }
     }
 
     // returns None on EOF
@@ -109,5 +129,15 @@ impl Lexer {
                 return;
             }
         }
+    }
+
+    fn scan_identifier(&mut self) {
+        while self.peek().is_alphanumeric() || self.peek() == '_' {
+            self.advance();
+        }
+
+        // start..current is the identifier
+        let string: String = self.source[self.start..self.current].iter().collect();
+        println!("{:?}", string);
     }
 }
