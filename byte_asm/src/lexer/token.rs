@@ -21,6 +21,9 @@ pub enum TokenType {
     GreaterEqual,
     Less,
     LessEqual,
+    DollarSign,
+
+    EndOfFile,
 }
 
 #[derive(Debug)]
