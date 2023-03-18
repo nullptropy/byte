@@ -25,10 +25,15 @@ pub enum TokenType {
     PercentSign,
     Colon,
 
+    Identifier,
+    OrgDirective,
+    DBDirective,
+
     EndOfFile,
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub kind: TokenType,
+    pub text: String,
 }

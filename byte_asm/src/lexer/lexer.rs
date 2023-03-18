@@ -1,5 +1,7 @@
 // TODO: some unit tests would be nice
 
+use crate::ScannerResult;
+use crate::error::ScannerError;
 use crate::lexer::{Token, TokenType};
 
 pub struct Lexer {
@@ -20,9 +22,9 @@ impl Lexer {
     }
 
     // TODO: this needs to return an error
-    pub fn scan_token(&mut self) -> Result<Option<Token>, ()> {
+    pub fn scan_token(&mut self) -> ScannerResult<Option<Token>> {
         if self.current >= self.source.len() {
-            return Err(());
+            return Err(ScannerError::Unknown);
         }
         self.start = self.current;
 
@@ -58,7 +60,18 @@ impl Lexer {
                 // with the `scan_identifier` function
                 // there's quite a bit of overlap with all these functions
                 // maybe i should come up with a better architecture for this
-                '.' => return Ok(self.make_token(TokenType::Dot)),
+                '.' => {
+                    // scan an identifier
+                    // but return a directive type
+                    // and return an error if this process fails
+                    // this sucks big time lol
+                    match self.scan_identifier()?.to_lowercase().as_str() {
+                        ".org" => TokenType::OrgDirective,
+                        ".db"  => TokenType::DBDirective,
+                        string => return Err(ScannerError::UnknownDirective(string.to_string()))
+                    };
+                    return Ok(self.make_token(TokenType::OrgDirective));
+                },
                 // scan binary number
                 '%' => return Ok(self.make_token(TokenType::PercentSign)),
                 // scan hex number
@@ -66,14 +79,18 @@ impl Lexer {
                 // scan a decimal number
                 _ if c.is_digit(10) => {}
                 // scan an identifier
-                _ if c.is_alphabetic() => self.scan_identifier(),
+                _ if c.is_alphabetic() => {
+                    // omg
+                    self.scan_identifier().unwrap();
+                    return Ok(self.make_token(TokenType::Identifier));
+                },
 
                 // there are a couple of different number representations that we would like to support
                 // * #$0000    : hex format
                 // * #6500     : decimal format
                 // * #%00001000: binary format
                 // it's not super clear if scanning the numbers should be done here
-                n => todo!("idk what to do (yet): {n}"),
+                n => return Err(ScannerError::UnknownCharacter(self.line, self.current, n)),
             }
         }
 
@@ -119,7 +136,10 @@ impl Lexer {
     // TODO: attach more info to the `Token` struct
     // so that we can report errors with proper context
     pub fn make_token(&self, kind: TokenType) -> Option<Token> {
-        Some(Token { kind })
+        Some(Token {
+            kind,
+            text: self.source[self.start..self.current].iter().collect(),
+        })
     }
 
     fn scan_comment(&mut self) {
@@ -131,13 +151,11 @@ impl Lexer {
         }
     }
 
-    fn scan_identifier(&mut self) {
+    fn scan_identifier(&mut self) -> ScannerResult<String> {
         while self.peek().is_alphanumeric() || self.peek() == '_' {
             self.advance();
         }
 
-        // start..current is the identifier
-        let string: String = self.source[self.start..self.current].iter().collect();
-        println!("{:?}", string);
+        Ok(self.source[self.start..self.current].iter().collect())
     }
 }

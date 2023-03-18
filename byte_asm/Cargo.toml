@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 byte_common = { path = "../byte_common" }
+thiserror = "1.0.40"
