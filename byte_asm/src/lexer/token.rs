@@ -1,3 +1,5 @@
+use crate::error::ScannerError;
+
 // keywords, instructions, all other shit
 #[derive(Debug)]
 pub enum TokenType {
@@ -28,7 +30,7 @@ pub enum TokenType {
     Identifier,
     OrgDirective,
     DBDirective,
-
+    Include,
     EndOfFile,
 }
 
@@ -36,4 +38,20 @@ pub enum TokenType {
 pub struct Token {
     pub kind: TokenType,
     pub text: String,
+}
+
+impl TryFrom<&str> for TokenType {
+    type Error = crate::error::ScannerError;
+
+    #[rustfmt::skip]
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        use TokenType::*;
+
+        match value {
+            ".org"    => Ok(OrgDirective),
+            ".db"     => Ok(DBDirective),
+            "include" => Ok(Include),
+            _         => Err(ScannerError::Unknown)
+        }
+    }
 }
