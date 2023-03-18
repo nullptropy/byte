@@ -11,8 +11,10 @@ fn main() {
         let mut lexer =
             Lexer::new(std::fs::read_to_string(file_path).expect("failed to read the file"));
 
-        while let Some(token) = lexer.scan_token() {
-            tokens.push(token);
+        while let Ok(token) = lexer.scan_token() {
+            if let Some(token) = token {
+                tokens.push(token);
+            }
         }
 
         println!("{:#?}", tokens);
