@@ -23,7 +23,6 @@ impl Lexer {
         }
     }
 
-    // TODO: this needs to return an error
     pub fn scan_token(&mut self) -> ScannerResult<Option<Token>> {
         if self.current >= self.source.len() {
             return Err(ScannerError::Unknown);
@@ -53,28 +52,7 @@ impl Lexer {
                 }
 
                 '\n' => self.line += 1,
-
-                // skip whitespace
                 ' ' | '\t' | '\r' => (),
-
-                // scan assembler directives
-                // so assembler directives can also be parsed
-                // with the `scan_identifier` function
-                // there's quite a bit of overlap with all these functions
-                // maybe i should come up with a better architecture for this
-                '.' => {
-                    // scan an identifier
-                    // but return a directive type
-                    // and return an error if this process fails
-                    // this sucks big time lol
-                    let identifier = self.scan_identifier()?;
-                    let kind: ScannerResult<TokenType> =
-                        identifier.to_lowercase().as_str().try_into();
-
-                    return Ok(self.make_token(
-                        kind.map_err(|_err| ScannerError::UnknownDirective(identifier))?,
-                    ));
-                }
 
                 '%' => {
                     let literal = TokenLiteral::Number(self.scan_number(2)?);
@@ -89,9 +67,18 @@ impl Lexer {
                     return Ok(self.make_token_literal(TokenType::Number, literal));
                 }
 
-                // scan an identifier
+                '.' => {
+                    let identifier = self.scan_identifier()?;
+                    let kind: ScannerResult<TokenType> =
+                        identifier.to_lowercase().as_str().try_into();
+
+                    return Ok(self.make_token(
+                        kind.map_err(|_err| ScannerError::UnknownDirective(identifier))?,
+                    ));
+                }
                 _ if c.is_alphabetic() => {
                     let kind: TokenType =
+                        // check if the identifier is actually a reserved keyword
                         match self.scan_identifier()?.to_lowercase().as_str().try_into() {
                             Ok(kind) => kind,
                             Err(_) => TokenType::Identifier,
@@ -171,7 +158,6 @@ impl Lexer {
         Ok(self.source[self.start..self.current].iter().collect())
     }
 
-    // TODO: this can fail when we're parsing hex and binary numbers
     fn scan_number(&mut self, radix: u32) -> ScannerResult<u64> {
         while self.peek().is_digit(radix) {
             self.advance();
