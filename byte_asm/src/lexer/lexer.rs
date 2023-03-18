@@ -1,8 +1,8 @@
 // TODO: some unit tests would be nice
 
-use crate::ScannerResult;
 use crate::error::ScannerError;
 use crate::lexer::{Token, TokenType};
+use crate::ScannerResult;
 
 pub struct Lexer {
     source: Vec<char>,
@@ -65,25 +65,30 @@ impl Lexer {
                     // but return a directive type
                     // and return an error if this process fails
                     // this sucks big time lol
-                    match self.scan_identifier()?.to_lowercase().as_str() {
-                        ".org" => TokenType::OrgDirective,
-                        ".db"  => TokenType::DBDirective,
-                        string => return Err(ScannerError::UnknownDirective(string.to_string()))
-                    };
-                    return Ok(self.make_token(TokenType::OrgDirective));
-                },
+                    let identifier = self.scan_identifier()?;
+
+                    let kind: ScannerResult<TokenType> =
+                        identifier.to_lowercase().as_str().try_into();
+                    let kind: TokenType =
+                        kind.map_err(|_err| ScannerError::UnknownDirective(identifier))?;
+
+                    return Ok(self.make_token(kind));
+                }
                 // scan binary number
                 '%' => return Ok(self.make_token(TokenType::PercentSign)),
                 // scan hex number
                 '$' => return Ok(self.make_token(TokenType::DollarSign)),
                 // scan a decimal number
-                _ if c.is_digit(10) => {}
+                _ if c.is_ascii_digit() => {}
                 // scan an identifier
                 _ if c.is_alphabetic() => {
-                    // omg
-                    self.scan_identifier().unwrap();
-                    return Ok(self.make_token(TokenType::Identifier));
-                },
+                    let kind: TokenType =
+                        match self.scan_identifier()?.to_lowercase().as_str().try_into() {
+                            Ok(kind) => kind,
+                            Err(_) => TokenType::Identifier,
+                        };
+                    return Ok(self.make_token(kind));
+                }
 
                 // there are a couple of different number representations that we would like to support
                 // * #$0000    : hex format
@@ -122,11 +127,9 @@ impl Lexer {
     }
 
     pub fn match_next(&mut self, next: char, on_true: TokenType, on_false: TokenType) -> TokenType {
-        if self.current < self.source.len() {
-            if self.source[self.current] == next {
-                self.current += 1;
-                return on_true;
-            }
+        if self.current < self.source.len() && self.source[self.current] == next {
+            self.current += 1;
+            return on_true;
         }
 
         on_false
