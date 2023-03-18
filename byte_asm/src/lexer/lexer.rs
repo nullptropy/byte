@@ -4,6 +4,8 @@ use crate::error::ScannerError;
 use crate::lexer::{Token, TokenType};
 use crate::ScannerResult;
 
+use super::token::TokenLiteral;
+
 pub struct Lexer {
     source: Vec<char>,
     line: usize,
@@ -66,20 +68,27 @@ impl Lexer {
                     // and return an error if this process fails
                     // this sucks big time lol
                     let identifier = self.scan_identifier()?;
-
                     let kind: ScannerResult<TokenType> =
                         identifier.to_lowercase().as_str().try_into();
-                    let kind: TokenType =
-                        kind.map_err(|_err| ScannerError::UnknownDirective(identifier))?;
 
-                    return Ok(self.make_token(kind));
+                    return Ok(self.make_token(
+                        kind.map_err(|_err| ScannerError::UnknownDirective(identifier))?,
+                    ));
                 }
-                // scan binary number
-                '%' => return Ok(self.make_token(TokenType::PercentSign)),
-                // scan hex number
-                '$' => return Ok(self.make_token(TokenType::DollarSign)),
-                // scan a decimal number
-                _ if c.is_ascii_digit() => {}
+
+                '%' => {
+                    let literal = TokenLiteral::Number(self.scan_number(2)?);
+                    return Ok(self.make_token_literal(TokenType::Number, literal));
+                }
+                '$' => {
+                    let literal = TokenLiteral::Number(self.scan_number(16)?);
+                    return Ok(self.make_token_literal(TokenType::Number, literal));
+                }
+                _ if c.is_ascii_digit() => {
+                    let literal = TokenLiteral::Number(self.scan_number(10)?);
+                    return Ok(self.make_token_literal(TokenType::Number, literal));
+                }
+
                 // scan an identifier
                 _ if c.is_alphabetic() => {
                     let kind: TokenType =
@@ -90,11 +99,6 @@ impl Lexer {
                     return Ok(self.make_token(kind));
                 }
 
-                // there are a couple of different number representations that we would like to support
-                // * #$0000    : hex format
-                // * #6500     : decimal format
-                // * #%00001000: binary format
-                // it's not super clear if scanning the numbers should be done here
                 n => return Err(ScannerError::UnknownCharacter(self.line, self.current, n)),
             }
         }
@@ -106,7 +110,6 @@ impl Lexer {
         self.current >= self.source.len()
     }
 
-    // TODO: maybe make this accept an offset
     pub fn peek(&self) -> char {
         if self.is_at_end() {
             '\0'
@@ -135,13 +138,19 @@ impl Lexer {
         on_false
     }
 
-    // wip
-    // TODO: attach more info to the `Token` struct
-    // so that we can report errors with proper context
     pub fn make_token(&self, kind: TokenType) -> Option<Token> {
         Some(Token {
             kind,
             text: self.source[self.start..self.current].iter().collect(),
+            literal: None,
+        })
+    }
+
+    pub fn make_token_literal(&self, kind: TokenType, literal: TokenLiteral) -> Option<Token> {
+        Some(Token {
+            kind,
+            text: self.source[self.start..self.current].iter().collect(),
+            literal: Some(literal),
         })
     }
 
@@ -160,5 +169,33 @@ impl Lexer {
         }
 
         Ok(self.source[self.start..self.current].iter().collect())
+    }
+
+    // TODO: this can fail when we're parsing hex and binary numbers
+    fn scan_number(&mut self, radix: u32) -> ScannerResult<u64> {
+        while self.peek().is_digit(radix) {
+            self.advance();
+        }
+
+        if self.start + 1 == self.current && radix != 10 {
+            return Err(ScannerError::NumberExpected);
+        }
+
+        let start = if radix == 10 {
+            self.start
+        } else {
+            self.start + 1
+        };
+
+        match u64::from_str_radix(
+            self.source[start..self.current]
+                .iter()
+                .collect::<String>()
+                .as_str(),
+            radix,
+        ) {
+            Ok(data) => Ok(data),
+            Err(why) => unreachable!(),
+        }
     }
 }

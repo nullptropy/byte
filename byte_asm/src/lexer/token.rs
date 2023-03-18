@@ -31,13 +31,24 @@ pub enum TokenType {
     OrgDirective,
     DBDirective,
     Include,
+
+    String,
+    Number,
+
     EndOfFile,
+}
+
+#[derive(Debug)]
+pub enum TokenLiteral {
+    String(String),
+    Number(u64)
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub kind: TokenType,
     pub text: String,
+    pub literal: Option<TokenLiteral>
 }
 
 impl TryFrom<&str> for TokenType {
