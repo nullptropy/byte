@@ -1,7 +1,6 @@
 // keywords, instructions, all other shit
 #[derive(Debug)]
 pub enum TokenType {
-    // common symbols
     LeftParen,
     RightParen,
     LeftBrace,
@@ -22,6 +21,8 @@ pub enum TokenType {
     Less,
     LessEqual,
     DollarSign,
+    NumberSign,
+    PercentSign,
 
     EndOfFile,
 }

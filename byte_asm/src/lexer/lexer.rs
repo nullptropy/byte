@@ -3,7 +3,8 @@
 use crate::lexer::{Token, TokenType};
 
 pub struct Lexer {
-    code: Vec<char>,
+    source: Vec<char>,
+    line: usize,
     start: usize,
     current: usize,
 }
@@ -11,7 +12,8 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(code: String) -> Self {
         Self {
-            code: code.chars().collect(),
+            source: code.chars().collect(),
+            line: 1,
             start: 0,
             current: 0,
         }
@@ -19,7 +21,7 @@ impl Lexer {
 
     // TODO: this needs to return an error
     pub fn scan_token(&mut self) -> Result<Option<Token>, ()> {
-        if self.current >= self.code.len() {
+        if self.current >= self.source.len() {
             return Err(());
         }
         self.start = self.current;
@@ -31,11 +33,10 @@ impl Lexer {
                 '{' => return Ok(self.make_token(TokenType::LeftBrace)),
                 '}' => return Ok(self.make_token(TokenType::RightBrace)),
                 ',' => return Ok(self.make_token(TokenType::Comma)),
-                '.' => return Ok(self.make_token(TokenType::Dot)),
                 '+' => return Ok(self.make_token(TokenType::Plus)),
                 '-' => return Ok(self.make_token(TokenType::Minus)),
                 '*' => return Ok(self.make_token(TokenType::Star)),
-                '$' => return Ok(self.make_token(TokenType::DollarSign)),
+                ';' => self.scan_comment(),
 
                 '=' => {
                     let kind = self.match_next('=', TokenType::EqualEqual, TokenType::Equal);
@@ -46,8 +47,25 @@ impl Lexer {
                     return Ok(self.make_token(kind));
                 }
 
-                ';' => self.scan_comment(),
+                '\n' => self.line += 1,
+                ' ' | '\t' | '\r' => (),
 
+                // scan assembler directives
+                '.' => return Ok(self.make_token(TokenType::Dot)),
+                // scan binary number
+                '%' => return Ok(self.make_token(TokenType::PercentSign)),
+                // scan hex number
+                '$' => return Ok(self.make_token(TokenType::DollarSign)),
+                // scan a decimal number
+                _ if c.is_digit(10) => {}
+                // scan an identifier
+                _ if c.is_alphabetic() => {}
+
+                // there are a couple of different number representations that we would like to support
+                // * #$0000    : hex format
+                // * #6500     : decimal format
+                // * #%00001000: binary format
+                // it's not super clear if scanning the numbers should be done here
                 _ => todo!(),
             }
         }
@@ -57,8 +75,8 @@ impl Lexer {
 
     // returns None on EOF
     pub fn advance(&mut self) -> Option<char> {
-        if self.current < self.code.len() {
-            let c = self.code[self.current];
+        if self.current < self.source.len() {
+            let c = self.source[self.current];
             self.current += 1;
             Some(c)
         } else {
@@ -67,8 +85,8 @@ impl Lexer {
     }
 
     pub fn match_next(&mut self, next: char, on_true: TokenType, on_false: TokenType) -> TokenType {
-        if self.current < self.code.len() {
-            if self.code[self.current] == next {
+        if self.current < self.source.len() {
+            if self.source[self.current] == next {
                 self.current += 1;
                 return on_true;
             }
@@ -78,6 +96,8 @@ impl Lexer {
     }
 
     // wip
+    // TODO: attach more info to the `Token` struct
+    // so that we can report errors with proper context
     pub fn make_token(&self, kind: TokenType) -> Option<Token> {
         Some(Token { kind })
     }
