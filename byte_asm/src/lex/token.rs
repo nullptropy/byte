@@ -1,4 +1,4 @@
-use crate::error::ScannerError;
+use super::LexerError;
 
 // keywords, instructions, all other shit
 #[derive(Debug)]
@@ -41,28 +41,28 @@ pub enum TokenType {
 #[derive(Debug)]
 pub enum TokenLiteral {
     String(String),
-    Number(u64)
+    Number(u64),
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub kind: TokenType,
     pub text: String,
-    pub literal: Option<TokenLiteral>
+    pub literal: Option<TokenLiteral>,
 }
 
 impl TryFrom<&str> for TokenType {
-    type Error = crate::error::ScannerError;
+    type Error = LexerError;
 
     #[rustfmt::skip]
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+    fn try_from(value: &str) -> super::LexerResult<Self> {
         use TokenType::*;
 
         match value {
             ".org"    => Ok(OrgDirective),
             ".db"     => Ok(DBDirective),
             "include" => Ok(Include),
-            _         => Err(ScannerError::Unknown)
+            _         => Err(LexerError::Unknown)
         }
     }
 }

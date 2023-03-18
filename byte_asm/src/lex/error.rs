@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ScannerError {
+pub enum LexerError {
     #[error("Unknown assembler directive: {0}")]
     UnknownDirective(String),
     #[error("Unknown character at line {0} index {1}: {2}")]
