@@ -2,76 +2,61 @@ use super::{LexerError, LexerResult};
 use super::{Token, TokenLiteral, TokenType};
 
 pub struct Lexer {
-    source: Vec<char>,
+    column: usize,
+    current: usize,
     line: usize,
     start: usize,
-    current: usize,
+    source: Vec<char>,
 }
 
 impl Lexer {
-    pub fn new(code: String) -> Self {
+    pub fn new(source: String) -> Self {
         Self {
-            source: code.chars().collect(),
+            column: 0,
+            current: 0,
             line: 1,
             start: 0,
-            current: 0,
+            source: source.chars().collect(),
         }
     }
 
-    pub fn scan_tokens(&mut self) -> LexerResult<Vec<Token>> {
-        let mut tokens = Vec::new();
-
-        loop {
-            if self.current >= self.source.len() {
-                tokens.push(Token {
-                    kind: TokenType::EndOfFile,
-                    text: "".to_string(),
-                    literal: None,
-                });
-                break;
-            }
-            if let Some(token) = self.scan_token()? {
-                tokens.push(token);
-            }
-        }
-
-        Ok(tokens)
-    }
-
-    pub fn scan_token(&mut self) -> LexerResult<Option<Token>> {
+    pub fn scan_token(&mut self) -> LexerResult<Token> {
+        self.skip_whitespace();
         self.start = self.current;
 
-        if let Some(c) = self.advance() {
-            match c {
-                '(' => return self.make_token(TokenType::LeftParen),
-                ')' => return self.make_token(TokenType::RightParen),
-                '{' => return self.make_token(TokenType::LeftBrace),
-                '}' => return self.make_token(TokenType::RightBrace),
-                ',' => return self.make_token(TokenType::Comma),
-                '+' => return self.make_token(TokenType::Plus),
-                '-' => return self.make_token(TokenType::Minus),
-                '*' => return self.make_token(TokenType::Star),
-                ':' => return self.make_token(TokenType::Colon),
+        let token = match self.advance() {
+            None => self.make_token(TokenType::EndOfFile, None),
+            Some(c) => match c {
+                '(' => self.make_token(TokenType::LeftParen, None),
+                ')' => self.make_token(TokenType::RightParen, None),
+                '{' => self.make_token(TokenType::LeftBrace, None),
+                '}' => self.make_token(TokenType::RightBrace, None),
+                ',' => self.make_token(TokenType::Comma, None),
+                '+' => self.make_token(TokenType::Plus, None),
+                '-' => self.make_token(TokenType::Minus, None),
+                '*' => self.make_token(TokenType::Star, None),
+                ':' => self.make_token(TokenType::Colon, None),
+
                 '=' => {
                     let kind = self.match_next('=', TokenType::EqualEqual, TokenType::Equal);
-                    return self.make_token(kind);
+                    self.make_token(kind, None)
                 }
                 '!' => {
                     let kind = self.match_next('=', TokenType::BangEqual, TokenType::Bang);
-                    return self.make_token(kind);
+                    self.make_token(kind, None)
                 }
 
                 '%' => {
-                    let literal = TokenLiteral::Number(self.scan_number(2)?);
-                    return self.make_token_literal(TokenType::Number, literal);
+                    let literal = Some(TokenLiteral::Number(self.scan_number(2)?));
+                    self.make_token(TokenType::Number, literal)
                 }
                 '$' => {
-                    let literal = TokenLiteral::Number(self.scan_number(16)?);
-                    return self.make_token_literal(TokenType::Number, literal);
+                    let literal = Some(TokenLiteral::Number(self.scan_number(16)?));
+                    self.make_token(TokenType::Number, literal)
                 }
                 _ if c.is_ascii_digit() => {
-                    let literal = TokenLiteral::Number(self.scan_number(10)?);
-                    return self.make_token_literal(TokenType::Number, literal);
+                    let literal = Some(TokenLiteral::Number(self.scan_number(10)?));
+                    self.make_token(TokenType::Number, literal)
                 }
 
                 '.' => {
@@ -79,99 +64,115 @@ impl Lexer {
                     let kind = TokenType::try_from(identifier.to_lowercase().as_str())
                         .map_err(|_err| LexerError::UnknownDirective(identifier))?;
 
-                    return self.make_token(kind);
+                    self.make_token(kind, None)
                 }
                 _ if c.is_alphabetic() => {
-                    let kind: TokenType =
-                        // check if the identifier is actually a reserved keyword
-                        match self.scan_identifier()?.to_lowercase().as_str().try_into() {
-                            Ok(kind) => kind,
-                            Err(_) => TokenType::Identifier,
-                        };
-                    return self.make_token(kind);
+                    let identifier = self.scan_identifier()?;
+                    let kind = TokenType::try_from(identifier.to_lowercase().as_str())
+                        .unwrap_or(TokenType::Identifier);
+
+                    self.make_token(kind, None)
                 }
 
-                ' ' | '\t' | '\r' => (),
-                ';' => self.scan_comment(),
-                '\n' => self.line += 1,
+                ';' => {
+                    self.scan_comment();
+                    self.make_token(TokenType::Comment, None)
+                }
 
-                n => return Err(LexerError::UnknownCharacter(self.line, self.current, n)),
-            }
-        }
+                n => return Err(LexerError::UnknownCharacter(self.line, self.column, n)),
+            },
+        };
 
-        Ok(None)
+        Ok(token)
     }
 
-    pub fn is_at_end(&self) -> bool {
+    fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
-    pub fn peek(&self) -> char {
+    fn peek(&self) -> Option<char> {
         if self.is_at_end() {
-            '\0'
-        } else {
-            self.source[self.current]
-        }
-    }
-
-    pub fn advance(&mut self) -> Option<char> {
-        if self.current < self.source.len() {
-            let next_char = self.source[self.current];
-            self.current += 1;
-            Some(next_char)
-        } else {
             None
+        } else {
+            Some(self.source[self.current])
         }
     }
 
-    pub fn match_next(&mut self, next: char, on_true: TokenType, on_false: TokenType) -> TokenType {
-        if self.current < self.source.len() && self.source[self.current] == next {
+    fn advance(&mut self) -> Option<char> {
+        if self.is_at_end() {
+            None
+        } else {
             self.current += 1;
-            return on_true;
+            self.column += 1;
+            Some(self.source[self.current - 1])
         }
-
-        on_false
     }
 
-    pub fn make_token(&self, kind: TokenType) -> LexerResult<Option<Token>> {
-        Ok(Some(Token {
-            kind,
-            text: self.source[self.start..self.current].iter().collect(),
-            literal: None,
-        }))
+    fn match_next(&mut self, next: char, on_true: TokenType, on_false: TokenType) -> TokenType {
+        match self.peek() {
+            Some(c) if c == next => {
+                self.advance();
+                on_true
+            }
+            _ => on_false,
+        }
     }
 
-    pub fn make_token_literal(
-        &self,
-        kind: TokenType,
-        literal: TokenLiteral,
-    ) -> LexerResult<Option<Token>> {
-        Ok(Some(Token {
+    fn make_token(&self, kind: TokenType, literal: Option<TokenLiteral>) -> Token {
+        Token {
             kind,
+            literal,
+            line: self.line,
+            column: self.column,
             text: self.source[self.start..self.current].iter().collect(),
-            literal: Some(literal),
-        }))
+        }
+    }
+
+    fn skip_whitespace(&mut self) {
+        loop {
+            match self.peek().unwrap_or('\0') {
+                ' ' | '\r' | '\t' => {
+                    self.advance();
+                }
+                '\n' => {
+                    self.advance();
+                    self.line += 1;
+                    self.column = 0;
+                }
+                _ => break,
+            }
+        }
     }
 
     fn scan_comment(&mut self) {
-        while let Some(c) = self.advance() {
+        while let Some(c) = self.peek() {
             if c == '\n' {
-                return;
+                break;
             }
+
+            self.advance();
         }
     }
 
     fn scan_identifier(&mut self) -> LexerResult<String> {
-        while self.peek().is_alphanumeric() || self.peek() == '_' {
-            self.advance();
+        while let Some(c) = self.peek() {
+            if c.is_alphanumeric() || c == '_' {
+                self.advance();
+            } else {
+                break;
+            }
         }
 
         Ok(self.source[self.start..self.current].iter().collect())
     }
 
     fn scan_number(&mut self, radix: u32) -> LexerResult<u64> {
-        while self.peek().is_digit(radix) {
-            self.advance();
+        while let Some(c) = self.peek() {
+            if c.is_digit(radix) {
+                self.advance();
+            } else {
+                break;
+            }
         }
 
         // `scan_number` gets called at thee different places
@@ -185,14 +186,8 @@ impl Lexer {
 
         // offset the `start` by `1` if the radix is not `10`.
         // essentially skips `%` and `$`.
-        let start = if radix == 10 {
-            self.start
-        } else {
-            self.start + 1
-        };
-
         match u64::from_str_radix(
-            self.source[start..self.current]
+            self.source[self.start + if radix == 10 { 0 } else { 1 }..self.current]
                 .iter()
                 .collect::<String>()
                 .as_str(),
