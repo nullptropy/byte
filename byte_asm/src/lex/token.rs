@@ -1,7 +1,7 @@
 use super::LexerError;
 
 // keywords, instructions, all other shit
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     LeftParen,
     RightParen,
@@ -35,20 +35,23 @@ pub enum TokenType {
     String,
     Number,
 
+    Comment,
     EndOfFile,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenLiteral {
     String(String),
     Number(u64),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Token {
     pub kind: TokenType,
     pub text: String,
     pub literal: Option<TokenLiteral>,
+    pub line: usize,
+    pub column: usize,
 }
 
 impl TryFrom<&str> for TokenType {
