@@ -65,7 +65,7 @@ impl TryFrom<&str> for TokenType {
             ".org"    => Ok(OrgDirective),
             ".db"     => Ok(DBDirective),
             "include" => Ok(Include),
-            _         => Err(LexerError::Unknown)
+            _         => Err(LexerError::Generic("this should be unreachable?".to_string()))
         }
     }
 }

@@ -2,12 +2,24 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum LexerError {
-    #[error("Unknown assembler directive: {0}")]
-    UnknownDirective(String),
-    #[error("Unknown character at line {0} index {1}: {2}")]
-    UnknownCharacter(usize, usize, char),
-    #[error("No number is specified after hex or binary number symbol")]
-    NumberExpected,
-    #[error("place-holder error value")]
-    Unknown,
+    #[error("[{line}:{column}] unknown assembler directive: {directive}")]
+    UnknownDirective{
+        line: usize,
+        column: usize,
+        directive: String,
+    },
+    #[error("[{line}:{column}] unknown character: {character}")]
+    UnknownCharacter {
+        line: usize,
+        column: usize,
+        character: char,
+    },
+    #[error("[{line}:{column}] no number is specified after number symbol: {symbol}")]
+    NumberExpected {
+        line: usize,
+        column: usize,
+        symbol: char,
+    },
+    #[error("{0}")]
+    Generic(String),
 }

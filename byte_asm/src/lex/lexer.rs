@@ -61,8 +61,13 @@ impl Lexer {
 
                 '.' => {
                     let identifier = self.scan_identifier()?;
-                    let kind = TokenType::try_from(identifier.to_lowercase().as_str())
-                        .map_err(|_err| LexerError::UnknownDirective(identifier))?;
+                    let kind = TokenType::try_from(identifier.to_lowercase().as_str()).map_err(
+                        |_err| LexerError::UnknownDirective {
+                            line: self.line,
+                            column: self.column,
+                            directive: identifier,
+                        },
+                    )?;
 
                     self.make_token(kind, None)
                 }
@@ -79,7 +84,13 @@ impl Lexer {
                     self.make_token(TokenType::Comment, None)
                 }
 
-                n => return Err(LexerError::UnknownCharacter(self.line, self.column, n)),
+                n => {
+                    return Err(LexerError::UnknownCharacter {
+                        line: self.line,
+                        column: self.column,
+                        character: n,
+                    })
+                }
             },
         };
 
@@ -181,7 +192,11 @@ impl Lexer {
         // `1` char away from `self.current`, the loop above failed to
         // parse any valid digit in base `radix`.
         if self.start + 1 == self.current && radix != 10 {
-            return Err(LexerError::NumberExpected);
+            return Err(LexerError::NumberExpected {
+                line: self.line,
+                column: self.column,
+                symbol: if radix == 16 { '$' } else { '%' },
+            });
         }
 
         // offset the `start` by `1` if the radix is not `10`.
