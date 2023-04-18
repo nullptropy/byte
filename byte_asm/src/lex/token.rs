@@ -1,5 +1,3 @@
-use super::LexerError;
-
 // keywords, instructions, all other shit
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
@@ -55,17 +53,22 @@ pub struct Token {
 }
 
 impl TryFrom<&str> for TokenType {
-    type Error = LexerError;
+    type Error = ();
 
     #[rustfmt::skip]
-    fn try_from(value: &str) -> super::LexerResult<Self> {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         use TokenType::*;
 
-        match value {
-            ".org"    => Ok(OrgDirective),
-            ".db"     => Ok(DBDirective),
-            "include" => Ok(Include),
-            _         => Err(LexerError::Generic("this should be unreachable?".to_string()))
-        }
+        let kind = match value {
+            "org"     => OrgDirective,
+            "db"      => DBDirective,
+            "include" => Include,
+            // this is usually the case we end up with
+            // when `try_from` is called for a user-defined
+            // identifier
+            _         => return Err(())
+        };
+
+        Ok(kind)
     }
 }

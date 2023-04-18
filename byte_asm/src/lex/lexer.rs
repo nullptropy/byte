@@ -1,6 +1,8 @@
 use super::{LexerError, LexerResult};
 use super::{Token, TokenLiteral, TokenType};
 
+// TODO: the lexer needs some integration tests
+
 pub struct Lexer {
     column: usize,
     current: usize,
@@ -61,13 +63,14 @@ impl Lexer {
 
                 '.' => {
                     let identifier = self.scan_identifier()?;
-                    let kind = TokenType::try_from(identifier.to_lowercase().as_str()).map_err(
-                        |_err| LexerError::UnknownDirective {
-                            line: self.line,
-                            column: self.column,
-                            directive: identifier,
-                        },
-                    )?;
+                    let kind =
+                        TokenType::try_from(&identifier.to_lowercase()[1..]).map_err(|_| {
+                            LexerError::UnknownDirective {
+                                line: self.line,
+                                column: self.column,
+                                directive: identifier,
+                            }
+                        })?;
 
                     self.make_token(kind, None)
                 }
@@ -186,7 +189,7 @@ impl Lexer {
             }
         }
 
-        // `scan_number` gets called at thee different places
+        // `scan_number` gets called at three different places
         // if the radix is either `2` or `16`, `self.start`
         // points to either `%` or `$`. so if `self.start` is only
         // `1` char away from `self.current`, the loop above failed to
