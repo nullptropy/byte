@@ -1,8 +1,6 @@
 use super::{LexerError, LexerResult};
 use super::{Token, TokenLiteral, TokenType};
 
-// TODO: the lexer needs some integration tests
-
 pub struct Lexer {
     column: usize,
     current: usize,
@@ -59,6 +57,11 @@ impl Lexer {
                 _ if c.is_ascii_digit() => {
                     let literal = Some(TokenLiteral::Number(self.scan_number(10)?));
                     self.make_token(TokenType::Number, literal)
+                }
+
+                c if c == '\'' || c == '"' => {
+                    let string = self.scan_string(c)?;
+                    self.make_token(TokenType::String, Some(TokenLiteral::String(string)))
                 }
 
                 '.' => {
@@ -165,6 +168,54 @@ impl Lexer {
             }
 
             self.advance();
+        }
+    }
+
+    fn scan_string(&mut self, quote: char) -> LexerResult<String> {
+        let mut string = String::new();
+
+        while let Some(c) = self.peek() {
+            if c == quote || c == '\n' {
+                break;
+            }
+            self.advance();
+
+            // if c isn't a `\\` just push it
+            // to `string` and continue processing
+            if c != '\\' {
+                string.push(c);
+                continue;
+            }
+
+            // if c is a `\\` we potentially have to decode
+            // an escape sequence
+            match self.peek() {
+                Some('n') => string.push('\n'),
+                Some('r') => string.push('\r'),
+                Some('t') => string.push('\t'),
+                Some('"') => string.push('"'),
+                Some('\'') => string.push('\''),
+                Some('\\') => string.push('\\'),
+                // if the char after `\\` isn't recognized,
+                // just push `e` into the string
+                Some(e) => string.push(e),
+                // don't call `advance` in this case
+                None => continue,
+            }
+
+            self.advance();
+        }
+
+        if let None | Some('\n') = self.peek() {
+            Err(LexerError::UnterminatedString {
+                line: self.line,
+                column: self.column,
+                quote,
+            })
+        } else {
+            // consume the second quote
+            self.advance();
+            Ok(string)
         }
     }
 

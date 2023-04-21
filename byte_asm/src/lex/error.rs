@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum LexerError {
     #[error("[{line}:{column}] unknown assembler directive: {directive}")]
-    UnknownDirective{
+    UnknownDirective {
         line: usize,
         column: usize,
         directive: String,
@@ -19,6 +19,12 @@ pub enum LexerError {
         line: usize,
         column: usize,
         symbol: char,
+    },
+    #[error("[{line}:{column}] unterminated string quote")]
+    UnterminatedString {
+        line: usize,
+        column: usize,
+        quote: char,
     },
     #[error("{0}")]
     Generic(String),
