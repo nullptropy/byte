@@ -35,6 +35,7 @@ impl Lexer {
                 '+' => self.make_token(TokenType::Plus, None),
                 '-' => self.make_token(TokenType::Minus, None),
                 '*' => self.make_token(TokenType::Star, None),
+                '#' => self.make_token(TokenType::Hash, None),
                 ':' => self.make_token(TokenType::Colon, None),
 
                 '=' => {
