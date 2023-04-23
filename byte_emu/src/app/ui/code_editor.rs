@@ -99,7 +99,7 @@ impl Highlighter {
         use TokenType::*;
 
         match token_type {
-            DWDirective | DBDirective | OrgDirective | Include | Equ => {
+            DWDirective | DBDirective | OrgDirective | Include | Equ | Label => {
                 Color32::from_rgb(0x63, 0xaa, 0xcf)
             }
 

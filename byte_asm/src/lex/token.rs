@@ -32,6 +32,7 @@ pub enum TokenType {
     DWDirective,
     Equ,
     Include,
+    Label,
 
     String,
     Number,
