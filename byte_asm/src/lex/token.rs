@@ -43,13 +43,14 @@ pub enum TokenType {
 pub enum TokenLiteral {
     String(String),
     Number(u64),
+    None,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Token {
     pub kind: TokenType,
     pub text: String,
-    pub literal: Option<TokenLiteral>,
+    pub literal: TokenLiteral,
     pub line: usize,
     pub column: usize,
 }
