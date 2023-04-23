@@ -1,4 +1,4 @@
-// keywords, instructions, all other shit
+// TODO: lex instructions differently
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     LeftParen,
@@ -30,6 +30,7 @@ pub enum TokenType {
     OrgDirective,
     DBDirective,
     DWDirective,
+    Equ,
     Include,
 
     String,
@@ -73,6 +74,7 @@ impl TryFrom<&str> for TokenType {
             "org"     => OrgDirective,
             "db"      => DBDirective,
             "dw"      => DWDirective,
+            "equ"     => Equ,
             "include" => Include,
             // this is usually the case we end up with
             // when `try_from` is called for a user-defined
