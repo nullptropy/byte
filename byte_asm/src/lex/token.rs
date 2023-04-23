@@ -40,6 +40,14 @@ pub enum TokenType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Location {
+    pub start: usize,
+    pub end: usize,
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenLiteral {
     String(String),
     Number(u64),
@@ -51,8 +59,7 @@ pub struct Token {
     pub kind: TokenType,
     pub text: String,
     pub literal: TokenLiteral,
-    pub line: usize,
-    pub column: usize,
+    pub location: Location,
 }
 
 impl TryFrom<&str> for TokenType {

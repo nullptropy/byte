@@ -1,5 +1,5 @@
 use super::{LexerError, LexerResult};
-use super::{Token, TokenLiteral, TokenType};
+use super::{Location, Token, TokenLiteral, TokenType};
 
 pub struct Lexer {
     column: usize,
@@ -137,11 +137,17 @@ impl Lexer {
     }
 
     fn make_token(&self, kind: TokenType, literal: TokenLiteral) -> Token {
+        let location = Location {
+            start: self.start,
+            end: self.current,
+            line: self.line,
+            column: self.column,
+        };
+
         Token {
             kind,
             literal,
-            line: self.line,
-            column: self.column,
+            location,
             text: self.source[self.start..self.current].iter().collect(),
         }
     }
