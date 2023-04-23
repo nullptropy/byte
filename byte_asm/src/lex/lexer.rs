@@ -1,22 +1,27 @@
+use std::iter::Peekable;
+use std::str::Chars;
+
 use super::{LexerError, LexerResult};
 use super::{Location, Token, TokenLiteral, TokenType};
 
-pub struct Lexer {
+pub struct Lexer<'a> {
     column: usize,
     current: usize,
     line: usize,
     start: usize,
-    source: Vec<char>,
+    source: &'a str,
+    chars: Peekable<Chars<'a>>,
 }
 
-impl Lexer {
-    pub fn new(source: String) -> Self {
+impl<'a> Lexer<'a> {
+    pub fn new(source: &'a str) -> Self {
         Self {
             column: 0,
             current: 0,
             line: 1,
             start: 0,
-            source: source.chars().collect(),
+            source,
+            chars: source.chars().peekable(),
         }
     }
 
@@ -66,22 +71,21 @@ impl Lexer {
                 }
 
                 '.' => {
-                    let identifier = self.scan_identifier()?;
-                    let kind =
-                        TokenType::try_from(&identifier.to_lowercase()[1..]).map_err(|_| {
-                            LexerError::UnknownDirective {
-                                line: self.line,
-                                column: self.column,
-                                directive: identifier,
-                            }
-                        })?;
+                    let identifier = self.scan_identifier()?.to_lowercase();
+                    let kind = TokenType::try_from(&identifier[1..]).map_err(|_| {
+                        LexerError::UnknownDirective {
+                            line: self.line,
+                            column: self.column,
+                            directive: identifier.to_owned(),
+                        }
+                    })?;
 
                     self.make_token(kind, TokenLiteral::None)
                 }
                 _ if c.is_alphabetic() => {
-                    let identifier = self.scan_identifier()?;
-                    let kind = TokenType::try_from(identifier.to_lowercase().as_str())
-                        .unwrap_or(TokenType::Identifier);
+                    let identifier = self.scan_identifier()?.to_lowercase();
+                    let kind =
+                        TokenType::try_from(identifier.as_str()).unwrap_or(TokenType::Identifier);
 
                     self.make_token(kind, TokenLiteral::None)
                 }
@@ -108,12 +112,8 @@ impl Lexer {
         self.current >= self.source.len()
     }
 
-    fn peek(&self) -> Option<char> {
-        if self.is_at_end() {
-            None
-        } else {
-            Some(self.source[self.current])
-        }
+    fn peek(&mut self) -> Option<char> {
+        self.chars.peek().copied()
     }
 
     fn advance(&mut self) -> Option<char> {
@@ -122,7 +122,7 @@ impl Lexer {
         } else {
             self.current += 1;
             self.column += 1;
-            Some(self.source[self.current - 1])
+            self.chars.next()
         }
     }
 
@@ -148,7 +148,7 @@ impl Lexer {
             kind,
             literal,
             location,
-            text: self.source[self.start..self.current].iter().collect(),
+            text: &self.source[self.start..self.current],
         }
     }
 
@@ -226,7 +226,7 @@ impl Lexer {
         }
     }
 
-    fn scan_identifier(&mut self) -> LexerResult<String> {
+    fn scan_identifier(&mut self) -> LexerResult<&str> {
         while let Some(c) = self.peek() {
             if c.is_alphanumeric() || c == '_' {
                 self.advance();
@@ -235,7 +235,7 @@ impl Lexer {
             }
         }
 
-        Ok(self.source[self.start..self.current].iter().collect())
+        Ok(&self.source[self.start..self.current])
     }
 
     fn scan_number(&mut self, radix: u32) -> LexerResult<u64> {
@@ -263,10 +263,7 @@ impl Lexer {
         // offset the `start` by `1` if the radix is not `10`.
         // essentially skips `%` and `$`.
         u64::from_str_radix(
-            self.source[self.start + if radix == 10 { 0 } else { 1 }..self.current]
-                .iter()
-                .collect::<String>()
-                .as_str(),
+            &self.source[self.start + if radix == 10 { 0 } else { 1 }..self.current],
             radix,
         )
         // this should be unreachable

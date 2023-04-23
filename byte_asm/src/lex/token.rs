@@ -55,9 +55,9 @@ pub enum TokenLiteral {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Token {
+pub struct Token<'a> {
     pub kind: TokenType,
-    pub text: String,
+    pub text: &'a str,
     pub literal: TokenLiteral,
     pub location: Location,
 }
