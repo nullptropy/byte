@@ -29,6 +29,7 @@ pub enum TokenType {
     Identifier,
     OrgDirective,
     DBDirective,
+    DWDirective,
     Include,
 
     String,
@@ -63,6 +64,7 @@ impl TryFrom<&str> for TokenType {
         let kind = match value {
             "org"     => OrgDirective,
             "db"      => DBDirective,
+            "dw"      => DWDirective,
             "include" => Include,
             // this is usually the case we end up with
             // when `try_from` is called for a user-defined
