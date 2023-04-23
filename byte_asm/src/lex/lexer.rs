@@ -262,15 +262,14 @@ impl Lexer {
 
         // offset the `start` by `1` if the radix is not `10`.
         // essentially skips `%` and `$`.
-        match u64::from_str_radix(
+        u64::from_str_radix(
             self.source[self.start + if radix == 10 { 0 } else { 1 }..self.current]
                 .iter()
                 .collect::<String>()
                 .as_str(),
             radix,
-        ) {
-            Ok(value) => Ok(value),
-            Err(_err) => unreachable!(),
-        }
+        )
+        // this should be unreachable
+        .map_err(|why| LexerError::Generic(why.to_string()))
     }
 }
