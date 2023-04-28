@@ -30,7 +30,6 @@ impl ByteEmuApp {
                     .font(egui::TextStyle::Monospace)
                     .code_editor()
                     .desired_width(f32::INFINITY)
-                    .desired_rows(1)
                     .layouter(&mut layouter),
             );
         });
@@ -54,11 +53,14 @@ struct Highlighter {}
 
 impl Highlighter {
     fn highlight(&self, string: &str) -> LayoutJob {
-        let mut layout_job = LayoutJob::default();
         let mut lexer = Lexer::new(string);
+        let mut prev_loc: Option<Location> = None;
+        let mut layout_job = LayoutJob::default();
 
         let font_id = egui::FontId::monospace(10.0);
-        let mut prev_loc: Option<Location> = None;
+        let mut append = |text: &str, color: Color32| {
+            layout_job.append(text, 0.0, egui::TextFormat::simple(font_id.clone(), color));
+        };
 
         loop {
             match lexer.scan_token() {
@@ -67,22 +69,18 @@ impl Highlighter {
                         break;
                     }
 
-                    if let Some(ref prev) = prev_loc {
-                        if token.location.start - prev.end > 0 {
-                            layout_job.append(
-                                &string[prev.end..token.location.start],
-                                0.0,
-                                egui::TextFormat::simple(font_id.clone(), Color32::TRANSPARENT),
-                            );
+                    match prev_loc {
+                        None => {
+                            append(&string[0..token.location.start], Color32::WHITE);
+                        }
+                        Some(ref prev) => {
+                            if token.location.start - prev.end > 0 {
+                                append(&string[prev.end..token.location.start], Color32::WHITE);
+                            }
                         }
                     }
 
-                    layout_job.append(
-                        token.text,
-                        0.0,
-                        egui::TextFormat::simple(font_id.clone(), self.token_color(token.kind)),
-                    );
-
+                    append(token.text, self.token_color(token.kind));
                     prev_loc = Some(token.location);
                 }
                 Err(why) => println!("Syntax Error: {why}"),
@@ -92,59 +90,21 @@ impl Highlighter {
         layout_job
     }
 
-    // TODO: do this based on actual color themes
-    // and add a mechanism to the highlighter
-    // to be able to pick different color schemes
+    #[rustfmt::skip]
     fn token_color(&self, token_type: TokenType) -> Color32 {
         use TokenType::*;
 
         match token_type {
+            Number     => Color32::from_rgb(0xd8, 0x98, 0xa4),
+            String     => Color32::from_rgb(0x7b, 0xaf, 0x95),
+            Comment    => Color32::from_rgb(0x6a, 0x6a, 0x69),
+            // Identifier => Color32::from_rgb(0x3d, 0xc1, 0xac),
+
             DWDirective | DBDirective | OrgDirective | Include | Equ | Label => {
                 Color32::from_rgb(0x63, 0xaa, 0xcf)
             }
 
-            Identifier => Color32::from_rgb(0x3d, 0xc1, 0xac),
-            Number => Color32::from_rgb(0xd8, 0x98, 0xa4),
-            String => Color32::from_rgb(0x7b, 0xaf, 0x95),
-            Comment => Color32::from_rgb(0x6a, 0x6a, 0x69),
-
-            _ => Color32::BLUE,
+            _ => Color32::WHITE,
         }
     }
 }
-// LeftParen,
-// RightParen,
-// LeftBrace,
-// RightBrace,
-// Comma,
-// Dot,
-// Minus,
-// Plus,
-// Semicolon,
-// Slash,
-// Star,
-// Hash,
-// Bang,
-// BangEqual,
-// Equal,
-// EqualEqual,
-// Greater,
-// GreaterEqual,
-// Less,
-// LessEqual,
-// DollarSign,
-// NumberSign,
-// PercentSign,
-// Colon,
-
-// Identifier,
-// OrgDirective,
-// DBDirective,
-// DWDirective,
-// Include,
-
-// String,
-// Number,
-
-// Comment,
-// EndOfFile,
