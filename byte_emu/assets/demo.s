@@ -1,5 +1,5 @@
 ; The emulator is currently running a program that allows the user to control
-; the position of a colored pixel on the screen and change its color using the SELECT key.
+; the position of a colored square on the screen and change its color using the SELECT key.
 ;
 ; SELECT: mapped to 'A'
 ;  START: mapped to 'S'
@@ -10,7 +10,7 @@
 ;   LEFT: mapped to the Left Arrow Key
 ;  RIGHT: mapped to the Right Arrow Key
 ;
-; To move the pixel, use the corresponding arrow keys.
+; To move the square, use the corresponding arrow keys.
 
 ; TODO: make use of macros to clear this up
 
@@ -22,6 +22,11 @@ COLOR    EQU $fc
 POS_L    EQU $15
 POS_H    EQU $16
 PREV_KEY EQU $17
+CNT_L    EQU $18
+CNT_H    EQU $19
+
+SQ_SIZE  EQU $09
+CNT_ROW  EQU $20
 
 .org $0000
     .DB "some random string"
@@ -38,12 +43,12 @@ reset:
     jmp loop
 
 init:
-    lda #$20
+    lda #$1c
     sta POS_L     ; low byte of the counter
-    lda #$18
+    lda #$17
     sta POS_H     ; high byte of the counter
 
-    lda #$01      ; initial color
+    lda #$00      ; initial color
     sta COLOR
     rts
 
@@ -52,14 +57,13 @@ loop:
 
 VBLANK_IRQ:
     jsr handle_input
-    ; jsr update
+    jsr update
     jsr draw
     rti
 
 draw:
-    ldy #$00
-    lda COLOR
-    sta (POS_L), y
+    jsr clear
+    jsr draw_player
     rts
 
 update:
@@ -106,7 +110,6 @@ handle_input_ret:
     rts
 
 move_left:
-    jsr clear
     lda POS_L
     sec
     sbc #$01
@@ -117,7 +120,6 @@ move_left_ret:
     rts
 
 move_right:
-    jsr clear
     lda POS_L
     clc
     adc #$01
@@ -128,7 +130,6 @@ move_right_ret:
     rts
 
 move_down:
-    jsr clear
     lda POS_L
     clc
     adc #$40
@@ -139,7 +140,6 @@ move_down_ret:
     rts
 
 move_up:
-    jsr clear
     lda POS_L
     sec
     sbc #$40
@@ -150,13 +150,70 @@ move_up_ret:
     rts
 
 clear:
-    lda COLOR
-    pha
     lda #$00
-    sta COLOR
-    jsr draw
+    sta CNT_L
+    lda #$10
+    sta CNT_H
+clear_loop:
+    lda RANDOM
+    ldy #$00
+    sta (CNT_L), y
+    lda CNT_L
+    clc
+    adc #$01
+    sta CNT_L
+    bcc clear_loop
+    lda CNT_H
+    clc
+    adc #$01
+    sta CNT_H
+    cmp #$20
+    bne clear_loop
+    rts
+
+draw_player:
+    lda POS_H
+    pha
+    lda POS_L
+    pha
+    lda #SQ_SIZE
+    sta CNT_ROW
+    ldy #$00
+draw_player_loop_outer:
+    ldx #SQ_SIZE
+draw_player_loop_inner:
+    lda COLOR
+    sta (POS_L), y
+    lda POS_L
+    clc
+    adc #$01
+    sta POS_L
+    bcc draw_no_carry_inner
+    lda POS_H
+    clc
+    adc #$01
+    sta POS_H
+draw_no_carry_inner:
+    dex
+    bne draw_player_loop_inner
+
+    lda POS_L
+    clc
+    adc #($40 - SQ_SIZE)
+    sta POS_L
+    bcc draw_no_carry_outer
+    lda POS_H
+    clc
+    adc #$01
+    sta POS_H
+draw_no_carry_outer:
+    dec CNT_ROW
+    bne draw_player_loop_outer
+draw_ret:
     pla
-    sta COLOR
+    sta POS_L
+    pla
+    sta POS_H
     rts
 
 .org $fffc
