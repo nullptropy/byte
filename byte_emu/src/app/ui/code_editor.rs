@@ -18,8 +18,9 @@ impl ByteEmuApp {
     }
 
     fn ui_code_editor(&mut self, ui: &mut egui::Ui) {
-        let mut layouter = |ui: &egui::Ui, string: &str, _wrap_width: f32| {
-            let layout_job = highlight(ui.ctx(), string);
+        let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+            let mut layout_job = highlight(ui.ctx(), string);
+            layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
 
@@ -27,7 +28,6 @@ impl ByteEmuApp {
             ui.add_sized(
                 ui.available_size(),
                 egui::TextEdit::multiline(&mut self.state.text)
-                    .font(egui::TextStyle::Monospace)
                     .code_editor()
                     .desired_width(f32::INFINITY)
                     .layouter(&mut layouter),
@@ -53,13 +53,16 @@ struct Highlighter {}
 
 impl Highlighter {
     fn highlight(&self, string: &str) -> LayoutJob {
+        let mut layout_job = LayoutJob::default();
         let mut lexer = Lexer::new(string);
         let mut prev_loc: Option<Location> = None;
-        let mut layout_job = LayoutJob::default();
 
-        let font_id = egui::FontId::monospace(10.0);
         let mut append = |text: &str, color: Color32| {
-            layout_job.append(text, 0.0, egui::TextFormat::simple(font_id.clone(), color));
+            layout_job.append(
+                text,
+                0.0,
+                egui::TextFormat::simple(egui::FontId::monospace(10.0), color),
+            );
         };
 
         loop {
@@ -98,7 +101,6 @@ impl Highlighter {
             Number     => Color32::from_rgb(0xd8, 0x98, 0xa4),
             String     => Color32::from_rgb(0x7b, 0xaf, 0x95),
             Comment    => Color32::from_rgb(0x6a, 0x6a, 0x69),
-            // Identifier => Color32::from_rgb(0x3d, 0xc1, 0xac),
 
             DWDirective | DBDirective | OrgDirective | Include | Equ | Label => {
                 Color32::from_rgb(0x63, 0xaa, 0xcf)
