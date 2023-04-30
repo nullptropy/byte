@@ -85,6 +85,9 @@ impl CPU {
         self.cycle += 7;
     }
 
+    // attrs on expressions is still experimental
+    // move this to the line where we match on `opcode.code`
+    #[rustfmt::skip]
     pub fn step(&mut self) -> Result<(), Error> {
         let opcode = self.bus.read(self.reg.pc);
         self.reg.pc = self.reg.pc.wrapping_add(1);
@@ -95,8 +98,6 @@ impl CPU {
             .and_then(|opcode| opcode.as_ref())
             .ok_or(Error::UnrecognizedOpcode(opcode))?;
 
-        // comment out when pushing to the repo
-        // #[rustfmt::skip]
         match opcode.code {
             0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => self.adc(opcode),
             0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(opcode),

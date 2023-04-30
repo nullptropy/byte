@@ -1,9 +1,6 @@
-#![allow(unused_imports)]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 
 mod common;
-
-use common::init_cpu;
-use common::cpu::Flags;
 
 #[test]
 fn test_6502_functional_tests() {
@@ -21,7 +18,7 @@ fn test_6502_functional_tests() {
         ip += 1;
 
         if cpu.reg.pc == 0x3469 { break; }
-        if      pc[0] == pc[1]  { dbg!(cpu.reg.pc); assert!(false); }
+        if      pc[0] == pc[1]  { panic!("test failed: {:#X?}", cpu.reg) }
 
         cpu.step().unwrap();
     }

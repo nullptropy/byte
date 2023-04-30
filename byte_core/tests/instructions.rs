@@ -1,3 +1,5 @@
+#![cfg_attr(rustfmt, rustfmt_skip)]
+
 mod common;
 
 use common::cpu::Flags;
@@ -22,8 +24,8 @@ fn opcode_0x0a_accumulator_asl() {
         |cpu| cpu.reg.a = 0b1010_1010, &[0x0a, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0b0101_0100);
-    assert_eq!(cpu.reg.p.contains(Flags::CARRY), true);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), false);
+    assert!(cpu.reg.p.contains(Flags::CARRY));
+    assert!(!cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -34,8 +36,8 @@ fn opcode_0x06_zeropage_asl() {
         |cpu| cpu.bus.write(0xaa, 0b1010_1010), &[0x06, 0xaa, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.bus.read(0xaa), 0b0101_0100);
-    assert_eq!(cpu.reg.p.contains(Flags::CARRY), true);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), false);
+    assert!(cpu.reg.p.contains(Flags::CARRY));
+    assert!(!cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -48,7 +50,7 @@ fn opcode_0x24_zeropage_bit() {
 
     assert!(cpu.reg.p.contains(Flags::NEGATIVE));
     assert!(cpu.reg.p.contains(Flags::OVERFLOW));
-    assert!(cpu.reg.p.contains(Flags::ZERO) == false);
+    assert!(!cpu.reg.p.contains(Flags::ZERO));
 }
 
 #[test]
@@ -148,7 +150,7 @@ fn opcode_0x18_implied_clc() {
     let cpu = execute_nsteps(
         |cpu| cpu.set_flag(Flags::CARRY, true), &[0x18, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.p.contains(Flags::CARRY), false);
+    assert!(!cpu.reg.p.contains(Flags::CARRY));
 }
 
 #[test]
@@ -158,7 +160,7 @@ fn opcode_0xd8_implied_cld() {
     let cpu = execute_nsteps(
         |cpu| cpu.set_flag(Flags::DECIMAL, true), &[0xd8, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.p.contains(Flags::DECIMAL), false);
+    assert!(!cpu.reg.p.contains(Flags::DECIMAL));
 }
 
 #[test]
@@ -168,7 +170,7 @@ fn opcode_0x58_implied_cli() {
     let cpu = execute_nsteps(
         |cpu| cpu.set_flag(Flags::INTERRUPT, true), &[0x58, 0x00], 0x8000, 1);
 
-    assert_eq!(cpu.reg.p.contains(Flags::INTERRUPT), false);
+    assert!(!cpu.reg.p.contains(Flags::INTERRUPT));
 }
 
 #[test]
@@ -178,7 +180,7 @@ fn opcode_0xb8_implied_clv() {
     let cpu = execute_nsteps(
         |cpu| cpu.set_flag(Flags::OVERFLOW, false), &[0xb8], 0x8000, 1);
 
-    assert_eq!(cpu.reg.p.contains(Flags::OVERFLOW), false);
+    assert!(!cpu.reg.p.contains(Flags::OVERFLOW));
 }
 
 #[test]
@@ -226,7 +228,7 @@ fn opcode_0xca_implied_dex() {
         |cpu| cpu.reg.x = 0x3, &[0xca, 0xca, 0xca, 0x00], 0x8000, 3);
 
     assert_eq!(cpu.reg.x, 0x0);
-    assert_eq!(cpu.reg.p.contains(Flags::ZERO), true);
+    assert!(cpu.reg.p.contains(Flags::ZERO));
 }
 
 #[test]
@@ -326,7 +328,7 @@ fn opcode_0xa9_immediate_lda() {
         |_| {}, &[0xa9, 0xff, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -337,7 +339,7 @@ fn opcode_0xa5_zeropage_lda() {
         |cpu| cpu.bus.write(0xee, 0xff), &[0xa5, 0xee, 0x00], 0x8000, 1);
     
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -352,7 +354,7 @@ fn opcode_0xb5_zeropagex_lda() {
         &[0xb5, 0xeb], 0x800, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -363,7 +365,7 @@ fn opcode_0xad_absolute_lda() {
         |cpu| cpu.bus.write(0xfaaf, 0xff), &[0xad, 0xaf, 0xfa, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -378,7 +380,7 @@ fn opcode_0xbd_absolutex_lda() {
         &[0xbd, 0xac, 0xfa, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -393,7 +395,7 @@ fn opcode_0xb9_absolutey_lda() {
         &[0xb9, 0xac, 0xfa, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -409,7 +411,7 @@ fn opcode_0xa1_indirectx_lda() {
         &[0xa1, 0x05, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
@@ -425,7 +427,7 @@ fn opcode_0xb1_indirecty_lda() {
         &[0xb1, 0x10, 0x00], 0x8000, 1);
 
     assert_eq!(cpu.reg.a, 0xff);
-    assert_eq!(cpu.reg.p.contains(Flags::NEGATIVE), true);
+    assert!(cpu.reg.p.contains(Flags::NEGATIVE));
 }
 
 #[test]
