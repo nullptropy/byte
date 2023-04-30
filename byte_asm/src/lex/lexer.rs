@@ -53,15 +53,15 @@ impl<'a> Lexer<'a> {
                 }
 
                 '%' => {
-                    let literal = TokenLiteral::Number(self.scan_number(2)?);
+                    let literal = TokenLiteral::Number(self.scan_number(2, 1)?);
                     self.make_token(TokenType::Number, literal)
                 }
                 '$' => {
-                    let literal = TokenLiteral::Number(self.scan_number(16)?);
+                    let literal = TokenLiteral::Number(self.scan_number(16, 1)?);
                     self.make_token(TokenType::Number, literal)
                 }
                 _ if c.is_ascii_digit() => {
-                    let literal = TokenLiteral::Number(self.scan_number(10)?);
+                    let literal = TokenLiteral::Number(self.scan_number(10, 0)?);
                     self.make_token(TokenType::Number, literal)
                 }
 
@@ -134,13 +134,12 @@ impl<'a> Lexer<'a> {
     }
 
     fn match_next(&mut self, next: char, on_true: TokenType, on_false: TokenType) -> TokenType {
-        match self.peek() {
-            Some(c) if c == next => {
+        (self.peek() == Some(next))
+            .then(|| {
                 self.advance();
                 on_true
-            }
-            _ => on_false,
-        }
+            })
+            .unwrap_or(on_false)
     }
 
     fn make_token(&self, kind: TokenType, literal: TokenLiteral) -> Token {
@@ -161,11 +160,11 @@ impl<'a> Lexer<'a> {
 
     fn skip_whitespace(&mut self) {
         loop {
-            match self.peek().unwrap_or('\0') {
-                ' ' | '\r' | '\t' => {
+            match self.peek() {
+                Some(' ' | '\r' | '\t') => {
                     self.advance();
                 }
-                '\n' => {
+                Some('\n') => {
                     self.advance();
                     self.line += 1;
                     self.column = 0;
@@ -245,7 +244,7 @@ impl<'a> Lexer<'a> {
         Ok(&self.source[self.start..self.current])
     }
 
-    fn scan_number(&mut self, radix: u32) -> LexerResult<u64> {
+    fn scan_number(&mut self, radix: u32, start_offset: usize) -> LexerResult<u64> {
         while let Some(c) = self.peek() {
             if c.is_digit(radix) {
                 self.advance();
@@ -259,7 +258,7 @@ impl<'a> Lexer<'a> {
         // points to either `%` or `$`. so if `self.start` is only
         // `1` char away from `self.current`, the loop above failed to
         // parse any valid digit in base `radix`.
-        if self.start + 1 == self.current && radix != 10 {
+        if self.current - self.start == 1 && radix != 10 {
             return Err(LexerError::NumberExpected {
                 line: self.line,
                 column: self.column,
@@ -269,11 +268,8 @@ impl<'a> Lexer<'a> {
 
         // offset the `start` by `1` if the radix is not `10`.
         // essentially skips `%` and `$`.
-        u64::from_str_radix(
-            &self.source[self.start + if radix == 10 { 0 } else { 1 }..self.current],
-            radix,
-        )
-        // this should be unreachable
-        .map_err(|why| LexerError::Generic(why.to_string()))
+        u64::from_str_radix(&self.source[self.start + start_offset..self.current], radix)
+            // this should be unreachable
+            .map_err(|why| LexerError::Generic(why.to_string()))
     }
 }
