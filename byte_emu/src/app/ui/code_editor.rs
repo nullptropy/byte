@@ -3,7 +3,6 @@ use std::collections::HashSet;
 
 use crate::app::ByteEmuApp;
 use byte_asm::lex::{Lexer, Token, TokenType};
-use byte_common::opcode::get_opcode;
 
 impl ByteEmuApp {
     pub fn show_code_editor(&mut self, ctx: &egui::Context) {
@@ -19,14 +18,17 @@ impl ByteEmuApp {
     }
 
     fn ui_code_editor(&mut self, ui: &mut egui::Ui) {
-        let mut selected = self.state.code_editor_theme;
         egui::ComboBox::from_label("Select Theme")
-            .selected_text(format!("{selected:?}"))
+            .selected_text(format!("{:?}", self.state.code_editor_theme))
             .show_ui(ui, |ui: &mut egui::Ui| {
-                ui.selectable_value(&mut selected, Theme::Default, "Default");
-                ui.selectable_value(&mut selected, Theme::EmbersLight, "EmbersLight");
+                ui.selectable_value(&mut self.state.code_editor_theme, Theme::Default, "Default");
+                ui.selectable_value(
+                    &mut self.state.code_editor_theme,
+                    Theme::EmbersLight,
+                    "EmbersLight",
+                );
             });
-        self.state.code_editor_theme = selected;
+        ui.separator();
 
         let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
             let mut layout_job = highlight(ui.ctx(), string, self.state.code_editor_theme);
@@ -34,7 +36,6 @@ impl ByteEmuApp {
             ui.fonts(|f| f.layout_job(layout_job))
         };
 
-        ui.separator();
         egui::ScrollArea::both().show(ui, |ui| {
             ui.style_mut().visuals.extreme_bg_color = self
                 .state
@@ -115,6 +116,7 @@ impl Highlighter {
                 Number => HighlighterType::Number,
                 String => HighlighterType::String,
                 Comment => HighlighterType::Comment,
+                Instruction => HighlighterType::Instruction,
 
                 DWDirective | DBDirective | OrgDirective | Include | Equ => {
                     HighlighterType::Keyword
@@ -126,8 +128,7 @@ impl Highlighter {
                     } else if variable_table.contains(token.text(src)) {
                         HighlighterType::Variable
                     } else {
-                        get_opcode(token.text(src))
-                            .map_or(HighlighterType::Generic, |_| HighlighterType::Instruction)
+                        HighlighterType::Generic
                     }
                 }
 

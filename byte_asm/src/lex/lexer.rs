@@ -1,6 +1,8 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
+use byte_common::opcode::get_opcode;
+
 use super::{LexerError, LexerResult};
 use super::{Location, Token, TokenLiteral, TokenType};
 
@@ -84,10 +86,15 @@ impl<'a> Lexer<'a> {
                 }
                 _ if c.is_alphabetic() => {
                     let identifier = self.scan_identifier()?.to_lowercase();
-                    let kind =
-                        TokenType::try_from(identifier.as_str()).unwrap_or(TokenType::Identifier);
 
-                    self.make_token(kind, TokenLiteral::None)
+                    if let Some(opcode) = get_opcode(&identifier) {
+                        self.make_token(TokenType::Instruction, TokenLiteral::Opcode(*opcode))
+                    } else {
+                        let kind = TokenType::try_from(identifier.as_str())
+                            .unwrap_or(TokenType::Identifier);
+
+                        self.make_token(kind, TokenLiteral::None)
+                    }
                 }
 
                 ';' => {

@@ -1,3 +1,5 @@
+use byte_common::opcode::Opcode;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     LeftParen,
@@ -26,6 +28,7 @@ pub enum TokenType {
     Colon,
 
     Identifier,
+    Instruction,
     OrgDirective,
     DBDirective,
     DWDirective,
@@ -51,6 +54,7 @@ pub struct Location {
 pub enum TokenLiteral {
     String(String),
     Number(u64),
+    Opcode(Opcode),
     None,
 }
 
