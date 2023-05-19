@@ -1,6 +1,7 @@
 mod file_processor;
 mod ui;
 
+use self::ui::code_editor::Theme as CodeEditorTheme;
 use crate::{
     emu::core::{ByteEmu, ByteInputState},
     DEFAULT_BINARY, DEFAULT_SOURCE,
@@ -21,6 +22,7 @@ pub struct State {
     memory_window_range: (u16, u16),
     memory_window_range_str: (String, String),
     memory_window_text_area: String,
+    code_editor_theme: CodeEditorTheme,
 
     is_about_open: bool,
     is_code_editor_open: bool,
@@ -46,6 +48,7 @@ impl Default for State {
             memory_window_range: (0, 0x100),
             memory_window_range_str: ("0x0000".into(), "0x100".into()),
             memory_window_text_area: String::new(),
+            code_editor_theme: CodeEditorTheme::Default,
 
             is_about_open: true,
             is_code_editor_open: true,

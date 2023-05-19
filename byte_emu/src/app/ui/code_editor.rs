@@ -1,11 +1,9 @@
-#![allow(unused)]
-
 use egui::{text::LayoutJob, Color32};
 use std::collections::HashSet;
 
 use crate::app::ByteEmuApp;
-use byte_asm::lex::{Lexer, LexerResult, Location, Token, TokenType};
-use byte_common::opcode::{get_opcode, OPCODE_MAP};
+use byte_asm::lex::{Lexer, Token, TokenType};
+use byte_common::opcode::get_opcode;
 
 impl ByteEmuApp {
     pub fn show_code_editor(&mut self, ctx: &egui::Context) {
@@ -21,15 +19,27 @@ impl ByteEmuApp {
     }
 
     fn ui_code_editor(&mut self, ui: &mut egui::Ui) {
+        let mut selected = self.state.code_editor_theme;
+        egui::ComboBox::from_label("Select Theme")
+            .selected_text(format!("{selected:?}"))
+            .show_ui(ui, |ui: &mut egui::Ui| {
+                ui.selectable_value(&mut selected, Theme::Default, "Default");
+                ui.selectable_value(&mut selected, Theme::EmbersLight, "EmbersLight");
+            });
+        self.state.code_editor_theme = selected;
+
         let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-            let mut layout_job = highlight(ui.ctx(), string, Theme::Default);
+            let mut layout_job = highlight(ui.ctx(), string, self.state.code_editor_theme);
             layout_job.wrap.max_width = wrap_width;
             ui.fonts(|f| f.layout_job(layout_job))
         };
 
+        ui.separator();
         egui::ScrollArea::both().show(ui, |ui| {
-            ui.style_mut().visuals.extreme_bg_color =
-                Theme::Default.default_theme(HighlighterType::Background);
+            ui.style_mut().visuals.extreme_bg_color = self
+                .state
+                .code_editor_theme
+                .colorize(HighlighterType::Background);
             ui.add_sized(
                 ui.available_size(),
                 egui::TextEdit::multiline(&mut self.state.text)
@@ -148,13 +158,16 @@ impl Highlighter {
         for (kind, token) in processed_tokens {
             match prev {
                 None => {
-                    append(&src[0..token.location.start], Color32::WHITE);
+                    append(
+                        &src[0..token.location.start],
+                        theme.colorize(HighlighterType::Generic),
+                    );
                 }
                 Some(prev) => {
                     if token.location.start - prev.location.end > 0 {
                         append(
                             &src[prev.location.end..token.location.start],
-                            Color32::WHITE,
+                            theme.colorize(HighlighterType::Generic),
                         );
                     }
                 }
@@ -168,7 +181,7 @@ impl Highlighter {
     }
 }
 
-enum HighlighterType {
+pub enum HighlighterType {
     Background,
     Comment,
     // generic?
@@ -181,41 +194,59 @@ enum HighlighterType {
     Variable,
 }
 
-#[derive(Debug, Clone, Copy, Hash)]
-enum Theme {
+#[rustfmt::skip]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
+pub enum Theme {
     Default,
-    Base16,
+    EmbersLight,
 }
 
 impl Theme {
-    fn colorize(&self, kind: HighlighterType) -> Color32 {
+    pub fn colorize(&self, kind: HighlighterType) -> Color32 {
         use Theme::*;
 
         match self {
-            Base16 => self.base16_theme(kind),
             Default => self.default_theme(kind),
+            EmbersLight => self.embers_light_theme(kind),
         }
     }
 }
 
 impl Theme {
-    pub fn base16_theme(&self, kind: HighlighterType) -> Color32 {
-        todo!()
-    }
-
-    pub fn default_theme(&self, kind: HighlighterType) -> Color32 {
+    fn embers_light_theme(&self, kind: HighlighterType) -> Color32 {
         use HighlighterType::*;
 
         match kind {
-            Background => Color32::from_rgb(0x0a, 0x0a, 0x0a),
-            Comment => Color32::from_rgb(0x6a, 0x6a, 0x69),
-            Generic => Color32::from_rgb(0xff, 0xff, 0xff),
-            Instruction => Color32::from_rgb(0xff, 0xc5, 0x91),
-            Keyword => Color32::from_rgb(0x63, 0xaa, 0xcf),
-            Label => Color32::from_rgb(0x72, 0x97, 0x5f),
-            Number => Color32::from_rgb(0xd8, 0x98, 0xa4),
-            String => Color32::from_rgb(0x7b, 0xaf, 0x95),
-            Variable => Color32::from_rgb(0x96, 0xce, 0xd8),
+            Background => self.color(0xdbd6d1),
+            Comment => self.color(0xb19b90),
+            Generic => self.color(0x433b32),
+            Instruction => self.color(0x648a77),
+            Keyword => self.color(0x6d638c),
+            Label => self.color(0x6d8257),
+            Number => self.color(0x8b7586),
+            String => self.color(0x68858a),
+            Variable => self.color(0x8e8a70),
         }
+    }
+
+    fn default_theme(&self, kind: HighlighterType) -> Color32 {
+        use HighlighterType::*;
+
+        match kind {
+            Background => self.color(0x0a0a0a),
+            Comment => self.color(0x6a6a69),
+            Generic => self.color(0xffffff),
+            Instruction => self.color(0xffc591),
+            Keyword => self.color(0x63aacf),
+            Label => self.color(0x72975f),
+            Number => self.color(0xd898a4),
+            String => self.color(0x7baf95),
+            Variable => self.color(0x96ced8),
+        }
+    }
+
+    fn color(&self, color: usize) -> Color32 {
+        Color32::from_rgb((color >> 16) as u8, (color >> 8) as u8, color as u8)
     }
 }
