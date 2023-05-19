@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum LexerError {
     #[error("[{line}:{column}] unknown assembler directive: {directive}")]
     UnknownDirective {
