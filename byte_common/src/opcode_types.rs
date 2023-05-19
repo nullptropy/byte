@@ -1,12 +1,12 @@
 use core::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TickModifier {
     Branch,
     PageCrossed,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AddressingMode {
     Implied,
     Immediate,
@@ -23,7 +23,7 @@ pub enum AddressingMode {
     IndirectY,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Opcode {
     pub code: u8,
     pub size: u8,
