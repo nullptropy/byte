@@ -83,18 +83,11 @@ impl<'a> Lexer<'a> {
                     self.make_token(kind, TokenLiteral::None)
                 }
                 _ if c.is_alphabetic() => {
-                    // if the next char is a `:` then we return a Label token
                     let identifier = self.scan_identifier()?.to_lowercase();
                     let kind =
                         TokenType::try_from(identifier.as_str()).unwrap_or(TokenType::Identifier);
 
-                    // i might rever this change
-                    if kind == TokenType::Identifier && self.peek() == Some(':') {
-                        self.advance();
-                        self.make_token(TokenType::Label, TokenLiteral::None)
-                    } else {
-                        self.make_token(kind, TokenLiteral::None)
-                    }
+                    self.make_token(kind, TokenLiteral::None)
                 }
 
                 ';' => {
@@ -115,8 +108,8 @@ impl<'a> Lexer<'a> {
         Ok(token)
     }
 
-    fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+    fn is_at_end(&mut self) -> bool {
+        self.chars.peek().is_none()
     }
 
     fn peek(&mut self) -> Option<char> {
@@ -154,7 +147,6 @@ impl<'a> Lexer<'a> {
             kind,
             literal,
             location,
-            text: &self.source[self.start..self.current],
         }
     }
 

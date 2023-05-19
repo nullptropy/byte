@@ -1,4 +1,3 @@
-// TODO: lex instructions differently
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenType {
     LeftParen,
@@ -32,7 +31,6 @@ pub enum TokenType {
     DWDirective,
     Equ,
     Include,
-    Label,
 
     String,
     Number,
@@ -57,11 +55,20 @@ pub enum TokenLiteral {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Token<'a> {
+pub struct Token {
     pub kind: TokenType,
-    pub text: &'a str,
     pub literal: TokenLiteral,
     pub location: Location,
+}
+
+impl Token {
+    pub fn eof(&self) -> bool {
+        self.kind == TokenType::EndOfFile
+    }
+
+    pub fn text<'a>(&self, source: &'a str) -> &'a str {
+        &source[self.location.start..self.location.end]
+    }
 }
 
 impl TryFrom<&str> for TokenType {
