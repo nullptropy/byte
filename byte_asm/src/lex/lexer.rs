@@ -32,44 +32,44 @@ impl<'a> Lexer<'a> {
         self.start = self.current;
 
         let token = match self.advance() {
-            None => self.make_token(TokenType::EndOfFile, TokenLiteral::None),
+            None => self.make_token(TokenType::EndOfFile, None),
             Some(c) => match c {
-                '(' => self.make_token(TokenType::LeftParen, TokenLiteral::None),
-                ')' => self.make_token(TokenType::RightParen, TokenLiteral::None),
-                '{' => self.make_token(TokenType::LeftBrace, TokenLiteral::None),
-                '}' => self.make_token(TokenType::RightBrace, TokenLiteral::None),
-                ',' => self.make_token(TokenType::Comma, TokenLiteral::None),
-                '+' => self.make_token(TokenType::Plus, TokenLiteral::None),
-                '-' => self.make_token(TokenType::Minus, TokenLiteral::None),
-                '*' => self.make_token(TokenType::Star, TokenLiteral::None),
-                '#' => self.make_token(TokenType::Hash, TokenLiteral::None),
-                ':' => self.make_token(TokenType::Colon, TokenLiteral::None),
+                '(' => self.make_token(TokenType::LeftParen, None),
+                ')' => self.make_token(TokenType::RightParen, None),
+                '{' => self.make_token(TokenType::LeftBrace, None),
+                '}' => self.make_token(TokenType::RightBrace, None),
+                ',' => self.make_token(TokenType::Comma, None),
+                '+' => self.make_token(TokenType::Plus, None),
+                '-' => self.make_token(TokenType::Minus, None),
+                '*' => self.make_token(TokenType::Star, None),
+                '#' => self.make_token(TokenType::Hash, None),
+                ':' => self.make_token(TokenType::Colon, None),
 
                 '=' => {
                     let kind = self.match_next('=', TokenType::EqualEqual, TokenType::Equal);
-                    self.make_token(kind, TokenLiteral::None)
+                    self.make_token(kind, None)
                 }
                 '!' => {
                     let kind = self.match_next('=', TokenType::BangEqual, TokenType::Bang);
-                    self.make_token(kind, TokenLiteral::None)
+                    self.make_token(kind, None)
                 }
 
                 '%' => {
                     let literal = TokenLiteral::Number(self.scan_number(2, 1)?);
-                    self.make_token(TokenType::Number, literal)
+                    self.make_token(TokenType::Number, Some(literal))
                 }
                 '$' => {
                     let literal = TokenLiteral::Number(self.scan_number(16, 1)?);
-                    self.make_token(TokenType::Number, literal)
+                    self.make_token(TokenType::Number, Some(literal))
                 }
                 _ if c.is_ascii_digit() => {
                     let literal = TokenLiteral::Number(self.scan_number(10, 0)?);
-                    self.make_token(TokenType::Number, literal)
+                    self.make_token(TokenType::Number, Some(literal))
                 }
 
                 c if c == '\'' || c == '"' => {
                     let string = self.scan_string(c)?;
-                    self.make_token(TokenType::String, TokenLiteral::String(string))
+                    self.make_token(TokenType::String, Some(TokenLiteral::String(string)))
                 }
 
                 '.' => {
@@ -82,24 +82,24 @@ impl<'a> Lexer<'a> {
                         }
                     })?;
 
-                    self.make_token(kind, TokenLiteral::None)
+                    self.make_token(kind, None)
                 }
-                _ if c.is_alphabetic() => {
+                _ if c.is_ascii_alphabetic() => {
                     let identifier = self.scan_identifier()?.to_lowercase();
 
                     if let Some(opcode) = get_opcode(&identifier) {
-                        self.make_token(TokenType::Instruction, TokenLiteral::Opcode(*opcode))
+                        self.make_token(TokenType::Instruction, Some(TokenLiteral::Opcode(*opcode)))
                     } else {
                         let kind = TokenType::try_from(identifier.as_str())
                             .unwrap_or(TokenType::Identifier);
 
-                        self.make_token(kind, TokenLiteral::None)
+                        self.make_token(kind, None)
                     }
                 }
 
                 ';' => {
                     self.scan_comment();
-                    self.make_token(TokenType::Comment, TokenLiteral::None)
+                    self.make_token(TokenType::Comment, None)
                 }
 
                 n => {
@@ -142,7 +142,7 @@ impl<'a> Lexer<'a> {
             .unwrap_or(on_false)
     }
 
-    fn make_token(&self, kind: TokenType, literal: TokenLiteral) -> Token {
+    fn make_token(&self, kind: TokenType, literal: Option<TokenLiteral>) -> Token {
         let location = Location {
             start: self.start,
             end: self.current,
@@ -233,7 +233,7 @@ impl<'a> Lexer<'a> {
 
     fn scan_identifier(&mut self) -> LexerResult<&str> {
         while let Some(c) = self.peek() {
-            if c.is_alphanumeric() || c == '_' {
+            if c.is_ascii_alphanumeric() || c == '_' {
                 self.advance();
             } else {
                 break;
