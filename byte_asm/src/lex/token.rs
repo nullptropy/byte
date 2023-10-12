@@ -39,6 +39,7 @@ pub enum TokenType {
     Number,
 
     Comment,
+    NewLine,
     EndOfFile,
 }
 

@@ -102,6 +102,11 @@ impl<'a> Lexer<'a> {
                     self.make_token(TokenType::Comment, None)
                 }
 
+                '\n' => {
+                    self.scan_newlines();
+                    self.make_token(TokenType::NewLine, None)
+                }
+
                 n => {
                     return Err(LexerError::UnknownCharacter {
                         line: self.line,
@@ -158,27 +163,23 @@ impl<'a> Lexer<'a> {
     }
 
     fn skip_whitespace(&mut self) {
-        loop {
-            match self.peek() {
-                Some(' ' | '\r' | '\t') => {
-                    self.advance();
-                }
-                Some('\n') => {
-                    self.advance();
-                    self.line += 1;
-                    self.column = 0;
-                }
-                _ => break,
-            }
+        while let Some(' ' | '\r' | '\t') = self.peek() {
+            self.advance();
+        }
+    }
+
+    fn scan_newlines(&mut self) {
+        self.line += 1;
+        self.column = 0;
+
+        while self.peek() == Some('\n') {
+            self.advance();
+            self.line += 1;
         }
     }
 
     fn scan_comment(&mut self) {
-        while let Some(c) = self.peek() {
-            if c == '\n' {
-                break;
-            }
-
+        while self.peek() != Some('\n') {
             self.advance();
         }
     }
