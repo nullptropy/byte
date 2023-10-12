@@ -163,8 +163,13 @@ impl<'a> Lexer<'a> {
     }
 
     fn skip_whitespace(&mut self) {
-        while let Some(' ' | '\r' | '\t') = self.peek() {
-            self.advance();
+        loop {
+            match self.peek() {
+                Some(' ' | '\r' | '\t') => {
+                    self.advance();
+                }
+                _ => break,
+            }
         }
     }
 
