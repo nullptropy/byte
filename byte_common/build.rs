@@ -49,8 +49,8 @@ fn main() {
         }
     }
 
-    identifier.push_str("}");
-    opcode_map.push_str("]");
+    identifier.push('}');
+    opcode_map.push(']');
 
     write_to_out_dir("mnemonics.rs", identifier.as_str());
     write_to_out_dir("opcode_arr.rs", opcode_map.as_str());
@@ -59,7 +59,7 @@ fn main() {
 fn write_to_out_dir(filename: &str, content: &str) {
     let out_dir = std::env::var("OUT_DIR").expect("OUT_DIR not set");
     let dest_path = std::path::PathBuf::from(out_dir).join(filename);
-    std::fs::write(&dest_path, content).expect("Could not write file");
+    std::fs::write(dest_path, content).expect("Could not write file");
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
