@@ -21,10 +21,6 @@ impl<'a> Scanner<'a> {
         self.skip_whitespace();
         self.cursor.sync();
 
-        // // Instruction,
-        // // Semicolon,
-        // // Comment,
-        // // Directive,
         let token = match self.cursor.advance() {
             None => self.make_token(TokenKind::EOF, None),
             Some(c) => match c {
@@ -55,6 +51,11 @@ impl<'a> Scanner<'a> {
                 _ if c.is_ascii_digit() => {
                     let value = TokenValue::Number(self.scan_number(10, 0)?);
                     self.make_token(TokenKind::Number, Some(value))
+                }
+
+                ';' => {
+                    self.scan_comment();
+                    self.make_token(TokenKind::Comment, None)
                 }
 
                 c if c == '\'' || c == '"' => {
@@ -93,21 +94,27 @@ impl<'a> Scanner<'a> {
         Ok(token)
     }
 
-    fn skip_whitespace(&mut self) {
-        loop {
-            if let Some(' ' | '\r' | '\t') = self.cursor.peek() {
-                self.cursor.advance();
-            } else {
-                break;
-            }
-        }
-    }
-
     fn make_token(&mut self, kind: TokenKind, value: Option<TokenValue>) -> Token {
         Token {
             kind,
             value,
             location: self.cursor.location(),
+        }
+    }
+
+    fn skip_whitespace(&mut self) {
+        while let Some(' ' | '\r' | '\t') = self.cursor.peek() {
+            self.cursor.advance();
+        }
+    }
+
+    fn scan_comment(&mut self) {
+        while let Some(c) = self.cursor.peek() {
+            if c == '\n' {
+                break;
+            }
+
+            self.cursor.advance();
         }
     }
 
