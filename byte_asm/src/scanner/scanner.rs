@@ -1,7 +1,7 @@
 use byte_common::opcode::Mnemonic;
 
 use super::cursor::Cursor;
-use super::{Directive, Location, Token, TokenKind, TokenValue};
+use super::{Directive, Token, TokenKind, TokenValue};
 use super::{ScannerError, ScannerResult};
 
 pub struct Scanner<'a> {
