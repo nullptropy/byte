@@ -27,21 +27,22 @@ pub enum Directive {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
-    Directive,
-    Instruction,
-    Comment,
-    Comma,
-    Hash,
-    OpenParen,
     CloseParen,
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Semicolon,
     Colon,
-    NewLine,
+    Comma,
+    Comment,
+    Directive,
+    Dot,
     EOF,
+    Hash,
+    Instruction,
+    Minus,
+    NewLine,
+    OpenParen,
+    Plus,
+    Semicolon,
+    Slash,
+    Star,
 }
 
 #[derive(Debug, Clone, PartialEq)]

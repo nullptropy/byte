@@ -16,7 +16,32 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn scan_token(&mut self) -> ScannerResult<Token> {
-        Ok(self.make_token(TokenKind::EOF, None))
+        // // Instruction,
+        // // Semicolon,
+        // // Comment,
+        // // Directive,
+        let token = match self.cursor.advance() {
+            None => self.make_token(TokenKind::EOF, None),
+            Some(c) => match c {
+                ')' => self.make_token(TokenKind::CloseParen, None),
+                ',' => self.make_token(TokenKind::Comma, None),
+                ':' => self.make_token(TokenKind::Colon, None),
+                '.' => self.make_token(TokenKind::Dot, None),
+                '#' => self.make_token(TokenKind::Hash, None),
+                '-' => self.make_token(TokenKind::Minus, None),
+                '(' => self.make_token(TokenKind::OpenParen, None),
+                '+' => self.make_token(TokenKind::Plus, None),
+                '/' => self.make_token(TokenKind::Slash, None),
+                '*' => self.make_token(TokenKind::Star, None),
+
+                // hmmm, should this be considered as whitespace??
+                '\n' => self.make_token(TokenKind::NewLine, None),
+
+                _ => todo!("not yet implemented :0"),
+            },
+        };
+
+        Ok(token)
     }
 
     pub fn make_token(&mut self, kind: TokenKind, value: Option<TokenValue>) -> Token {
