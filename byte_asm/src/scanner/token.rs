@@ -18,11 +18,11 @@ pub enum TokenValue {
 
 #[derive(Debug, Clone, Copy, PartialEq, strum::EnumString)]
 pub enum Directive {
-    Db,
-    Dw,
-    Equ,
-    Include,
-    Org,
+    DB,
+    DW,
+    EQU,
+    INCLUDE,
+    ORG,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -32,7 +32,6 @@ pub enum TokenKind {
     Comma,
     Comment,
     Directive,
-    Dot,
     EOF,
     Hash,
     Instruction,

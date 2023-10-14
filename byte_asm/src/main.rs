@@ -8,7 +8,7 @@ fn main() {
     loop {
         match scanner.scan_token() {
             Ok(token) => {
-                println!("{:?}", token.text(&data));
+                println!("{:?}", token);
                 if token.eof() {
                     break;
                 }

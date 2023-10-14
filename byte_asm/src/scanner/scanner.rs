@@ -1,5 +1,5 @@
 use super::cursor::Cursor;
-use super::{Location, Token, TokenKind, TokenValue};
+use super::{Directive, Location, Token, TokenKind, TokenValue};
 use super::{ScannerError, ScannerResult};
 
 pub struct Scanner<'a> {
@@ -29,7 +29,6 @@ impl<'a> Scanner<'a> {
                 ')' => self.make_token(TokenKind::CloseParen, None),
                 ',' => self.make_token(TokenKind::Comma, None),
                 ':' => self.make_token(TokenKind::Colon, None),
-                '.' => self.make_token(TokenKind::Dot, None),
                 '#' => self.make_token(TokenKind::Hash, None),
                 '-' => self.make_token(TokenKind::Minus, None),
                 '(' => self.make_token(TokenKind::OpenParen, None),
@@ -61,6 +60,18 @@ impl<'a> Scanner<'a> {
                     self.make_token(TokenKind::String, Some(string))
                 }
 
+                '.' => {
+                    let identifier = self.scan_identifier()?.to_lowercase();
+                    let directive = Directive::try_from(identifier[1..].to_uppercase().as_str())
+                        .map_err(|_| ScannerError::UnknownDirective {
+                            line: self.cursor.line,
+                            column: self.cursor.column,
+                            directive: identifier.to_owned(),
+                        })?;
+
+                    self.make_token(TokenKind::Directive, Some(TokenValue::Directive(directive)))
+                }
+
                 c => todo!("not yet implemented :(: {c}"),
             },
         };
@@ -84,6 +95,18 @@ impl<'a> Scanner<'a> {
             value,
             location: self.cursor.location(),
         }
+    }
+
+    fn scan_identifier(&mut self) -> ScannerResult<&str> {
+        while let Some(c) = self.cursor.peek() {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                self.cursor.advance();
+            } else {
+                break;
+            }
+        }
+
+        Ok(&self.source[self.cursor.start..self.cursor.current])
     }
 
     fn scan_string(&mut self, quote: char) -> ScannerResult<String> {
