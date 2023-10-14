@@ -2,7 +2,7 @@ use egui::{text::LayoutJob, Color32};
 use std::collections::HashSet;
 
 use crate::app::ByteEmuApp;
-use byte_asm::lex::{Lexer, Token, TokenType};
+use byte_asm::scanner::{Scanner, Token, TokenKind};
 
 impl ByteEmuApp {
     pub fn show_code_editor(&mut self, ctx: &egui::Context) {
@@ -70,11 +70,11 @@ struct Highlighter;
 
 impl Highlighter {
     fn scan_tokens(&self, src: &str) -> Vec<Token> {
-        let mut lexer = Lexer::new(src);
+        let mut scanner = Scanner::new(src);
         let mut tokens = Vec::new();
 
         loop {
-            match lexer.scan_token() {
+            match scanner.scan_token() {
                 Ok(token) if token.eof() => break,
                 Ok(token) => tokens.push(token),
                 // handle syntax errors here
@@ -85,54 +85,51 @@ impl Highlighter {
         tokens
     }
 
+    #[rustfmt::skip]
     fn process_tokens(&self, src: &str, tokens: Vec<Token>) -> Vec<(HighlighterType, Token)> {
-        use TokenType::*;
+        use TokenKind::*;
 
         let mut tokens_iter = tokens.iter().peekable();
         let mut label_table = HashSet::new();
         let mut variable_table = HashSet::new();
 
-        #[allow(clippy::while_let_on_iterator)]
         while let Some(token) = tokens_iter.next() {
-            if token.kind != TokenType::Identifier {
+            if token.kind != TokenKind::Identifier {
                 continue;
             }
 
             if let Some(next_token) = tokens_iter.peek() {
-                if next_token.kind == TokenType::Colon {
+                if next_token.kind == Colon {
                     label_table.insert(token.text(src));
-                } else if next_token.kind == TokenType::Equ {
-                    variable_table.insert(token.text(src));
+                    continue;
                 }
             }
+
+            variable_table.insert(token.text(src));
         }
 
-        let mut tokens_iter = tokens.into_iter().peekable();
+        let tokens_iter = tokens.into_iter().peekable();
         let mut result = Vec::new();
 
-        #[allow(clippy::while_let_on_iterator)]
-        while let Some(token) = tokens_iter.next() {
+        for token in tokens_iter {
             let kind = match token.kind {
-                Number => HighlighterType::Number,
-                String => HighlighterType::String,
-                Comment => HighlighterType::Comment,
+                Number      => HighlighterType::Number,
+                String      => HighlighterType::String,
+                Comment     => HighlighterType::Comment,
                 Instruction => HighlighterType::Instruction,
+                Directive   => HighlighterType::Keyword,
 
-                DWDirective | DBDirective | OrgDirective | Include | Equ => {
-                    HighlighterType::Keyword
-                }
-
-                Identifier => {
+                Identifier  => {
                     if label_table.contains(token.text(src)) {
                         HighlighterType::Label
                     } else if variable_table.contains(token.text(src)) {
                         HighlighterType::Variable
                     } else {
-                        HighlighterType::Generic
+                        HighlighterType::Foreground
                     }
                 }
 
-                _ => HighlighterType::Generic,
+                _ => HighlighterType::Foreground,
             };
 
             result.push((kind, token));
@@ -161,14 +158,15 @@ impl Highlighter {
                 None => {
                     append(
                         &src[0..token.location.start],
-                        theme.colorize(HighlighterType::Generic),
+                        theme.colorize(HighlighterType::Foreground),
                     );
                 }
                 Some(prev) => {
-                    if token.location.start - prev.location.end > 0 {
+                    let prev_end = prev.location.start + prev.location.length;
+                    if token.location.start - prev_end > 0 {
                         append(
-                            &src[prev.location.end..token.location.start],
-                            theme.colorize(HighlighterType::Generic),
+                            &src[prev_end..token.location.start],
+                            theme.colorize(HighlighterType::Foreground),
                         );
                     }
                 }
@@ -185,8 +183,7 @@ impl Highlighter {
 pub enum HighlighterType {
     Background,
     Comment,
-    // generic?
-    Generic,
+    Foreground,
     Instruction,
     Keyword,
     Label,
@@ -221,7 +218,7 @@ impl Theme {
         match kind {
             Background => self.color(0xdbd6d1),
             Comment => self.color(0xb19b90),
-            Generic => self.color(0x433b32),
+            Foreground => self.color(0x433b32),
             Instruction => self.color(0x648a77),
             Keyword => self.color(0x6d638c),
             Label => self.color(0x6d8257),
@@ -237,7 +234,7 @@ impl Theme {
         match kind {
             Background => self.color(0x0a0a0a),
             Comment => self.color(0x6a6a69),
-            Generic => self.color(0xffffff),
+            Foreground => self.color(0xffffff),
             Instruction => self.color(0xffc591),
             Keyword => self.color(0x63aacf),
             Label => self.color(0x72975f),
