@@ -28,6 +28,7 @@ pub enum Directive {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
     CloseParen,
+    Number,
     Colon,
     Comma,
     Comment,

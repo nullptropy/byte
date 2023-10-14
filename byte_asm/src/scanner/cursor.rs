@@ -2,11 +2,11 @@ use super::Location;
 use std::{iter::Peekable, str::Chars};
 
 pub struct Cursor<'a> {
-    chars: Peekable<Chars<'a>>,
-    column: usize,
-    current: usize,
-    line: usize,
-    start: usize,
+    pub chars: Peekable<Chars<'a>>,
+    pub column: usize,
+    pub current: usize,
+    pub line: usize,
+    pub start: usize,
 }
 
 impl<'a> Cursor<'a> {

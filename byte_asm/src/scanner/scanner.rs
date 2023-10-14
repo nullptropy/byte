@@ -43,7 +43,20 @@ impl<'a> Scanner<'a> {
                     token
                 }
 
-                _ => todo!("not yet implemented :0"),
+                '%' => {
+                    let value = TokenValue::Number(self.scan_number(2, 1)?);
+                    self.make_token(TokenKind::Number, Some(value))
+                }
+                '$' => {
+                    let value = TokenValue::Number(self.scan_number(16, 1)?);
+                    self.make_token(TokenKind::Number, Some(value))
+                }
+                _ if c.is_ascii_digit() => {
+                    let value = TokenValue::Number(self.scan_number(10, 0)?);
+                    self.make_token(TokenKind::Number, Some(value))
+                }
+
+                c => todo!("not yet implemented :(: {c}"),
             },
         };
 
@@ -66,5 +79,38 @@ impl<'a> Scanner<'a> {
             value,
             location: self.cursor.location(),
         }
+    }
+
+    fn scan_number(&mut self, radix: u32, start_offset: usize) -> ScannerResult<u64> {
+        while let Some(c) = self.cursor.peek() {
+            if c.is_digit(radix) {
+                self.cursor.advance();
+            } else {
+                break;
+            }
+        }
+
+        // `scan_number` is called at three different places.
+        // --
+        // if the radix is either `2` or `16`, `cursor.start`
+        // points to either `%` or `$`. so if `cursor.start` is only
+        // `1` char away from `cursor.current`, the loop above failed to
+        // parse any valid digit in base `radix`.
+        if self.cursor.current - self.cursor.start == 1 && radix != 10 {
+            return Err(ScannerError::NumberExpected {
+                line: self.cursor.line,
+                column: self.cursor.column,
+                symbol: if radix == 16 { '$' } else { '%' },
+            });
+        }
+
+        // offset the `start` by `1` if the radix is not `10`.
+        // essentially skips `%` and `$`.
+        u64::from_str_radix(
+            &self.source[self.cursor.start + start_offset..self.cursor.current],
+            radix,
+        )
+        // this should be unreachable
+        .map_err(|why| ScannerError::Generic(why.to_string()))
     }
 }

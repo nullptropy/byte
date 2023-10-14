@@ -5,11 +5,15 @@ fn main() {
     let data = std::fs::read_to_string(file).expect("failed to read the provided file");
 
     let mut scanner = Scanner::new(&data);
-    while let Ok(token) = scanner.scan_token() {
-        println!("{:?}", token);
-
-        if token.eof() {
-            break;
+    loop {
+        match scanner.scan_token() {
+            Ok(token) => {
+                println!("{:?}", token);
+                if token.eof() {
+                    break;
+                }
+            }
+            Err(err) => println!("{:?}", err),
         }
     }
 }
