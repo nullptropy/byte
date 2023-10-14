@@ -13,45 +13,62 @@ fn main() {
         result
     };
 
-    // serde doesn't support serializing/deserializing big arrays (yet)
-    // so i'm just serializing a `Vec<Option<Opcode>>` of size 0xff
-    // and modifiying the output of the serializer into something like:
-    // ```rust
-    // [Some(Opcode { .. }), None, ..]
-    // ```
-    // and then in the `byte_common::opcode` module, `OPCODE_MAP` is defined as:
-    // ```rust
-    // pub const OPCODE_MAP: [Option<Opcode>; 255] =
-    //     include!(concat!(env!("OUT_DIR"), "/opcode_arr.rs"));
-    // ```
-    let string = uneval::to_string(opcodes)
-        .expect("failed to serialize the opcodes")
-        .replace("vec!", "")
-        .replace(".into()", "")
-        .replace(".into_iter().collect()", "");
+    let mut identifier = String::new();
+    let mut opcode_map = String::new();
 
-    let path: std::path::PathBuf = [
-        std::env::var("OUT_DIR")
-            .expect("OUT_DIR not set, check if you're running this from the build script"),
-        "opcode_arr.rs".to_string(),
-    ]
-    .iter()
-    .collect();
+    identifier.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString)]\n");
+    identifier.push_str("pub enum Mnemonic {\n");
+    opcode_map.push_str("[\n");
 
-    std::fs::write(path, string).expect("failed to write the opcode_arr.rs file");
+    for opcode in opcodes.iter() {
+        match opcode {
+            Some(op) => {
+                let mnemonic = op.name.to_uppercase();
+                let tick_modifier =
+                    format!("{:?}", op.tick_modifier).replace("Some(", "Some(TickModifier::");
+
+                if !identifier.contains(mnemonic.as_str()) {
+                    identifier.push_str(format!("{},", mnemonic).as_str());
+                }
+                opcode_map.push_str(
+                    format!(
+                        "Some(Opcode {{
+                            code: {},
+                            size: {},
+                            tick: {},
+                            tick_modifier: {},
+                            mnemonic: Mnemonic::{},
+                            mode: AddressingMode::{:?}
+                        }}),",
+                        op.code, op.size, op.tick, tick_modifier, mnemonic, op.mode,
+                    )
+                    .as_str(),
+                );
+            }
+            None => opcode_map.push_str("None,"),
+        }
+    }
+
+    identifier.push_str("}");
+    opcode_map.push_str("]");
+
+    write_to_out_dir("mnemonics.rs", identifier.as_str());
+    write_to_out_dir("opcode_arr.rs", opcode_map.as_str());
 }
 
-// these definitions are directly mirrored
-// from the `byte_common::opcode` module so that
-// `byte_common` itself doesn't depend on serde.
+fn write_to_out_dir(filename: &str, content: &str) {
+    let out_dir = std::env::var("OUT_DIR").expect("OUT_DIR not set");
+    let dest_path = std::path::PathBuf::from(out_dir).join(filename);
+    std::fs::write(&dest_path, content).expect("Could not write file");
+}
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum TickModifier {
     Branch,
     PageCrossed,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum AddressingMode {
     Implied,
     Immediate,

@@ -1,4 +1,5 @@
 use core::fmt;
+use strum::EnumString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TickModifier {
@@ -6,7 +7,9 @@ pub enum TickModifier {
     PageCrossed,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+include!(concat!(env!("OUT_DIR"), "/mnemonics.rs"));
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AddressingMode {
     Implied,
     Immediate,
@@ -28,7 +31,7 @@ pub struct Opcode {
     pub code: u8,
     pub size: u8,
     pub tick: u8,
-    pub name: &'static str,
+    pub mnemonic: Mnemonic,
     pub mode: AddressingMode,
     pub tick_modifier: Option<TickModifier>,
 }
@@ -37,8 +40,8 @@ impl fmt::Debug for Opcode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}:{:02x}:{}:{}:{:?}:{:?}",
-            self.name, self.code, self.size, self.tick, self.mode, self.tick_modifier
+            "{:?}:{:02x}:{}:{}:{:?}:{:?}",
+            self.mnemonic, self.code, self.size, self.tick, self.mode, self.tick_modifier
         )
     }
 }
