@@ -34,6 +34,7 @@ pub enum TokenKind {
     Directive,
     EOF,
     Hash,
+    Identifier,
     Instruction,
     Minus,
     NewLine,

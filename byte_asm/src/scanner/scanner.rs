@@ -1,3 +1,5 @@
+use byte_common::opcode::Mnemonic;
+
 use super::cursor::Cursor;
 use super::{Directive, Location, Token, TokenKind, TokenValue};
 use super::{ScannerError, ScannerResult};
@@ -70,6 +72,18 @@ impl<'a> Scanner<'a> {
                         })?;
 
                     self.make_token(TokenKind::Directive, Some(TokenValue::Directive(directive)))
+                }
+
+                _ if c.is_alphabetic() => {
+                    let identifier = self.scan_identifier()?.to_uppercase();
+
+                    match Mnemonic::try_from(identifier.as_str()) {
+                        Ok(mnemonic) => self.make_token(
+                            TokenKind::Instruction,
+                            Some(TokenValue::Instruction(mnemonic)),
+                        ),
+                        Err(_) => self.make_token(TokenKind::Identifier, None),
+                    }
                 }
 
                 c => todo!("not yet implemented :(: {c}"),
