@@ -16,6 +16,9 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn scan_token(&mut self) -> ScannerResult<Token> {
+        self.skip_whitespace();
+        self.cursor.sync();
+
         // // Instruction,
         // // Semicolon,
         // // Comment,
@@ -34,8 +37,11 @@ impl<'a> Scanner<'a> {
                 '/' => self.make_token(TokenKind::Slash, None),
                 '*' => self.make_token(TokenKind::Star, None),
 
-                // hmmm, should this be considered as whitespace??
-                '\n' => self.make_token(TokenKind::NewLine, None),
+                '\n' => {
+                    let token = self.make_token(TokenKind::NewLine, None);
+                    self.cursor.advance_line();
+                    token
+                }
 
                 _ => todo!("not yet implemented :0"),
             },
@@ -44,14 +50,21 @@ impl<'a> Scanner<'a> {
         Ok(token)
     }
 
-    pub fn make_token(&mut self, kind: TokenKind, value: Option<TokenValue>) -> Token {
-        let token = Token {
+    fn skip_whitespace(&mut self) {
+        loop {
+            if let Some(' ' | '\r' | '\t') = self.cursor.peek() {
+                self.cursor.advance();
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn make_token(&mut self, kind: TokenKind, value: Option<TokenValue>) -> Token {
+        Token {
             kind,
             value,
             location: self.cursor.location(),
-        };
-        self.cursor.sync();
-
-        token
+        }
     }
 }

@@ -50,7 +50,7 @@ impl<'a> Cursor<'a> {
     pub fn location(&self) -> Location {
         Location {
             column: self.column,
-            length: self.current - self.start + 1, // ?
+            length: self.current - self.start,
             line: self.line,
             start: self.start,
         }
