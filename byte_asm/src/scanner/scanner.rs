@@ -1,5 +1,6 @@
 use super::cursor::Cursor;
 use super::{Location, Token, TokenKind, TokenValue};
+use super::{ScannerError, ScannerResult};
 
 pub struct Scanner<'a> {
     cursor: Cursor<'a>,
@@ -14,9 +15,8 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    // implement errors
-    pub fn scan_token(&mut self) -> Option<Token> {
-        Some(self.make_token(TokenKind::EOF, None))
+    pub fn scan_token(&mut self) -> ScannerResult<Token> {
+        Ok(self.make_token(TokenKind::EOF, None))
     }
 
     pub fn make_token(&mut self, kind: TokenKind, value: Option<TokenValue>) -> Token {

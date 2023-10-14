@@ -5,7 +5,7 @@ fn main() {
     let data = std::fs::read_to_string(file).expect("failed to read the provided file");
 
     let mut scanner = Scanner::new(&data);
-    while let Some(token) = scanner.scan_token() {
+    while let Ok(token) = scanner.scan_token() {
         println!("{:?}", token);
 
         if token.eof() {
