@@ -28,7 +28,6 @@ pub enum Directive {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
     CloseParen,
-    Number,
     Colon,
     Comma,
     Comment,
@@ -39,11 +38,13 @@ pub enum TokenKind {
     Instruction,
     Minus,
     NewLine,
+    Number,
     OpenParen,
     Plus,
     Semicolon,
     Slash,
     Star,
+    String,
 }
 
 #[derive(Debug, Clone, PartialEq)]

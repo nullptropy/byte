@@ -56,6 +56,11 @@ impl<'a> Scanner<'a> {
                     self.make_token(TokenKind::Number, Some(value))
                 }
 
+                c if c == '\'' || c == '"' => {
+                    let string = TokenValue::String(self.scan_string(c)?);
+                    self.make_token(TokenKind::String, Some(string))
+                }
+
                 c => todo!("not yet implemented :(: {c}"),
             },
         };
@@ -78,6 +83,54 @@ impl<'a> Scanner<'a> {
             kind,
             value,
             location: self.cursor.location(),
+        }
+    }
+
+    fn scan_string(&mut self, quote: char) -> ScannerResult<String> {
+        let mut string = String::new();
+
+        while let Some(c) = self.cursor.peek() {
+            if c == quote || c == '\n' {
+                break;
+            }
+            self.cursor.advance();
+
+            // if c isn't a `\\` just push it
+            // to `string` and continue processing
+            if c != '\\' {
+                string.push(c);
+                continue;
+            }
+
+            // if c is a `\\` we potentially have to decode
+            // an escape sequence
+            match self.cursor.peek() {
+                Some('n') => string.push('\n'),
+                Some('r') => string.push('\r'),
+                Some('t') => string.push('\t'),
+                Some('"') => string.push('"'),
+                Some('\'') => string.push('\''),
+                Some('\\') => string.push('\\'),
+                // if the char after `\\` isn't recognized,
+                // just push `e` into the string
+                Some(e) => string.push(e),
+                // don't call `advance` in this case
+                None => continue,
+            }
+
+            self.cursor.advance();
+        }
+
+        if let None | Some('\n') = self.cursor.peek() {
+            Err(ScannerError::UnterminatedString {
+                line: self.cursor.line,
+                column: self.cursor.column,
+                quote,
+            })
+        } else {
+            // consume the second quote
+            self.cursor.advance();
+            Ok(string)
         }
     }
 
