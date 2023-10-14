@@ -1,5 +1,4 @@
 use core::fmt;
-use strum::EnumString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TickModifier {

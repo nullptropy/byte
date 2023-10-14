@@ -16,7 +16,7 @@ fn main() {
     let mut identifier = String::new();
     let mut opcode_map = String::new();
 
-    identifier.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString)]\n");
+    identifier.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString)]\n");
     identifier.push_str("pub enum Mnemonic {\n");
     opcode_map.push_str("[\n");
 
