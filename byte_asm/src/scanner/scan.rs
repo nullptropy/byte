@@ -87,7 +87,13 @@ impl<'a> Scanner<'a> {
                     }
                 }
 
-                c => todo!("not yet implemented :(: {c}"),
+                n => {
+                    return Err(ScannerError::UnknownCharacter {
+                        line: self.cursor.line,
+                        column: self.cursor.column,
+                        character: n,
+                    })
+                }
             },
         };
 
